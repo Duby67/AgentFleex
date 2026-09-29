@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - integration
+      - dev
+      - production
+
+permissions:
+  contents: read
+
+jobs:
+  require-ordered-branch-flow:
+    name: Require ordered branch promotion
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate pull request source and target
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          case "$BASE_REF" in
+            integration)
+              case "$HEAD_REF" in
+                feature-*|fix-*|docs-*|test-*|deploy-*|qol-*) ;;
+                *)
+                  echo "Pull requests into integration must come from a dedicated task branch. Current source: $HEAD_REF"
+                  exit 1
+                  ;;
+              esac
+              ;;
+            dev)
+              test "$HEAD_REF" = integration || {
+                echo "Pull requests into dev must come from integration. Current source: $HEAD_REF"
+                exit 1
+              }
+              ;;
+            production)
+              test "$HEAD_REF" = dev || {
+                echo "Pull requests into production must come from dev. Current source: $HEAD_REF"
+                exit 1
+              }
+              ;;
+            *)
+              echo "Unsupported protected target: $BASE_REF"
+              exit 1
+              ;;
+          esac
+
+  agent-layer:
+    name: Agent rules, skills and docs
+    if: github.base_ref == 'integration'
+    needs:
+      - require-ordered-branch-flow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Docs check
+        run: uv run Scripts/check_docs.py
+
+      - name: Agent rules check
+        run: uv run Scripts/check_agent_rules.py
+
+      - name: Skills check
+        run: uv run Scripts/check_skills.py Skills
+
+      - name: Check script tests
+        run: uv run --no-project --with pytest --with pyyaml python -m pytest -q Tests
