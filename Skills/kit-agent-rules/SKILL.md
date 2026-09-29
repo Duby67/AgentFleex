@@ -1,51 +1,43 @@
 ---
 name: kit-agent-rules
-description: Keep agent rules consistent across AGENTS.md, task routing, the skill registry, process links, and their validation. Use when changing AGENTS.md, Docs/GIT_WORKFLOW.md process policy, Scripts/check_agent_rules.py, or wiring an already-authored skill addition, rename, split, move, or removal into the repository. Do not use for writing skill content or human-facing documentation.
+description: Keep AGENTS.md minimal and consistent with the repository skills and docs. Use when changing AGENTS.md or CLAUDE.md, or wiring a skill addition, rename, split, or removal into the repository. Do not use for writing skill content or human-facing documentation.
 ---
 
 # Agent Rules
 
-Keep task routing, repository skills, and their validation consistent without changing product
-behavior. Skill content quality belongs to `$kit-skill-authoring`.
+`AGENTS.md` is read on every model request, so every line costs tokens on every task. Skill content
+quality belongs to `$kit-skill-authoring`.
 
-## Scope
+## Wiring
 
-- `AGENTS.md`: the repository router, always loaded by Codex and imported by `CLAUDE.md` (a single
-  `@AGENTS.md` line) for Claude Code; rules every task must follow belong here, not in an on-demand
-  skill;
-- `.agents/`: only the Codex discovery symlink and the local, git-ignored session files
-  `.agents/tasks.md` and `.agents/handoff.md`; `AGENTS.md` owns their protocol;
-- `Skills/**` structure and routing. `Skills/` is the only skill source; `.agents/skills` (Codex)
-  and `.claude/skills` (Claude Code) are relative symlinks to it and never hold files of their own;
-- `Docs/GIT_WORKFLOW.md` process policy and `Docs/README.md` navigation;
-- `Scripts/check_agent_rules.py`, `Scripts/check_skills.py`, and `.githooks/`.
+- `AGENTS.md` is the single rules file. Codex reads it natively; `CLAUDE.md` holds one line,
+  `@AGENTS.md`, so Claude Code imports the same file.
+- `Skills/` is the only skill source. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are
+  relative symlinks to it and never hold files of their own.
+- Both clients discover skills from their `description` fields; a routing table in `AGENTS.md` is
+  not needed and duplicates those descriptions.
+- `.agents/handoff.md` and `.agents/tasks.md` are local, git-ignored session files.
 
-## Principles
+## What belongs in AGENTS.md
 
-- Every rule has one canonical owner; other places link to it instead of copying it.
-- Hard rules (protected branches, secrets, privacy, no silent fallback, no delegation, honest
-  evidence) are stated imperatively. Soft guidance (what to read, which checks to run, how to reply)
-  gives direction and a quality bar, not an algorithm.
-- `AGENTS.md` is paid for on every model request: keep it short, and move detail that only some
-  tasks need into a skill or a canonical document.
-- A skill rename, split, or removal updates `Skills/`, the `AGENTS.md` route, and process links in
-  one change, without compatibility aliases.
-- Names and paths describe the job, not a tool: no agent-, model-, or vendor-specific words in skill
-  names.
-- Never weaken protected-branch or commit, push, PR, and merge restrictions.
+Keep only what every task needs and the agent cannot infer:
 
-## Validation contract
+- one or two sentences on what the project is and is not;
+- hard invariants whose violation is costly (data, money, security, privacy, protected branches);
+- pointers to canonical owners the agent would not find on its own.
 
-`Scripts/check_agent_rules.py` checks that every skill is routed from `AGENTS.md` and that
-`AGENTS.md` stays English. `Scripts/check_docs.py` owns path, link, `$skill` reference, and
-navigation integrity. `Scripts/check_skills.py` owns package validation: frontmatter, naming,
-language, UI metadata, size, and links. Do not add checks that require specific prose; they freeze
-wording instead of protecting meaning.
+Remove or move out:
 
-```text
-uv run Scripts/check_skills.py Skills
-uv run Scripts/check_agent_rules.py
-uv run Scripts/check_docs.py
-```
+- statements the file already implies ("this file is for agents", "write this file in English");
+- general engineering advice any capable agent already follows;
+- task-specific procedures (move to a skill) and human-facing explanations (move to docs);
+- copies of facts owned elsewhere (link instead);
+- examples, history, and rationale that do not change behavior.
 
-Run the checker tests when validation logic changes.
+State hard rules imperatively; give soft guidance as direction, not an algorithm. A skill rename,
+split, or removal updates `Skills/` and every reference in one change, without aliases.
+
+## Check
+
+Re-read the diff and ask for each added line whether an agent would act differently without it; if
+not, delete it. Verify that the symlinks resolve and that referenced paths exist.
