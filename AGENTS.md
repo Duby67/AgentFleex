@@ -15,11 +15,10 @@ Hard rules; stop and report instead of working around them.
   text implied by the file itself (its audience, purpose, or language), or copies of other files.
 - **Git actions belong to the developer:** commit, push, PR, and merge.
 - **No silent fallback:** fail with an actionable error instead of substituting a default.
-- **Secrets** come from the environment; never commit them or put them in logs, reports, or session
-  files.
+- **Secrets** come from the environment; never commit them or put them in logs or reports.
 - **Honest evidence:** never report an unrun or skipped check as passed; completion needs checks run
   after the last change.
-- **No delegation:** only the operator starts agents.
+- **No delegation:** an agent never starts another agent without the operator's permission.
 
 When docs, config, code, and tests disagree, report the contradiction instead of choosing.
 
@@ -28,9 +27,6 @@ When docs, config, code, and tests disagree, report the contradiction instead of
 Trace the real flow, then make the smallest correct change. Prefer, in order: no change, existing
 code, the standard library, an installed dependency, new code. Stay in scope. Read narrowly:
 focused search, bounded reads, `git diff --stat` before diffs, quiet test output.
-
-For multi-session work keep `.agents/handoff.md` (current findings and evidence) and
-`.agents/tasks.md` (the operator's checklist; mark results, add no tasks); both are git-ignored.
 
 ## Report
 

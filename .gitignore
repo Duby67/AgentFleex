@@ -9,10 +9,6 @@
 *.pem
 *.key
 
-# Local agent session files (protocol: AGENTS.md)
-/.agents/tasks.md
-/.agents/handoff.md
-
 # Local agent tool settings; project rules live in AGENTS.md and Skills/
 /.codex/
 /.serena/

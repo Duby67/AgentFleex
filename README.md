@@ -12,7 +12,6 @@
 | [CLAUDE.md](./CLAUDE.md) | Одна строка `@AGENTS.md`: Claude Code импортирует тот же файл |
 | `Skills/` | Единственный источник скилов |
 | `.agents/skills`, `.claude/skills` | Относительные симлинки на `Skills/` для Codex и Claude Code |
-| `.agents/handoff.md`, `.agents/tasks.md` | Локальные файлы сессии, в git не попадают |
 
 Оба клиента сами находят скилы по полю `description`, поэтому таблица маршрутизации в `AGENTS.md`
 не нужна. В Windows симлинки требуют `git config core.symlinks true` и режим разработчика.

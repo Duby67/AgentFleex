@@ -16,7 +16,6 @@ quality belongs to `$kit-skill-authoring`.
   relative symlinks to it and never hold files of their own.
 - Both clients discover skills from their `description` fields; a routing table in `AGENTS.md` is
   not needed and duplicates those descriptions.
-- `.agents/handoff.md` and `.agents/tasks.md` are local, git-ignored session files.
 
 ## What belongs in AGENTS.md
 
