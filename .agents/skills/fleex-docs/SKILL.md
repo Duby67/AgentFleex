@@ -3,7 +3,7 @@ name: fleex-docs
 description: Synchronize human-facing Markdown with behavior verified in code, tests, configuration, or workflows. Use when editing README.md or other human documentation. Do not use for AGENTS.md or skills.
 ---
 
-# Documentation
+# Docs
 
 Keep human documentation true to current behavior, concise, and with each fact in exactly one
 canonical owner.
@@ -18,4 +18,11 @@ canonical owner.
   authorized scope.
 - Do not copy secrets or real identifiers, keep historical drafts, or change code to match text.
 
-Check that every link and referenced path in the edited files resolves.
+## Gotchas
+
+- Human docs keep their existing language even though agent files are in English.
+
+## Check
+
+Run `.agents/skills/fleex-skills/scripts/check.sh` (`check.ps1` on Windows) to verify links, and
+confirm by hand that referenced paths in code spans exist.

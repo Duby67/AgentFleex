@@ -1,4 +1,4 @@
 interface:
-  display_name: "Agent Rules"
-  short_description: "Keep agent rules, routing and checks consistent"
-  default_prompt: "Use $fleex-agents-md to change agent rules or the skill registry."
+  display_name: "AGENTS.md"
+  short_description: "Keep AGENTS.md minimal and wired to skills"
+  default_prompt: "Use $fleex-agents-md to change AGENTS.md or skill wiring."

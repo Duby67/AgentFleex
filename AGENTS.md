@@ -6,11 +6,11 @@ A template for agent-driven repositories.
 
 Hard rules; stop and report instead of working around them.
 
-- Commit, push, PR, and merge belong to the developer.
+- Commit, push, PR, and merge belong to the user.
 - No silent fallback: fail with an actionable error.
 - Secrets come from the environment; never commit or log them.
 - Never report an unrun or skipped check as passed; run checks after the last change.
-- Start another agent only with the operator's permission.
+- Start another agent only with the user's permission.
 - When docs, config, code, and tests disagree, report the contradiction instead of choosing.
 
 ## Work
