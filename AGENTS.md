@@ -1,34 +1,25 @@
-# Agents
+# AgentFleex
 
-## Project
-
-AgentFleex is a language- and branch-neutral template for agent-driven repositories: how
-`AGENTS.md` and skills are wired, and the rules that keep agent context small. A project created
-from it replaces this section with what the project is and is not.
+A template for agent-driven repositories.
 
 ## Rules
 
 Hard rules; stop and report instead of working around them.
 
-- **Keep this file minimal.** It is loaded on every request. Add only rules every task needs; move
-  task-specific detail to a skill or a doc and link to it. Never add text the agent already knows,
-  text implied by the file itself (its audience, purpose, or language), or copies of other files.
-- **Git actions belong to the developer:** commit, push, PR, and merge.
-- **No silent fallback:** fail with an actionable error instead of substituting a default.
-- **Secrets** come from the environment; never commit them or put them in logs or reports.
-- **Honest evidence:** never report an unrun or skipped check as passed; completion needs checks run
-  after the last change.
-- **No delegation:** an agent never starts another agent without the operator's permission.
-
-When docs, config, code, and tests disagree, report the contradiction instead of choosing.
+- Commit, push, PR, and merge belong to the developer.
+- No silent fallback: fail with an actionable error.
+- Secrets come from the environment; never commit or log them.
+- Never report an unrun or skipped check as passed; run checks after the last change.
+- Start another agent only with the operator's permission.
+- When docs, config, code, and tests disagree, report the contradiction instead of choosing.
 
 ## Work
 
-Trace the real flow, then make the smallest correct change. Prefer, in order: no change, existing
-code, the standard library, an installed dependency, new code. Stay in scope. Read narrowly:
-focused search, bounded reads, `git diff --stat` before diffs, quiet test output.
+Make the smallest correct change. Prefer, in order: no change, existing code, the standard library,
+an installed dependency, new code. Stay in scope. Read narrowly: focused search, bounded reads,
+`git diff --stat` before diffs, quiet test output.
 
 ## Report
 
-One line per point: result, checks actually run with outcome, concrete risks. Omit empty
-categories; never list what was not done.
+One line per point: result, checks run with outcome, concrete risks. Omit empty categories; never
+list what was not done.
