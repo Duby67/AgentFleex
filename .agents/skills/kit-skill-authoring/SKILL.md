@@ -1,6 +1,6 @@
 ---
 name: kit-skill-authoring
-description: Create, split, review, or refactor repository skills shared by Codex and Claude Code. Use when changing Skills/*/SKILL.md, trigger descriptions, bundled resources, or agents/openai.yaml. Do not use for AGENTS.md wiring.
+description: Create, split, review, or refactor repository skills shared by Codex and Claude Code. Use when changing .agents/skills/*/SKILL.md, trigger descriptions, bundled resources, or agents/openai.yaml. Do not use for AGENTS.md wiring.
 ---
 
 # Skill Authoring
@@ -10,9 +10,9 @@ agent direction rather than a script. Wiring belongs to `$kit-agent-rules`.
 
 ## Package
 
-- `Skills/<skill-name>/SKILL.md`; the lowercase hyphenated directory matches the frontmatter `name`
-  (at most 64 characters). Codex and Claude Code read the same files through the `.agents/skills`
-  and `.claude/skills` symlinks, so write for any capable agent, not for one tool.
+- `.agents/skills/<skill-name>/SKILL.md`; the lowercase hyphenated directory matches the
+  frontmatter `name` (at most 64 characters). Codex reads `.agents/skills` directly and Claude Code
+  through the `.claude/skills` symlink, so write for any capable agent, not for one tool.
 - Frontmatter holds `name` and `description`. A user-gated skill says so in `description`, sets
   `disable-model-invocation: true` in the frontmatter (Claude Code) and
   `policy.allow_implicit_invocation: false` in `agents/openai.yaml` (Codex).

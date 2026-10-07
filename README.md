@@ -10,8 +10,8 @@
 | --- | --- |
 | [AGENTS.md](./AGENTS.md) | Единственный файл правил; Codex читает его сам |
 | [CLAUDE.md](./CLAUDE.md) | Одна строка `@AGENTS.md`: Claude Code импортирует тот же файл |
-| `Skills/` | Единственный источник скилов |
-| `.agents/skills`, `.claude/skills` | Относительные симлинки на `Skills/` для Codex и Claude Code |
+| `.agents/skills/` | Единственный источник скилов; Codex читает его сам |
+| `.claude/skills` | Относительный симлинк на `.agents/skills/` для Claude Code |
 
 Оба клиента сами находят скилы по полю `description`, поэтому таблица маршрутизации в `AGENTS.md`
 не нужна. В Windows симлинки требуют `git config core.symlinks true` и режим разработчика.
@@ -30,16 +30,16 @@
   тело читается по необходимости;
 - каждый факт хранится в одном месте, остальные ссылаются на него.
 
-Подробные правила: [kit-agent-rules](./Skills/kit-agent-rules/SKILL.md) (AGENTS.md),
-[kit-skill-authoring](./Skills/kit-skill-authoring/SKILL.md) (создание скилов, ссылки на best
-practice), [kit-docs](./Skills/kit-docs/SKILL.md) (документация для людей).
+Подробные правила: [kit-agent-rules](./.agents/skills/kit-agent-rules/SKILL.md) (AGENTS.md),
+[kit-skill-authoring](./.agents/skills/kit-skill-authoring/SKILL.md) (создание скилов, ссылки на best
+practice), [kit-docs](./.agents/skills/kit-docs/SKILL.md) (документация для людей).
 
 ## Новый проект из каркаса
 
 1. Создай репозиторий из AgentFleex.
 2. Перепиши раздел Project в `AGENTS.md`, добавь инварианты своей области (например, модель веток)
    и ссылки на владельцев тем.
-3. Проектные скилы называй `<project>-<job>` и клади в `Skills/`.
+3. Проектные скилы называй `<project>-<job>` и клади в `.agents/skills/`.
 4. Проверки кода, CI и hooks добавляй под язык и процесс проекта.
 
 ## Материалы

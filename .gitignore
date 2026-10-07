@@ -9,7 +9,7 @@
 *.pem
 *.key
 
-# Local agent tool settings; project rules live in AGENTS.md and Skills/
+# Local agent tool settings; project rules live in AGENTS.md and .agents/skills/
 /.codex/
 /.serena/
 /.mcp.json

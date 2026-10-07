@@ -12,8 +12,8 @@ quality belongs to `$kit-skill-authoring`.
 
 - `AGENTS.md` is the single rules file. Codex reads it natively; `CLAUDE.md` holds one line,
   `@AGENTS.md`, so Claude Code imports the same file.
-- `Skills/` is the only skill source. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are
-  relative symlinks to it and never hold files of their own.
+- `.agents/skills/` is the only skill source; Codex reads it natively. `.claude/skills` is a
+  relative symlink to it for Claude Code and never holds files of its own.
 - Both clients discover skills from their `description` fields; a routing table in `AGENTS.md` is
   not needed and duplicates those descriptions.
 
@@ -34,9 +34,9 @@ Remove or move out:
 - examples, history, and rationale that do not change behavior.
 
 State hard rules imperatively; give soft guidance as direction, not an algorithm. A skill rename,
-split, or removal updates `Skills/` and every reference in one change, without aliases.
+split, or removal updates `.agents/skills/` and every reference in one change, without aliases.
 
 ## Check
 
 Re-read the diff and ask for each added line whether an agent would act differently without it; if
-not, delete it. Verify that the symlinks resolve and that referenced paths exist.
+not, delete it. Verify that the symlink resolves and that referenced paths exist.
