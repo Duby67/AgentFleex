@@ -21,5 +21,5 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
 
 ## Report
 
-One line per point: result, checks run with outcome, concrete risks. Omit empty categories; never
-list what was not done.
+One line per point: result, checks run with outcome, concrete risks. Write nothing else: no empty
+categories, no actions not taken (such as "not committed"), nothing the user already sees.
