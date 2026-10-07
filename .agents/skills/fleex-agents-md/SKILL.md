@@ -1,12 +1,12 @@
 ---
-name: kit-agent-rules
+name: fleex-agents-md
 description: Keep AGENTS.md minimal and consistent with the repository skills and docs. Use when changing AGENTS.md or CLAUDE.md, or wiring a skill addition, rename, split, or removal into the repository. Do not use for writing skill content or human-facing documentation.
 ---
 
 # Agent Rules
 
 `AGENTS.md` is read on every model request, so every line costs tokens on every task. Skill content
-quality belongs to `$kit-skill-authoring`.
+quality belongs to `$fleex-skills`.
 
 ## Wiring
 

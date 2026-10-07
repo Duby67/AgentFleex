@@ -1,4 +1,4 @@
 interface:
   display_name: "Skill Authoring"
   short_description: "Create and review focused repository skills"
-  default_prompt: "Use $kit-skill-authoring to create or rework a repository skill."
+  default_prompt: "Use $fleex-skills to create or rework a repository skill."

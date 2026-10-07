@@ -1,5 +1,5 @@
 ---
-name: kit-docs
+name: fleex-docs
 description: Synchronize human-facing Markdown with behavior verified in code, tests, configuration, or workflows. Use when editing README.md or other human documentation. Do not use for AGENTS.md or skills.
 ---
 

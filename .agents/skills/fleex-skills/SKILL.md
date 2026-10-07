@@ -1,12 +1,12 @@
 ---
-name: kit-skill-authoring
+name: fleex-skills
 description: Create, split, review, or refactor repository skills shared by Codex and Claude Code. Use when changing .agents/skills/*/SKILL.md, trigger descriptions, bundled resources, or agents/openai.yaml. Do not use for AGENTS.md wiring.
 ---
 
 # Skill Authoring
 
 Create focused skills that activate only for intended tasks, consume little context, and give the
-agent direction rather than a script. Wiring belongs to `$kit-agent-rules`.
+agent direction rather than a script. Wiring belongs to `$fleex-agents-md`.
 
 ## Package
 
@@ -38,7 +38,7 @@ agent direction rather than a script. Wiring belongs to `$kit-agent-rules`.
 
 ## Shared and project skills
 
-Shared `kit-` skills hold reusable procedures and no project names, paths, or domain rules. Project
+Shared `fleex-` skills hold reusable procedures and no project names, paths, or domain rules. Project
 skills use the project prefix (`<project>-<job>`), supply local context, and refer to shared skills
 instead of copying them.
 

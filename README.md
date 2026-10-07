@@ -26,9 +26,9 @@
   тело читается по необходимости;
 - каждый факт хранится в одном месте, остальные ссылаются на него.
 
-Подробные правила: [kit-agent-rules](./.agents/skills/kit-agent-rules/SKILL.md) (AGENTS.md),
-[kit-skill-authoring](./.agents/skills/kit-skill-authoring/SKILL.md) (создание скилов, ссылки на best
-practice), [kit-docs](./.agents/skills/kit-docs/SKILL.md) (документация для людей).
+Подробные правила: [fleex-agents-md](./.agents/skills/fleex-agents-md/SKILL.md) (AGENTS.md),
+[fleex-skills](./.agents/skills/fleex-skills/SKILL.md) (создание скилов, ссылки на best
+practice), [fleex-docs](./.agents/skills/fleex-docs/SKILL.md) (документация для людей).
 
 ## Материалы
 
