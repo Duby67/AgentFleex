@@ -14,6 +14,45 @@
 /.serena/
 /.mcp.json
 /.claude/settings.local.json
+/.claude/worktrees/
+.aider*
+.playwright-mcp/
+
+# Dependencies and tool caches
+.cache/
+.direnv/
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/cache/
+.eslintcache
+.turbo/
+.parcel-cache/
+.next/
+.nuxt/
+.svelte-kit/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.tox/
+.nox/
+.ipynb_checkpoints/
+.gradle/
+.terraform/
+.dart_tool/
+.vs/
+
+# Test coverage
+coverage/
+htmlcov/
+.coverage
+.coverage.*
+.nyc_output/
 
 # Logs and temporary files
 *.log
