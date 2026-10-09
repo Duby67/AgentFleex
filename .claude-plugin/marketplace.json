@@ -1,0 +1,6 @@
+{
+  "name": "agentfleex",
+  "owner": { "name": "Duby67" },
+  "description": "AgentFleex plugin for Claude Code",
+  "plugins": [{ "name": "agentfleex", "source": "./" }]
+}

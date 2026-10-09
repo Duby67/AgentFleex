@@ -1,6 +1,9 @@
-# Validate agent wiring, skill packages, $skill references, and relative Markdown links.
+# Validate agent wiring, skill packages, $skill references, and relative Markdown links in the
+# git repository of the current directory; this plugin's own skills count as known references.
 # Prints one "path: problem" line per error and exits 1; prints "check: ok" otherwise.
 $ErrorActionPreference = 'Stop'
+
+$pluginSkills = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 
 $root = git rev-parse --show-toplevel 2>$null
 if ($LASTEXITCODE -ne 0 -or -not $root) {
@@ -29,15 +32,23 @@ function Get-Field($lines, $name) {
 if (-not (Test-Path CLAUDE.md) -or (Get-Content -Raw CLAUDE.md).TrimEnd() -ne '@AGENTS.md') {
     Err 'CLAUDE.md' "must contain exactly '@AGENTS.md'"
 }
+# Final target of a path through any chain of symlinks (PowerShell 7.2+).
+function Get-RealPath($path) {
+    $item = Get-Item -Force $path -ErrorAction SilentlyContinue
+    if (-not $item) { return $null }
+    $target = $item.ResolveLinkTarget($true)
+    if ($target) { $target.FullName } else { $item.FullName }
+}
+
 $link = Get-Item -Force .claude/skills -ErrorAction SilentlyContinue
-$skillsFull = (Resolve-Path $skills).Path
-if (-not $link -or -not $link.LinkType -or
-    (Resolve-Path .claude/skills -ErrorAction SilentlyContinue).Path -ne $skillsFull) {
+if ((Test-Path $skills) -and (-not $link -or -not $link.LinkType -or
+    (Get-RealPath .claude/skills) -ne (Get-RealPath $skills))) {
     Err '.claude/skills' "must be a symlink that resolves to $skills"
 }
 
-$names = @()
-foreach ($dir in Get-ChildItem -Directory $skills) {
+$names = @(Get-ChildItem -Directory $pluginSkills |
+    Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') } | ForEach-Object Name)
+foreach ($dir in Get-ChildItem -Directory $skills -ErrorAction SilentlyContinue) {
     $id = $dir.Name
     $rel = "$skills/$id"
     $file = "$rel/SKILL.md"
@@ -77,7 +88,8 @@ foreach ($dir in Get-ChildItem -Directory $skills) {
     }
 }
 
-$refFiles = @('AGENTS.md') + (Get-ChildItem -Recurse -File $skills -Include *.md, *.yaml |
+$refFiles = @(Get-Item AGENTS.md -ErrorAction SilentlyContinue | ForEach-Object Name) +
+    (Get-ChildItem -Recurse -File $skills -Include *.md, *.yaml -ErrorAction SilentlyContinue |
     ForEach-Object { (Resolve-Path -Relative $_.FullName) -replace '\\', '/' -replace '^\./', '' })
 foreach ($f in $refFiles) {
     $refs = [regex]::Matches((Get-Content -Raw $f), '\$[a-z][a-z0-9]*(-[a-z0-9]+)*') |

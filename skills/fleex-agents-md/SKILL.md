@@ -6,18 +6,22 @@ description: Keep AGENTS.md minimal and consistent with the repository skills an
 # AGENTS.md
 
 `AGENTS.md` is read on every model request, so every line costs tokens on every task. Skill content
-quality belongs to `$fleex-skills`.
+quality belongs to `$fleex-skills`. These rules apply to the repository being worked on.
 
 ## Wiring
 
 - `AGENTS.md` is the single rules file. Codex reads it natively; `CLAUDE.md` holds one line,
   `@AGENTS.md`, so Claude Code imports the same file.
-- `.agents/skills/` is the only skill source; Codex reads it natively. `.claude/skills` is a
-  relative symlink to it for Claude Code and never holds files of its own.
+- `.agents/skills/` is the only source of project skills; Codex reads it natively. `.claude/skills`
+  is a relative symlink to it for Claude Code and never holds files of its own.
+- Shared `fleex-` skills come from the AgentFleex plugin; never copy them into the repository.
 - Both clients discover skills from their `description` fields; a routing table in `AGENTS.md` is
   not needed and duplicates those descriptions.
 
 ## What belongs in AGENTS.md
+
+A repository without `AGENTS.md` starts from `assets/AGENTS.template.md`: fill in the project
+sentence, then keep only the rules that hold for this repository.
 
 Keep only what every task needs and the agent cannot infer:
 
@@ -46,5 +50,5 @@ split, or removal updates `.agents/skills/` and every reference in one change, w
 ## Check
 
 Re-read the diff and ask for each added line whether an agent would act differently without it; if
-not, delete it. Run `.agents/skills/fleex-skills/scripts/check.sh` (`check.ps1` on Windows) and fix
-every reported error.
+not, delete it. From the repository root, run `../fleex-skills/scripts/check.sh` relative to this
+skill's directory (`check.ps1` on Windows) and fix every reported error.

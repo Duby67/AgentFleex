@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Validate agent wiring, skill packages, $skill references, and relative Markdown links.
+# Validate agent wiring, skill packages, $skill references, and relative Markdown links in the
+# git repository of the current directory; this plugin's own skills count as known references.
 # Prints one "path: problem" line per error and exits 1; prints "check: ok" otherwise.
 set -u
 
+plugin_skills=$(cd "$(dirname "$0")/../.." && pwd -P) || exit 2
 root=$(git rev-parse --show-toplevel 2>/dev/null) || {
   echo "check: run inside the git repository" >&2
   exit 2
@@ -21,13 +23,17 @@ field() {
 
 [ "$(cat CLAUDE.md 2>/dev/null)" = "@AGENTS.md" ] ||
   err CLAUDE.md "must contain exactly '@AGENTS.md'"
-if [ ! -L .claude/skills ] ||
-  [ "$(cd .claude/skills 2>/dev/null && pwd -P)" != "$(cd "$skills" && pwd -P)" ]; then
+if [ -d "$skills" ] && { [ ! -L .claude/skills ] ||
+  [ "$(cd .claude/skills 2>/dev/null && pwd -P)" != "$(cd "$skills" && pwd -P)" ]; }; then
   err .claude/skills "must be a symlink that resolves to $skills"
 fi
 
 names=" "
+for dir in "$plugin_skills"/*/; do
+  [ -f "$dir/SKILL.md" ] && dir=${dir%/} && names="$names${dir##*/} "
+done
 for dir in "$skills"/*/; do
+  [ -d "$dir" ] || continue
   dir=${dir%/}
   id=${dir##*/}
   file=$dir/SKILL.md
@@ -70,7 +76,7 @@ done
 while IFS=: read -r file ref; do
   case $names in *" ${ref#\$} "*) ;; *) err "$file" "unknown skill reference $ref" ;; esac
 done < <(grep -roE --include='*.md' --include='*.yaml' '\$[a-z][a-z0-9]*(-[a-z0-9]+)*' \
-  AGENTS.md "$skills" | sort -u)
+  $(ls -d AGENTS.md "$skills" 2>/dev/null) /dev/null | sort -u)
 
 while IFS= read -r md; do
   base=$(dirname "$md")

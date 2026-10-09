@@ -24,5 +24,6 @@ canonical owner.
 
 ## Check
 
-Run `.agents/skills/fleex-skills/scripts/check.sh` (`check.ps1` on Windows) to verify links, and
-confirm by hand that referenced paths in code spans exist.
+From the repository root, run `../fleex-skills/scripts/check.sh` relative to this skill's directory
+(`check.ps1` on Windows) to verify links, and confirm by hand that referenced paths in code spans
+exist.

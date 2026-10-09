@@ -1,0 +1,10 @@
+{
+  "name": "agentfleex",
+  "version": "0.1.0",
+  "description": "Skills that keep AGENTS.md, repository skills, and human docs minimal and consistent",
+  "author": {
+    "name": "Duby67"
+  },
+  "repository": "https://github.com/Duby67/AgentFleex",
+  "skills": "./skills/"
+}

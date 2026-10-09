@@ -40,9 +40,9 @@ agent direction rather than a script. Wiring belongs to `$fleex-agents-md`.
 
 ## Shared and project skills
 
-Shared `fleex-` skills hold reusable procedures and no project names, paths, or domain rules. Project
-skills use the project prefix (`<project>-<job>`), supply local context, and refer to shared skills
-instead of copying them.
+Shared `fleex-` skills ship in the AgentFleex plugin and hold reusable procedures with no project
+names, paths, or domain rules. Project skills live in `.agents/skills/`, use the project prefix
+(`<project>-<job>`), supply local context, and refer to shared skills instead of copying them.
 
 ## Best practices
 
@@ -67,7 +67,8 @@ External examples are guidance, not extra workflow requirements.
 
 ## Check
 
-Run `scripts/check.sh` (`scripts/check.ps1` on Windows) and fix every reported error.
+From the repository root, run `scripts/check.sh` relative to this skill's directory
+(`scripts/check.ps1` on Windows) and fix every reported error.
 
 After a `description` change, test activation in fresh sessions: about ten prompts that should
 trigger the skill and ten near-misses, including prompts for adjacent skills, each run several
