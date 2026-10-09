@@ -11,8 +11,10 @@ import argparse
 import functools
 import json
 import re
+import io
 import subprocess
 import sys
+import tokenize
 from collections import defaultdict
 from pathlib import Path
 
@@ -49,7 +51,8 @@ JS = GENERIC + [re.compile(r"^(\s+)(?:(?:public|private|protected|static|async|r
                            r"get|set)\s+)*\*?(?P<first>)(?P<name>[A-Za-z_$#][\w$]*)\s*(?:<[^>]*>)?"
                            r"\([^;]*\)\s*(?::[^=;]+)?\{\s*$")]
 SHELL_SUFFIXES = (".sh", ".bash", ".zsh", ".ksh")
-TRIPLE_QUOTE = re.compile(r'"""|\'\'\'')
+# Files whose Python strings could not be tokenized, reported in the output header.
+UNTOKENIZED: list[str] = []
 HEREDOC = re.compile(r"(?<!<)<<(-?)\s*(['\"]?)([A-Za-z_]\w*)\2")
 FAMILIES = {
     **dict.fromkeys((".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".vue", ".svelte"),
@@ -259,22 +262,26 @@ def drop_verbatim(name: str, lines: list[str], rows: list[list]) -> tuple[list[l
         docs = heredocs(lines)
         body = frozenset(n for d in docs for n in range(d[0] + 1, d[1] + 1))
     elif name.lower().endswith((".py", ".pyi")):
-        body = python_strings(lines)
+        body = python_strings(name, lines)
     kept = [row for row in rows if row[2] != "heredoc" and row[0] not in body]
     return sorted(kept + docs, key=lambda row: row[0]), body
 
 
-def python_strings(lines: list[str]) -> frozenset:
-    """Lines after the opening line of a triple-quoted string, through its closing line."""
-    inside, delimiter = set(), None
-    for number, line in enumerate(lines, 1):
-        if delimiter:
-            inside.add(number)
-        for match in TRIPLE_QUOTE.finditer(line):
-            if delimiter is None:
-                delimiter = match.group()
-            elif match.group() == delimiter:
-                delimiter = None
+def python_strings(name: str, lines: list[str]) -> frozenset:
+    """Lines after the first line of a multi-line string, through its last line."""
+    inside, starts = set(), []
+    source = io.StringIO("\n".join(lines) + "\n").readline
+    try:
+        for token in tokenize.generate_tokens(source):
+            # Python 3.12+ splits f-strings into FSTRING_START ... FSTRING_END tokens.
+            kind = tokenize.tok_name[token.type]
+            if kind == "FSTRING_START":
+                starts.append(token.start[0])
+            elif kind in ("STRING", "FSTRING_END"):
+                first = starts.pop() if kind == "FSTRING_END" else token.start[0]
+                inside.update(range(first + 1, token.end[0] + 1))
+    except (tokenize.TokenError, SyntaxError):
+        UNTOKENIZED.append(name)
     return frozenset(inside)
 
 
@@ -339,6 +346,8 @@ def symbols(root: Path, names: list[str], backend: str) -> tuple[dict[str, list[
         note = f"ctags; patterns for {len(patterned)} file(s) ctags cannot parse"
     else:
         note = "ctags" if code else "markup"
+    if UNTOKENIZED:
+        note += f"; strings not detected in {len(UNTOKENIZED)} file(s) Python cannot tokenize"
     return result, note
 
 

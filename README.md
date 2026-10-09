@@ -58,7 +58,9 @@ Each skill owns its files: [fleex-agents](./skills/fleex-agents/SKILL.md) owns `
 `CLAUDE.md`, and the single catalog of shared rules; [fleex-skills](./skills/fleex-skills/SKILL.md)
 owns skills, their wiring, and links to best practices; [fleex-docs](./skills/fleex-docs/SKILL.md)
 owns human documentation; [fleex-index](./skills/fleex-index/SKILL.md) is a dependency-free
-navigation script (map, outline, show, find, refs) so agents read only the lines they need. Rules once written into a repository's `AGENTS.md` belong to its owner and
+navigation script (map, outline, show, find, refs) so agents read only the lines they need;
+[fleex-hygiene](./skills/fleex-hygiene/SKILL.md) finds and runs the repository's configured linters,
+formatters, and type checkers so every change keeps one style. Rules once written into a repository's `AGENTS.md` belong to its owner and
 are not synced with the catalog.
 
 ## References
