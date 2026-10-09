@@ -48,11 +48,14 @@ C_LIKE = GENERIC + [re.compile(r"^(\s*)(?P<first>[\w<>\[\],.?*&:]+)\s+(?:[\w<>\[
 JS = GENERIC + [re.compile(r"^(\s+)(?:(?:public|private|protected|static|async|readonly|override|"
                            r"get|set)\s+)*\*?(?P<first>)(?P<name>[A-Za-z_$#][\w$]*)\s*(?:<[^>]*>)?"
                            r"\([^;]*\)\s*(?::[^=;]+)?\{\s*$")]
+SHELL_SUFFIXES = (".sh", ".bash", ".zsh", ".ksh")
+TRIPLE_QUOTE = re.compile(r'"""|\'\'\'')
+HEREDOC = re.compile(r"(?<!<)<<(-?)\s*(['\"]?)([A-Za-z_]\w*)\2")
 FAMILIES = {
     **dict.fromkeys((".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".vue", ".svelte"),
                     JS),
     **dict.fromkeys((".py", ".pyi"), PYTHON),
-    **dict.fromkeys((".sh", ".bash", ".zsh", ".ksh"), SHELL),
+    **dict.fromkeys(SHELL_SUFFIXES, SHELL),
     **dict.fromkeys((".ps1", ".psm1"), POWERSHELL),
     ".sql": SQL,
     **dict.fromkeys((".c", ".h", ".cc", ".cpp", ".hpp", ".cs", ".java", ".kt", ".kts", ".scala",
@@ -76,6 +79,8 @@ INSTALL_CTAGS = ("for exact symbols install Universal Ctags: apt install univers
                  "brew install universal-ctags, or winget install UniversalCtags.Ctags")
 MARKUP = {".md", ".markdown", ".mdx", ".toml", ".yaml", ".yml"}
 SKIPPED = {".json", ".lock", ".svg", ".csv", ".txt", ".log", ".rst"}
+TRAILING_COMMENT = re.compile(r"\s+(#|//).*$")
+BOGUS_NAME = re.compile(r"[=\s()]")
 CLOSER = re.compile(r"^\s*(\}|\)|\]|end\b|fi\b|done\b|esac\b)")
 
 
@@ -126,15 +131,18 @@ def pattern_symbols(lines: list[str], patterns: list[re.Pattern]) -> list[list]:
             kind = fields.get("kind") or "def"
             symbols.append([number, 0, kind.lower(), name, indent(line)])
             break
-    return close(lines, symbols)
+    return symbols
 
 
-def close(lines: list[str], symbols: list[list]) -> list[list]:
-    """Fill missing ends by indentation and widen starts over decorators and doc comments."""
+def close(lines: list[str], symbols: list[list], verbatim: frozenset = frozenset()) -> list[list]:
+    """Fill missing ends by indentation and widen starts over decorators and doc comments.
+
+    Lines in `verbatim` (heredoc bodies) never end a symbol.
+    """
     for symbol in symbols:
         start, level = symbol[0], symbol[4]
         if not symbol[1]:
-            symbol[1] = indented_end(lines, start, level)
+            symbol[1] = indented_end(lines, start, level, verbatim)
         while start > 1 and indent(lines[start - 2]) == level and \
                 lines[start - 2].strip().startswith(PREFIX):
             start -= 1
@@ -142,15 +150,15 @@ def close(lines: list[str], symbols: list[list]) -> list[list]:
     return symbols
 
 
-def indented_end(lines: list[str], start: int, level: int) -> int:
+def indented_end(lines: list[str], start: int, level: int, verbatim: frozenset) -> int:
     end = len(lines)
     for number in range(start + 1, len(lines) + 1):
         line = lines[number - 1]
-        if not line.strip() or indent(line) > level:
+        if not line.strip() or indent(line) > level or number in verbatim:
             continue
         stripped = line.strip()
         # Continuations of the signature or an opening brace on its own line.
-        opens = stripped.endswith(("{", ":", "(", "["))
+        opens = TRAILING_COMMENT.sub("", stripped).endswith(("{", ":", "(", "["))
         if stripped == "{" or (CLOSER.match(line) and opens):
             continue
         # A closer at the symbol's own level ends its block; a shallower one belongs to a parent.
@@ -213,9 +221,13 @@ def ctags_symbols(root: Path, names: list[str]) -> dict[str, list[list]]:
     rows: dict[str, list[list]] = {name: [] for name in known}
     for line in output.splitlines():
         tag = json.loads(line)
-        if tag.get("_type") != "tag" or tag["kind"] in CTAGS_SKIP:
+        if tag.get("_type") != "tag" or tag["kind"] in CTAGS_SKIP or BOGUS_NAME.search(tag["name"]):
             continue
         kind = tag["kind"]
+        # Python namespaces are import aliases, and lambdas are values, not definitions.
+        if tag.get("language") == "Python" and (
+                kind == "namespace" or re.search(r"=\s*lambda\b", tag.get("pattern", ""))):
+            continue
         # Python methods are "member"; elsewhere a member is a field, which patterns skip too.
         if kind == "member":
             if tag.get("language") != "Python":
@@ -231,9 +243,53 @@ def ctags_symbols(root: Path, names: list[str]) -> dict[str, list[list]]:
         lines = read_lines(root / name)
         for row in found:
             row[4] = indent(lines[row[0] - 1])
-        found.sort(key=lambda row: row[0])
-        normalize(close(lines, found))
+        found[:], verbatim = drop_verbatim(name, lines, found)
+        normalize(close(lines, found, verbatim))
     return rows
+
+
+def drop_verbatim(name: str, lines: list[str], rows: list[list]) -> tuple[list[list], frozenset]:
+    """Sorted rows without anything found in verbatim text, and the verbatim line numbers.
+
+    Verbatim text is heredoc bodies in shell files, which become heredoc rows, and triple-quoted
+    strings in Python files.
+    """
+    docs, body = [], frozenset()
+    if name.lower().endswith(SHELL_SUFFIXES):
+        docs = heredocs(lines)
+        body = frozenset(n for d in docs for n in range(d[0] + 1, d[1] + 1))
+    elif name.lower().endswith((".py", ".pyi")):
+        body = python_strings(lines)
+    kept = [row for row in rows if row[2] != "heredoc" and row[0] not in body]
+    return sorted(kept + docs, key=lambda row: row[0]), body
+
+
+def python_strings(lines: list[str]) -> frozenset:
+    """Lines after the opening line of a triple-quoted string, through its closing line."""
+    inside, delimiter = set(), None
+    for number, line in enumerate(lines, 1):
+        if delimiter:
+            inside.add(number)
+        for match in TRIPLE_QUOTE.finditer(line):
+            if delimiter is None:
+                delimiter = match.group()
+            elif match.group() == delimiter:
+                delimiter = None
+    return frozenset(inside)
+
+
+def heredocs(lines: list[str]) -> list[list]:
+    """One row per heredoc, named by its delimiter, ending on the delimiter line."""
+    docs, number = [], 1
+    while number <= len(lines):
+        match = HEREDOC.search(lines[number - 1])
+        if match:
+            end = next((n for n in range(number + 1, len(lines) + 1)
+                        if lines[n - 1].strip() == match.group(3)), len(lines))
+            docs.append([number, end, "heredoc", match.group(3), indent(lines[number - 1])])
+            number = end
+        number += 1
+    return docs
 
 
 def normalize(rows: list[list]) -> list[list]:
@@ -260,7 +316,9 @@ def own_symbols(path: Path) -> list[list]:
         return key_symbols(lines, YAML_KEY, "key")
     if suffix in SKIPPED:
         return []
-    return normalize(pattern_symbols(lines, FAMILIES.get(suffix, GENERIC)))
+    rows = pattern_symbols(lines, FAMILIES.get(suffix, GENERIC))
+    rows, verbatim = drop_verbatim(path.name, lines, rows)
+    return normalize(close(lines, rows, verbatim))
 
 
 def symbols(root: Path, names: list[str], backend: str) -> tuple[dict[str, list[list]], str]:
