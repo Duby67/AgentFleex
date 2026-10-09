@@ -56,6 +56,8 @@ class ChecksTest(unittest.TestCase):
         self.assertIn("mypy (AgentFleex default", output)
         self.assertIn("shellcheck (built-in rules)", output)
         self.assertIn("assets/ruff.toml", output)
+        self.assertNotIn("\\", output)
+        self.assertNotIn("'", output)
 
     def test_no_python_means_no_python_defaults(self) -> None:
         self.write("README.md", "# Title\n")

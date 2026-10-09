@@ -13,7 +13,6 @@ import io
 import json
 import os
 import re
-import shlex
 import shutil
 import subprocess
 import sys
@@ -269,7 +268,7 @@ def defaults(root: Path, present: set[str]) -> list[str]:
     python = any(f.endswith((".py", ".pyi")) for f in files)
     if python and not present & PYTHON_STYLE:
         ruff, status = default_tool("ruff")
-        config = shlex.quote(str(ASSETS / "ruff.toml"))
+        config = shell_path(ASSETS / "ruff.toml")
         result.append(
             f"ruff (AgentFleex default {config}){status}\n"
             f"  check: {ruff} check --config {config} {{files}} && "
@@ -279,7 +278,7 @@ def defaults(root: Path, present: set[str]) -> list[str]:
         )
     if python and not present & PYTHON_TYPES:
         mypy, status = default_tool("mypy")
-        config = shlex.quote(str(ASSETS / "mypy.ini"))
+        config = shell_path(ASSETS / "mypy.ini")
         result.append(
             f"mypy (AgentFleex default {config}){status}\n"
             f"  check: {mypy} --config-file {config} {{files}}"
@@ -288,6 +287,12 @@ def defaults(root: Path, present: set[str]) -> list[str]:
         shellcheck, status = default_tool("shellcheck", uvx=False)
         result.append(f"shellcheck (built-in rules){status}\n  check: {shellcheck} {{files}}")
     return result
+
+
+def shell_path(path: Path) -> str:
+    """A path for bash, PowerShell, and cmd alike: forward slashes, double quotes only if needed."""
+    text = path.as_posix()
+    return f'"{text}"' if re.search(r"[^\w@%+=:,./-]", text) else text
 
 
 def default_tool(name: str, uvx: bool = True) -> tuple[str, str]:
