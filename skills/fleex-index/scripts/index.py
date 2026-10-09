@@ -375,6 +375,13 @@ def ctags_symbols(root: Path, names: list[str]) -> dict[str, list[list]]:
         lines = read_lines(root / name)
         for row in found:
             row[4] = indent(lines[row[0] - 1])
+        if name.lower().endswith(SHELL_SUFFIXES):
+            # Ctags also tags calls such as `fail()`; keep definitions the shell patterns accept.
+            found[:] = [
+                row
+                for row in found
+                if row[2] != "function" or any(p.match(lines[row[0] - 1]) for p in SHELL)
+            ]
         found[:], verbatim = drop_verbatim(name, lines, found)
         normalize(close(lines, found, verbatim))
     return rows

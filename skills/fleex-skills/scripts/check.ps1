@@ -35,6 +35,12 @@ function Get-Field($lines, $name) {
 if (-not (Test-Path CLAUDE.md) -or (Get-Content -Raw CLAUDE.md).TrimEnd() -ne '@AGENTS.md') {
     Err 'CLAUDE.md' "must contain exactly '@AGENTS.md'"
 }
+# A plugin repository ships one version to both clients.
+if ((Test-Path .claude-plugin/plugin.json) -and (Test-Path .codex-plugin/plugin.json) -and
+    (Get-Content -Raw .claude-plugin/plugin.json | ConvertFrom-Json).version -ne
+    (Get-Content -Raw .codex-plugin/plugin.json | ConvertFrom-Json).version) {
+    Err '.codex-plugin/plugin.json' 'version must match .claude-plugin/plugin.json'
+}
 # Final target of a path through any chain of symlinks (PowerShell 7.2+).
 function Get-RealPath($path) {
     $item = Get-Item -Force $path -ErrorAction SilentlyContinue

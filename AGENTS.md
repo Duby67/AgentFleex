@@ -20,6 +20,12 @@ Make the smallest correct change. Prefer, in order: no change, existing code, th
 an installed dependency, new code. Stay in scope. Read narrowly: focused search, bounded reads,
 `git diff --stat` before diffs, quiet test output.
 
+- Checks: `bash skills/fleex-skills/scripts/check.sh`, `python3 -m unittest discover -s tests -q`,
+  `uvx ruff check . && uvx ruff format --check .`,
+  `uvx mypy --config-file skills/fleex-hygiene/assets/mypy.ini skills/*/scripts/*.py tests/*.py`.
+- Bump `version` in both plugin manifests before a release; installed plugins update only on a new
+  version.
+
 ## Language
 
 - Agent-facing files (`AGENTS.md`, skills, agent docs) and human docs are in English; change the

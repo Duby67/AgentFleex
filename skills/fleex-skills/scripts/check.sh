@@ -26,6 +26,12 @@ field() {
 
 [ "$(cat CLAUDE.md 2>/dev/null)" = "@AGENTS.md" ] ||
   err CLAUDE.md "must contain exactly '@AGENTS.md'"
+# A plugin repository ships one version to both clients.
+version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$1" 2>/dev/null; }
+if [ -f .claude-plugin/plugin.json ] && [ -f .codex-plugin/plugin.json ] &&
+  [ "$(version .claude-plugin/plugin.json)" != "$(version .codex-plugin/plugin.json)" ]; then
+  err .codex-plugin/plugin.json "version must match .claude-plugin/plugin.json"
+fi
 if [ -d "$skills" ] && { [ ! -L .claude/skills ] ||
   [ "$(cd .claude/skills 2>/dev/null && pwd -P)" != "$(cd "$skills" && pwd -P)" ]; }; then
   err .claude/skills "must be a symlink that resolves to $skills"

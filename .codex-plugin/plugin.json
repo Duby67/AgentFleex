@@ -1,10 +1,11 @@
 {
   "name": "agentfleex",
-  "version": "0.1.0",
-  "description": "Skills that keep AGENTS.md, repository skills, and human docs minimal and consistent",
+  "version": "0.2.0",
+  "description": "Skills for agent-driven repositories: minimal AGENTS.md, skills, and docs, cheap code navigation, and style hygiene",
   "author": {
     "name": "Duby67"
   },
   "repository": "https://github.com/Duby67/AgentFleex",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "license": "MIT"
 }
