@@ -13,9 +13,10 @@ configs, `.editorconfig`, pre-commit hooks, and what CI runs. Match it; do not b
 Run `scripts/checks.py` (relative to this skill's directory) from anywhere in the repository with
 Python 3.8+. It reads configuration only and prints each configured tool with its check and fix
 commands, run through the project environment (`uv run`, `poetry run`, `.venv`, `npx`, the
-lockfile's package manager). `{files}` stands for the changed files: `git diff --name-only HEAD`
-plus new untracked files, filtered to what the tool handles. When CI runs a tool differently, CI's
-invocation wins.
+lockfile's package manager), and the CI commands that run them in GitHub Actions, GitLab, CircleCI,
+Azure, Bitbucket, Travis, Drone, Woodpecker, Buildkite, and Jenkins. `{files}` stands for the
+changed files: `git diff --name-only HEAD` plus new untracked files, filtered to what the tool
+handles. When CI runs a tool differently, CI's invocation wins.
 
 ## Apply
 
@@ -25,10 +26,15 @@ invocation wins.
   hand.
 - Never change tool configuration, add a tool, or silence a rule (`noqa`, `eslint-disable`,
   `type: ignore`) to pass, unless the user asks; a rule that looks wrong is reported instead.
+- When the client exposes editor diagnostics (such as a VS Code diagnostics tool), read them for
+  the changed files too. Extensions often analyze only open or saved files, so an empty result is
+  not a pass and a reported line may be stale; confirm with the tool's command line when you can.
+  Diagnostics from tools the repository does not configure come from the user's editor settings:
+  fix them when the fix keeps behavior, and suggest committing that tool's configuration so editor,
+  command line, and CI agree.
 - Leave pre-existing failures in untouched code alone and report them separately.
-- A line marked `MISSING` names what to install; when `uv run`, `poetry run`, or `npx` cannot find a
-  tool, the project environment is not installed (`uv sync`, `poetry install`, `npm install`). Tell
-  the user once and run the remaining checks.
+- A line marked `MISSING` names a tool to install; `SETUP` gives the command that installs the
+  project environment. Tell the user once, never install on your own, and run the remaining checks.
 
 ## Setting up
 

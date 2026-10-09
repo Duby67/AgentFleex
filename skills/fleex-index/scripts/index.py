@@ -17,6 +17,7 @@ import sys
 import tokenize
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 MODIFIERS = (r"(?:(?:export|default|declare|pub(?:\([^)]*\))?|public|private|protected|internal|"
              r"static|abstract|final|async|override|virtual|sealed|partial|open|data|inline|"
@@ -28,9 +29,11 @@ STATEMENTS = {"if", "for", "while", "switch", "catch", "return", "new", "else", 
 PYTHON = [re.compile(r"^(\s*)(?:async\s+)?(?P<kind>def|class)\s+(?P<name>\w+)")]
 SHELL = [re.compile(r"^(\s*)(?:function\s+)?(?P<name>[A-Za-z_][\w-]*)\s*\(\)\s*[{(]"),
          re.compile(r"^(\s*)function\s+(?P<name>[A-Za-z_][\w-]*)")]
-POWERSHELL = [re.compile(r"^(\s*)(?P<kind>function|filter|class|enum)\s+(?P<name>[\w-]+)", re.I)]
+POWERSHELL = [re.compile(r"^(\s*)(?P<kind>function|filter|class|enum)\s+(?P<name>[\w-]+)",
+                         re.IGNORECASE)]
 SQL = [re.compile(r"^(\s*)create\s+(?:or\s+replace\s+)?(?P<kind>table|view|function|procedure|"
-                  r"index|trigger|type)\s+(?:if\s+not\s+exists\s+)?(?P<name>[\w.\"]+)", re.I)]
+                  r"index|trigger|type)\s+(?:if\s+not\s+exists\s+)?(?P<name>[\w.\"]+)",
+                  re.IGNORECASE)]
 GENERIC = [
     # Go types report their concrete kind: type Server struct
     re.compile(r"^(\s*)type\s+(?P<name>\w+)\s+(?P<kind>struct|interface)\b"),
@@ -55,8 +58,8 @@ SHELL_SUFFIXES = (".sh", ".bash", ".zsh", ".ksh")
 UNTOKENIZED: list[str] = []
 HEREDOC = re.compile(r"(?<!<)<<(-?)\s*(['\"]?)([A-Za-z_]\w*)\2")
 FAMILIES = {
-    **dict.fromkeys((".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".vue", ".svelte"),
-                    JS),
+    **dict.fromkeys((".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".vue",
+                     ".svelte"), JS),
     **dict.fromkeys((".py", ".pyi"), PYTHON),
     **dict.fromkeys(SHELL_SUFFIXES, SHELL),
     **dict.fromkeys((".ps1", ".psm1"), POWERSHELL),
@@ -98,7 +101,7 @@ def git(root: Path, *args: str) -> str:
 
 def run(root: Path, command: list[str], ok: tuple[int, ...] = (0,)) -> str:
     result = subprocess.run(command, cwd=root, capture_output=True, text=True, encoding="utf-8",
-                            errors="replace")
+                            errors="replace", check=False)
     if result.returncode not in ok:
         raise Fail(result.stderr.strip() or f"{command[0]} failed")
     return result.stdout
@@ -173,12 +176,14 @@ def indented_end(lines: list[str], start: int, level: int, verbatim: frozenset) 
 
 
 def markdown_symbols(lines: list[str]) -> list[list]:
-    heads, fenced = [], False
+    heads: list[list[Any]] = []
+    fenced = False
     for number, line in enumerate(lines, 1):
         if FENCE.match(line):
             fenced = not fenced
         elif not fenced and (match := HEADING.match(line)):
-            heads.append([number, 0, f"h{len(match.group(1))}", match.group(2), len(match.group(1))])
+            level = len(match.group(1))
+            heads.append([number, 0, f"h{level}", match.group(2), level])
     for i, head in enumerate(heads):
         later = [h[0] for h in heads[i + 1:] if h[4] <= head[4]]
         head[1] = (later[0] - 1) if later else len(lines)
@@ -200,14 +205,15 @@ def key_symbols(lines: list[str], pattern: re.Pattern, kind: str) -> list[list]:
 def ctags_missing() -> str:
     """Why Universal Ctags cannot be used, or an empty string when it can."""
     try:
-        version = subprocess.run(["ctags", "--version"], capture_output=True, text=True).stdout
+        version = subprocess.run(["ctags", "--version"], capture_output=True, text=True,
+                                 check=False).stdout
         features = subprocess.run(["ctags", "--list-features"], capture_output=True,
-                                  text=True).stdout
+                                  text=True, check=False).stdout
     except OSError:
         return "ctags not found"
     if "Universal Ctags" not in version:
         return "ctags is not Universal Ctags"
-    if not re.search(r"^json\b", features, re.M):
+    if not re.search(r"^json\b", features, re.MULTILINE):
         return "ctags lacks JSON output"
     return ""
 
@@ -257,7 +263,8 @@ def drop_verbatim(name: str, lines: list[str], rows: list[list]) -> tuple[list[l
     Verbatim text is heredoc bodies in shell files, which become heredoc rows, and triple-quoted
     strings in Python files.
     """
-    docs, body = [], frozenset()
+    docs: list[list[Any]] = []
+    body: frozenset[int] = frozenset()
     if name.lower().endswith(SHELL_SUFFIXES):
         docs = heredocs(lines)
         body = frozenset(n for d in docs for n in range(d[0] + 1, d[1] + 1))
@@ -269,7 +276,8 @@ def drop_verbatim(name: str, lines: list[str], rows: list[list]) -> tuple[list[l
 
 def python_strings(name: str, lines: list[str]) -> frozenset:
     """Lines after the first line of a multi-line string, through its last line."""
-    inside, starts = set(), []
+    inside: set[int] = set()
+    starts: list[int] = []
     source = io.StringIO("\n".join(lines) + "\n").readline
     try:
         for token in tokenize.generate_tokens(source):
@@ -301,7 +309,7 @@ def heredocs(lines: list[str]) -> list[list]:
 
 def normalize(rows: list[list]) -> list[list]:
     """Map parser-specific kinds to one vocabulary and name functions inside types methods."""
-    stack = []
+    stack: list[list[Any]] = []
     for row in rows:
         row[2] = KINDS.get(row[2].lower(), row[2].lower())
         while stack and not (stack[-1][0] < row[0] <= stack[-1][1]):
@@ -353,7 +361,8 @@ def symbols(root: Path, names: list[str], backend: str) -> tuple[dict[str, list[
 
 def qualified(rows: list[list]) -> list[str]:
     """Dotted names through enclosing symbols: Class.method, Section.Subsection."""
-    stack, names = [], []
+    stack: list[tuple[list[Any], str]] = []
+    names: list[str] = []
     for row in rows:
         while stack and not (stack[-1][0][0] < row[0] <= stack[-1][0][1]):
             stack.pop()
@@ -371,7 +380,8 @@ def page(rows: list[str], limit: int, offset: int) -> str:
 
 
 def depths(rows: list[list]) -> list[int]:
-    stack, result = [], []
+    stack: list[list[Any]] = []
+    result: list[int] = []
     for row in rows:
         while stack and not (stack[-1][0] < row[0] <= stack[-1][1]):
             stack.pop()
@@ -385,7 +395,7 @@ def cmd_map(root: Path, args) -> list[str]:
     files = git_names(root, "ls-files", "-z", "-co", "--exclude-standard", "--", base or ".")
     if not files:
         raise Fail(f"no files under {base or '.'}")
-    totals = defaultdict(lambda: [0, 0])
+    totals: defaultdict[str, list[int]] = defaultdict(lambda: [0, 0])
     prefix = len(Path(base).parts)
     for name in files:
         parts = Path(name).parts
@@ -465,16 +475,18 @@ def main() -> int:
     p.add_argument("file")
     p.add_argument("name")
     p.add_argument("--line", type=int, help="start line to pick among duplicates")
-    for name, text in (("find", "where a symbol is defined"), ("refs", "files that mention a word")):
+    for name, text in (("find", "where a symbol is defined"),
+                       ("refs", "files that mention a word")):
         p = add(name, text)
         p.add_argument("name")
         p.add_argument("paths", nargs="*", help="limit the search to these paths")
     args = parser.parse_args()
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     here = Path(args.root).resolve()
     try:
         top = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=here, capture_output=True,
-                             text=True)
+                             text=True, check=False)
         if top.returncode:
             raise Fail(f"{here} is not inside a git repository; pass --root")
         root = Path(top.stdout.strip()).resolve()
