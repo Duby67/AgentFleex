@@ -22,7 +22,7 @@ codex plugin add agentfleex@agentfleex
 
 После установки достаточно попросить агента, например, «перепиши AGENTS.md» или «создай скил для
 деплоя»: нужный скил подключится по своему `description`. Если в репозитории нет `AGENTS.md`,
-агент начнёт с [шаблона](./skills/fleex-agents-md/assets/AGENTS.template.md).
+агент соберёт его из [каталога правил](./skills/fleex-agents/references/rules.md).
 
 ## Что плагин настраивает в репозитории
 
@@ -55,11 +55,11 @@ codex plugin add agentfleex@agentfleex
   тело читается по необходимости;
 - каждый факт хранится в одном месте, остальные ссылаются на него.
 
-Подробные правила: [fleex-agents-optimize](./skills/fleex-agents-optimize/SKILL.md) (содержимое
-AGENTS.md и правила экономии токенов), [fleex-agents-md](./skills/fleex-agents-md/SKILL.md) (связка
-AGENTS.md, CLAUDE.md и скилов),
-[fleex-skills](./skills/fleex-skills/SKILL.md) (создание скилов, ссылки на best
-practice), [fleex-docs](./skills/fleex-docs/SKILL.md) (документация для людей).
+Каждый скил владеет своими файлами: [fleex-agents](./skills/fleex-agents/SKILL.md) — `AGENTS.md` и
+`CLAUDE.md`, единственный каталог общих правил; [fleex-skills](./skills/fleex-skills/SKILL.md) —
+скилы и их подключение, ссылки на best practice; [fleex-docs](./skills/fleex-docs/SKILL.md) —
+документация для людей. Правила, однажды записанные в `AGENTS.md` репозитория, принадлежат его
+владельцу и с каталогом не синхронизируются.
 
 ## Материалы
 

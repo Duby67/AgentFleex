@@ -2,8 +2,7 @@
 
 A Claude Code and Codex plugin whose skills keep AGENTS.md, repository skills, and human docs
 minimal. The repository root is the plugin root: skills live in `skills/`, and `.agents/skills` and
-`.claude/skills` are symlinks to it. `skills/fleex-agents-md/assets/AGENTS.template.md` repeats the
-Rules, Work, and Report sections below; change both together.
+`.claude/skills` are symlinks to it.
 
 ## Rules
 

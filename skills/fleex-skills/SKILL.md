@@ -1,12 +1,20 @@
 ---
 name: fleex-skills
-description: Create, split, review, or refactor repository skills shared by Codex and Claude Code. Use when changing .agents/skills/*/SKILL.md, trigger descriptions, bundled resources, or agents/openai.yaml. Do not use for AGENTS.md wiring.
+description: Create, split, rename, remove, review, or refactor repository skills shared by Codex and Claude Code, and wire them into .agents/skills and .claude/skills. Use when changing .agents/skills/*/SKILL.md, trigger descriptions, bundled resources, agents/openai.yaml, or the skills symlink. Do not use for AGENTS.md or CLAUDE.md.
 ---
 
 # Skills
 
 Create focused skills that activate only for intended tasks, consume little context, and give the
-agent direction rather than a script. Wiring belongs to `$fleex-agents-md`.
+agent direction rather than a script.
+
+## Wiring
+
+- `.agents/skills/` is the only source of project skills; Codex reads it natively. `.claude/skills`
+  is a relative symlink to it for Claude Code and never holds files of its own.
+- Shared `fleex-` skills come from the AgentFleex plugin; never copy them into the repository.
+- A rename, split, or removal updates `.agents/skills/` and every reference in one change, without
+  aliases; search the whole repository, including `.gitignore` comments and `agents/openai.yaml`.
 
 ## Package
 

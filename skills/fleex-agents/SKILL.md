@@ -1,16 +1,18 @@
 ---
-name: fleex-agents-optimize
-description: Optimize the content of AGENTS.md for token cost and clarity: add missing token-saving rules, tighten existing rules without changing their meaning, and remove what agents do by default, facade, and decoration. Use when asked to write, optimize, shorten, compress, or clean up AGENTS.md rules. Do not use for CLAUDE.md, skill wiring, or skill content.
+name: fleex-agents
+description: Create, rewrite, or optimize AGENTS.md and CLAUDE.md: add missing rules from the shared catalog, tighten existing rules without changing their meaning, and remove default agent behavior, facade, and decoration. Use when creating, editing, optimizing, shortening, or cleaning up AGENTS.md or CLAUDE.md. Do not use for skill files or human-facing documentation.
 ---
 
-# Optimize AGENTS.md
+# AGENTS.md
 
-`AGENTS.md` is paid for on every model request; each line must change what the agent does. Wiring
-and the starter template belong to `$fleex-agents-md`.
+`AGENTS.md` is paid for on every model request; each line must change what the agent does. It is
+the single rules file: Codex reads it natively, and `CLAUDE.md` holds one line, `@AGENTS.md`, so
+Claude Code imports the same file.
 
 It holds only what every task needs and the agent cannot infer: one or two sentences on what the
 project is and is not, hard invariants whose violation is costly, and pointers to canonical owners
-the agent would not find on its own.
+the agent would not find on its own. Skills are found by their `description`, so it never lists or
+routes between them.
 
 ## Keep the owner's rules
 
@@ -30,17 +32,19 @@ The repository owner's rules are decisions, not drafts. Change their form, never
 - Facts the agent infers cheaply from the repository: the language or framework visible in manifests,
   the directory tree, what a well-named file contains.
 - Copies of facts owned elsewhere (link instead) and explanations for humans (move to docs).
-- Facade: a line about the file itself, even inside a rule ("this file is loaded on every request"), a table of contents, badges, a closing summary,
-  restated headings, rationale and history that change no behavior.
+- Facade: a line about the file itself, even inside a rule ("this file is loaded on every request"),
+  a table of contents, badges, a closing summary, restated headings, rationale and history that
+  change no behavior.
 - Decoration: emoji, bold or ALL-CAPS emphasis, "IMPORTANT"/"CRITICAL"/"MUST" markers, horizontal
   rules, nested headings over one bullet, tables that are lists. Strong emphasis makes current models
   overapply a rule; plain imperative wording is enough.
 
 ## Add
 
-Add missing rules from [token rules](references/token-rules.md) that fit this repository, filled
-with its real commands and paths. Verify every command and path before writing it; skip a rule you
-cannot make concrete.
+[The rule catalog](references/rules.md) is the only source of shared rules. A new `AGENTS.md` is the
+project sentence plus the catalog rules that hold for the repository; an existing one gains only the
+missing ones. Fill placeholders with the repository's real commands and paths, verified first; skip a
+rule you cannot make concrete. Once written, the rules belong to the owner and are not synced back.
 
 ## Gotchas
 
