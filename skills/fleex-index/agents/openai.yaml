@@ -1,0 +1,4 @@
+interface:
+  display_name: "Index"
+  short_description: "Map, outline, and locate code and docs without reading whole files"
+  default_prompt: "Use $fleex-index to find where to look before reading files."
