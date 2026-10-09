@@ -27,6 +27,7 @@ agent direction rather than a script.
 - `agents/openai.yaml` is optional Codex UI metadata: `display_name`, `short_description`, and a
   `default_prompt` that mentions `$<skill-name>`.
 - `$<skill-name>` is the reference syntax for a skill in any text, not an invocation command.
+- Write skills in English.
 - No secrets, absolute or private paths, or claims about unavailable capabilities.
 - Stay well under 200 lines; the shortest complete skill wins.
 

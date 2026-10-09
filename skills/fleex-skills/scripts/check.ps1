@@ -1,5 +1,6 @@
 # Validate agent wiring, skill packages, $skill references, and relative Markdown links in the
-# git repository of the current directory; this plugin's own skills count as known references.
+# git repository of the current directory; this plugin's own skills count as known references and
+# are validated too when the repository is the plugin itself.
 # Prints one "path: problem" line per error and exits 1; prints "check: ok" otherwise.
 $ErrorActionPreference = 'Stop'
 
@@ -13,6 +14,8 @@ if ($LASTEXITCODE -ne 0 -or -not $root) {
 Set-Location $root
 
 $skills = '.agents/skills'
+$dirs = @($skills)
+if ($pluginSkills -eq (Join-Path (Get-Location).Path 'skills')) { $dirs += 'skills' }
 $script:fail = $false
 function Err($path, $message) {
     [Console]::Error.WriteLine("${path}: $message")
@@ -48,9 +51,9 @@ if ((Test-Path $skills) -and (-not $link -or -not $link.LinkType -or
 
 $names = @(Get-ChildItem -Directory $pluginSkills |
     Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') } | ForEach-Object Name)
-foreach ($dir in Get-ChildItem -Directory $skills -ErrorAction SilentlyContinue) {
+foreach ($dir in Get-ChildItem -Directory $dirs -ErrorAction SilentlyContinue) {
     $id = $dir.Name
-    $rel = "$skills/$id"
+    $rel = (Resolve-Path -Relative $dir.FullName) -replace '\\', '/' -replace '^\./', ''
     $file = "$rel/SKILL.md"
     if (-not (Test-Path $file)) { Err $rel 'missing SKILL.md'; continue }
     $names += $id
@@ -89,7 +92,7 @@ foreach ($dir in Get-ChildItem -Directory $skills -ErrorAction SilentlyContinue)
 }
 
 $refFiles = @(Get-Item AGENTS.md -ErrorAction SilentlyContinue | ForEach-Object Name) +
-    (Get-ChildItem -Recurse -File $skills -Include *.md, *.yaml -ErrorAction SilentlyContinue |
+    (Get-ChildItem -Recurse -File $dirs -Include *.md, *.yaml -ErrorAction SilentlyContinue |
     ForEach-Object { (Resolve-Path -Relative $_.FullName) -replace '\\', '/' -replace '^\./', '' })
 foreach ($f in $refFiles) {
     $refs = [regex]::Matches((Get-Content -Raw $f), '\$[a-z][a-z0-9]*(-[a-z0-9]+)*') |

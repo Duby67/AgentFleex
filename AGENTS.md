@@ -1,8 +1,7 @@
 # AgentFleex
 
 A Claude Code and Codex plugin whose skills keep AGENTS.md, repository skills, and human docs
-minimal. The repository root is the plugin root: skills live in `skills/`, and `.agents/skills` and
-`.claude/skills` are symlinks to it.
+minimal. The repository root is the plugin root, and skills live in `skills/`.
 
 ## Rules
 
@@ -20,6 +19,12 @@ Hard rules; stop and report instead of working around them.
 Make the smallest correct change. Prefer, in order: no change, existing code, the standard library,
 an installed dependency, new code. Stay in scope. Read narrowly: focused search, bounded reads,
 `git diff --stat` before diffs, quiet test output.
+
+## Language
+
+- At the start of a session, ask the user which language to use in chat.
+- Agent-facing files (`AGENTS.md`, skills, agent docs) and human docs are in English; change the
+  human docs language only when the user asks.
 
 ## Report
 

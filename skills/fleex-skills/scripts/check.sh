@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Validate agent wiring, skill packages, $skill references, and relative Markdown links in the
-# git repository of the current directory; this plugin's own skills count as known references.
+# git repository of the current directory; this plugin's own skills count as known references and
+# are validated too when the repository is the plugin itself.
 # Prints one "path: problem" line per error and exits 1; prints "check: ok" otherwise.
 set -u
 
@@ -12,6 +13,8 @@ root=$(git rev-parse --show-toplevel 2>/dev/null) || {
 cd "$root" || exit 2
 
 skills=.agents/skills
+dirs=$skills
+[ "$plugin_skills" = "$(pwd -P)/skills" ] && dirs="$dirs skills"
 fail=0
 err() { echo "$1: $2" >&2; fail=1; }
 
@@ -32,7 +35,7 @@ names=" "
 for dir in "$plugin_skills"/*/; do
   [ -f "$dir/SKILL.md" ] && dir=${dir%/} && names="$names${dir##*/} "
 done
-for dir in "$skills"/*/; do
+for dir in $(for d in $dirs; do ls -d "$d"/*/ 2>/dev/null; done); do
   [ -d "$dir" ] || continue
   dir=${dir%/}
   id=${dir##*/}
@@ -76,7 +79,7 @@ done
 while IFS=: read -r file ref; do
   case $names in *" ${ref#\$} "*) ;; *) err "$file" "unknown skill reference $ref" ;; esac
 done < <(grep -roE --include='*.md' --include='*.yaml' '\$[a-z][a-z0-9]*(-[a-z0-9]+)*' \
-  $(ls -d AGENTS.md "$skills" 2>/dev/null) /dev/null | sort -u)
+  $(ls -d AGENTS.md $dirs 2>/dev/null) /dev/null | sort -u)
 
 while IFS= read -r md; do
   base=$(dirname "$md")

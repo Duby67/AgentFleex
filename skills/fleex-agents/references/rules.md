@@ -24,6 +24,12 @@ Hard rules; stop and report instead of working around them.
   `<type check command>`.
 - Do not create plan, summary, or notes files unless asked.
 
+## Language
+
+- At the start of a session, ask the user which language to use in chat.
+- Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in
+  <language, English by default>; change it only when the user asks.
+
 ## Report
 
 One line per point: result, checks run with outcome, concrete risks. Write nothing else: no empty

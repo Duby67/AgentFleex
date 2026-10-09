@@ -20,7 +20,8 @@ canonical owner.
 
 ## Gotchas
 
-- Human docs keep their existing language even though agent files are in English.
+- Human docs use the language `AGENTS.md` sets, English by default; agent-facing files stay in
+  English. Translate existing docs only when asked.
 
 ## Check
 

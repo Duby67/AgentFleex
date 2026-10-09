@@ -1,8 +1,9 @@
 # AgentFleex
 
-Плагин для Claude Code и Codex: скилы репозитория и документацию так, чтобы они были короткими и согласованными.
+A Claude Code and Codex plugin that keeps `AGENTS.md`, repository skills, and documentation short
+and consistent.
 
-## Установка
+## Installation
 
 Claude Code:
 
@@ -18,55 +19,54 @@ codex plugin marketplace add Duby67/AgentFleex
 codex plugin add agentfleex@agentfleex
 ```
 
-Изменения плагина подхватываются в новой сессии.
+## What the plugin sets up in a repository
 
-После установки достаточно попросить агента, например, «перепиши AGENTS.md» или «создай скил для
-деплоя»: нужный скил подключится по своему `description`. Если в репозитории нет `AGENTS.md`,
-агент соберёт его из [каталога правил](./skills/fleex-agents/references/rules.md).
-
-## Что плагин настраивает в репозитории
-
-| Путь | Назначение |
+| Path | Purpose |
 | --- | --- |
-| `AGENTS.md` | Единственный файл правил; Codex читает его сам |
-| `CLAUDE.md` | Одна строка `@AGENTS.md`: Claude Code импортирует тот же файл |
-| `.agents/skills/` | Единственный источник скилов проекта; Codex читает его сам |
-| `.claude/skills` | Относительный симлинк на `.agents/skills/` для Claude Code |
+| `AGENTS.md` | The single rules file; Codex reads it natively |
+| `CLAUDE.md` | One line, `@AGENTS.md`: Claude Code imports the same file |
+| `.agents/skills/` | The only source of project skills; Codex reads it natively |
+| `.claude/skills` | Relative symlink to `.agents/skills/` for Claude Code |
 
-Общие скилы `fleex-*` приходят из плагина и в репозиторий не копируются. Оба клиента сами находят
-скилы по полю `description`, поэтому таблица маршрутизации в `AGENTS.md` не нужна.
+Shared `fleex-*` skills come from the plugin and are not copied into the repository. Both clients
+find skills by their `description` field, so `AGENTS.md` needs no routing table.
 
-## Устройство этого репозитория
+Agent-facing files (`AGENTS.md`, skills, agent docs) are written in English. Human docs are in the
+language set in `AGENTS.md`: the agent asks for it when it creates `AGENTS.md` (English by default)
+and changes it only when the user asks. At the start of each session the agent asks which language to
+use in chat.
 
-Корень репозитория — корень плагина. Скилы лежат в `skills/`; `.agents/skills` и `.claude/skills` —
-симлинки на него, чтобы агенты пользовались ими и при работе над самим плагином. Манифесты:
-`.claude-plugin/` и `.codex-plugin/` (плагин), `.claude-plugin/marketplace.json` и
-`.agents/plugins/marketplace.json` (маркетплейсы).
+## Repository layout
 
-## Экономия токенов
+The repository root is the plugin root; skills live in `skills/`. Manifests: `.claude-plugin/` and
+`.codex-plugin/` (plugin), `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`
+(marketplaces). To try skill changes, start Claude Code with `claude --plugin-dir .`; in Codex,
+reinstall the plugin from the local marketplace.
 
-Главная статья расхода — файлы, которые агент читает часто, прежде всего `AGENTS.md`: он уходит в
-каждый запрос к модели. Поэтому:
+## Saving tokens
 
-- в `AGENTS.md` только то, что нужно каждой задаче и что агент не выведет сам: что за проект,
-  жёсткие инварианты, ссылки на владельцев;
-- удаляется всё, что следует из самого файла или известно агенту;
-- подробности отдельных задач живут в скилах: в каждый запрос попадает только их `description`,
-  тело читается по необходимости;
-- каждый факт хранится в одном месте, остальные ссылаются на него.
+The main cost is files the agent reads often, above all `AGENTS.md`, which goes into every model
+request. Therefore:
 
-Каждый скил владеет своими файлами: [fleex-agents](./skills/fleex-agents/SKILL.md) — `AGENTS.md` и
-`CLAUDE.md`, единственный каталог общих правил; [fleex-skills](./skills/fleex-skills/SKILL.md) —
-скилы и их подключение, ссылки на best practice; [fleex-docs](./skills/fleex-docs/SKILL.md) —
-документация для людей. Правила, однажды записанные в `AGENTS.md` репозитория, принадлежат его
-владельцу и с каталогом не синхронизируются.
+- `AGENTS.md` holds only what every task needs and the agent cannot infer: what the project is,
+  hard invariants, pointers to owners;
+- anything the file already implies or the agent already knows is removed;
+- task details live in skills: only their `description` goes into every request, and the body is
+  read on demand;
+- every fact lives in one place, and everything else links to it.
 
-## Материалы
+Each skill owns its files: [fleex-agents](./skills/fleex-agents/SKILL.md) owns `AGENTS.md`,
+`CLAUDE.md`, and the single catalog of shared rules; [fleex-skills](./skills/fleex-skills/SKILL.md)
+owns skills, their wiring, and links to best practices; [fleex-docs](./skills/fleex-docs/SKILL.md)
+owns human documentation. Rules once written into a repository's `AGENTS.md` belong to its owner and
+are not synced with the catalog.
+
+## References
 
 - [AGENTS.md](https://agents.md), [Codex: AGENTS.md](https://developers.openai.com/codex/guides/agents-md),
   [Claude Code: memory](https://docs.claude.com/en/docs/claude-code/memory)
 - [Claude Code best practices](https://www.anthropic.com/engineering/claude-code-best-practices),
   [Effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
-- Скилы: [спецификация](https://agentskills.io/specification),
+- Skills: [specification](https://agentskills.io/specification),
   [best practices](https://agentskills.io/skill-creation/best-practices),
-  [примеры Anthropic](https://github.com/anthropics/skills), [примеры OpenAI](https://github.com/openai/skills)
+  [Anthropic examples](https://github.com/anthropics/skills), [OpenAI examples](https://github.com/openai/skills)
