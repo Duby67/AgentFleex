@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (${{ matrix.os }}, Python ${{ matrix.python }}${{ matrix.ctags && ', ctags' || '' }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.x"]
+        # Ctags on the latest Python only, so Linux and macOS also test the pattern parser alone.
+        include:
+          - os: ubuntu-latest
+            python: "3.x"
+            ctags: true
+          - os: macos-latest
+            python: "3.x"
+            ctags: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install Universal Ctags
+        if: matrix.ctags && runner.os == 'Linux'
+        run: sudo apt-get install -y universal-ctags
+      - name: Install Universal Ctags
+        if: matrix.ctags && runner.os == 'macOS'
+        run: brew install universal-ctags
+      - name: Tests
+        run: python -m unittest discover -s tests -v
+      - name: Skill checks
+        if: runner.os != 'Windows'
+        run: bash skills/fleex-skills/scripts/check.sh
+      - name: Skill checks
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./skills/fleex-skills/scripts/check.ps1
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Ruff
+        run: uvx ruff check . && uvx ruff format --check .
+      - name: Mypy
+        run: >-
+          uvx mypy --config-file skills/fleex-hygiene/assets/mypy.ini
+          skills/fleex-hygiene/scripts/checks.py skills/fleex-index/scripts/index.py tests
+      - name: ShellCheck
+        run: shellcheck skills/fleex-skills/scripts/check.sh
+      - name: Whitespace
+        run: git diff --check $(git hash-object -t tree /dev/null) HEAD

@@ -231,6 +231,8 @@ def ci_commands(path: Path) -> list[tuple[int, str]]:
         if not value and YAML_MAPPING.match(following):
             continue  # A nested mapping such as CircleCI's run: {name, command}; scan it as keys.
         # Block scalar or list: every deeper line until the indentation returns to the key's level.
+        # A folded scalar (>) is one command; a literal block (|) or a list has one per line.
+        folded = value.startswith(">")
         pending = ""
         while number < len(lines):
             line = lines[number]
@@ -242,11 +244,15 @@ def ci_commands(path: Path) -> list[tuple[int, str]]:
                 continue
             # Join shell line continuations into one command.
             pending = f"{pending} {command}".strip()
+            if folded:
+                continue
             if not pending.endswith("\\"):
                 commands.append((number, pending))
                 pending = ""
             else:
                 pending = pending[:-1].rstrip()
+        if pending:
+            commands.append((number, pending))
     return commands
 
 

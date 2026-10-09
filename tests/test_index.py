@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
@@ -97,8 +98,10 @@ FILES = {
 
         ## Notes
         """,
-    "we:ird.txt": "uses helper\n",
 }
+# Windows forbids ":" in file names; elsewhere it checks that git paths are not split on colons.
+ODD_NAME = "we_ird.txt" if os.name == "nt" else "we:ird.txt"
+FILES[ODD_NAME] = "uses helper\n"
 
 
 class IndexTest(unittest.TestCase):
@@ -112,7 +115,8 @@ class IndexTest(unittest.TestCase):
         subprocess.run(["git", "init", "-q"], cwd=cls.root, check=True)
         for name, text in FILES.items():
             path = cls.root / name
-            path.write_text(textwrap.dedent(text), encoding="utf-8")
+            # Bytes keep LF line endings on Windows too.
+            path.write_bytes(textwrap.dedent(text).encode("utf-8"))
         (cls.root / "sub").mkdir()
 
     @classmethod
@@ -179,7 +183,7 @@ class IndexTest(unittest.TestCase):
         self.assertIn(
             "store.ts:7-13 class Store", self.run_index("find", "Store", cwd=self.root / "sub")
         )
-        self.assertIn("we:ird.txt: 1 (1)", self.run_index("refs", "helper"))
+        self.assertIn(f"{ODD_NAME}: 1 (1)", self.run_index("refs", "helper"))
 
     def test_map_counts_lines(self) -> None:
         self.assertIn("README.md  11 lines", self.run_index("map"))
@@ -188,6 +192,7 @@ class IndexTest(unittest.TestCase):
         lines = self.run_index("outline", "store.ts", "--limit", "2")
         self.assertEqual(lines[-1], "... 2 more; use --offset 2")
 
+    @unittest.skipIf(os.name == "nt", "symlinks need administrator rights on Windows")
     def test_missing_ctags_is_reported(self) -> None:
         empty = tempfile.mkdtemp()
         git = shutil.which("git")

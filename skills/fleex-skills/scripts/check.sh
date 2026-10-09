@@ -13,8 +13,8 @@ root=$(git rev-parse --show-toplevel 2>/dev/null) || {
 cd "$root" || exit 2
 
 skills=.agents/skills
-dirs=$skills
-[ "$plugin_skills" = "$(pwd -P)/skills" ] && dirs="$dirs skills"
+dirs=("$skills")
+[ "$plugin_skills" = "$(pwd -P)/skills" ] && dirs+=(skills)
 fail=0
 err() { echo "$1: $2" >&2; fail=1; }
 
@@ -41,8 +41,12 @@ names=" "
 for dir in "$plugin_skills"/*/; do
   [ -f "$dir/SKILL.md" ] && dir=${dir%/} && names="$names${dir##*/} "
 done
-for dir in $(for d in $dirs; do ls -d "$d"/*/ 2>/dev/null; done); do
-  [ -d "$dir" ] || continue
+# Arrays stay safe under set -u on bash 3.2 (macOS) through the ${a[@]+"${a[@]}"} form.
+packages=()
+for base in "${dirs[@]}"; do
+  for dir in "$base"/*/; do [ -d "$dir" ] && packages+=("$dir"); done
+done
+for dir in ${packages[@]+"${packages[@]}"}; do
   dir=${dir%/}
   id=${dir##*/}
   file=$dir/SKILL.md
@@ -82,10 +86,12 @@ for dir in $(for d in $dirs; do ls -d "$d"/*/ 2>/dev/null; done); do
   fi
 done
 
+scan=()
+for path in AGENTS.md "${dirs[@]}"; do [ -e "$path" ] && scan+=("$path"); done
 while IFS=: read -r file ref; do
   case $names in *" ${ref#\$} "*) ;; *) err "$file" "unknown skill reference $ref" ;; esac
 done < <(grep -roE --include='*.md' --include='*.yaml' '\$[a-z][a-z0-9]*(-[a-z0-9]+)*' \
-  $(ls -d AGENTS.md $dirs 2>/dev/null) /dev/null | sort -u)
+  ${scan[@]+"${scan[@]}"} /dev/null | sort -u)
 
 while IFS= read -r md; do
   base=$(dirname "$md")

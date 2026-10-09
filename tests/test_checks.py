@@ -25,7 +25,8 @@ class ChecksTest(unittest.TestCase):
     def write(self, name: str, text: str = "") -> None:
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(textwrap.dedent(text), encoding="utf-8")
+        # Bytes keep LF line endings on Windows too.
+        path.write_bytes(textwrap.dedent(text).encode("utf-8"))
 
     def checks(self, path: str = os.environ.get("PATH", "")) -> str:
         result = subprocess.run(
@@ -101,6 +102,9 @@ class ChecksTest(unittest.TestCase):
                         --no-dev
                   - run: go test ./...
                   - run: go vet ./...
+                  - run: >-
+                      uvx mypy --strict
+                      src
             """,
         )
         self.write(
@@ -136,6 +140,7 @@ class ChecksTest(unittest.TestCase):
                 [
                     "pnpm lint",
                     "go vet ./...",
+                    "uvx mypy --strict src",
                     "ruff check .",
                     "mypy src",
                     "cargo fmt --check",
