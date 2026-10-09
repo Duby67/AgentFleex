@@ -1,0 +1,4 @@
+interface:
+  display_name: "Optimize AGENTS.md"
+  short_description: "Cut token cost of AGENTS.md without changing its rules"
+  default_prompt: "Use $fleex-agents-optimize to optimize AGENTS.md."

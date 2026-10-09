@@ -55,7 +55,9 @@ codex plugin add agentfleex@agentfleex
   тело читается по необходимости;
 - каждый факт хранится в одном месте, остальные ссылаются на него.
 
-Подробные правила: [fleex-agents-md](./skills/fleex-agents-md/SKILL.md) (AGENTS.md),
+Подробные правила: [fleex-agents-optimize](./skills/fleex-agents-optimize/SKILL.md) (содержимое
+AGENTS.md и правила экономии токенов), [fleex-agents-md](./skills/fleex-agents-md/SKILL.md) (связка
+AGENTS.md, CLAUDE.md и скилов),
 [fleex-skills](./skills/fleex-skills/SKILL.md) (создание скилов, ссылки на best
 practice), [fleex-docs](./skills/fleex-docs/SKILL.md) (документация для людей).
 
