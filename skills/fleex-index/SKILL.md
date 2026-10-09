@@ -5,13 +5,16 @@ description: Navigate any git repository cheaply with a dependency-free script: 
 
 # Index
 
-Run `scripts/index.py` (relative to this skill's directory) from the repository root with Python 3.8+
-(`python3`, or `python` on Windows). It needs only the standard library and `git`, and reads tracked
-and untracked, non-ignored files.
+Run `scripts/index.py` (relative to this skill's directory) from anywhere in the repository with
+Python 3.8+ (`python3`, or `python` on Windows). It needs only the standard library and `git`, and
+reads tracked and untracked, non-ignored files. Path arguments are relative to the current
+directory; output paths are relative to the repository root.
 
-- `map [path] [--depth N]`: files and KiB per directory; start here in an unfamiliar repository.
+- `map [path] [--depth N]`: files and line counts per directory; start here in an unfamiliar
+  repository.
 - `outline <file>`: nested symbols or Markdown headings as `start-end kind name`.
-- `show <file> <name> [--line N]`: the text of one symbol or section, instead of the whole file.
+- `show <file> <name> [--line N]`: the text of one symbol or section, with its decorators and doc
+  comments; `name` may be qualified (`Class.method`, `Section.Subsection`).
 - `find <name> [paths...]`: definitions of a symbol across the repository.
 - `refs <name> [paths...]`: files that mention a whole word, most hits first, with line numbers.
 

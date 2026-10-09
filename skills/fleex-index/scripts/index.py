@@ -57,6 +57,7 @@ HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 FENCE = re.compile(r"^\s*(```|~~~)")
 TOML_TABLE = re.compile(r"^\s*\[\[?\s*([^\]]+?)\s*\]\]?")
 YAML_KEY = re.compile(r"^([A-Za-z_][\w.-]*):(?:\s|$)")
+PREFIX = ("@", "#[", "///", "//", "/*", "*", "#", "--")
 CLOSER = re.compile(r"^\s*(\}|\)|\]|end\b|fi\b|done\b|esac\b)")
 
 
@@ -64,12 +65,17 @@ class Fail(Exception):
     pass
 
 
-def git(root: Path, *args: str) -> list[str]:
+def git(root: Path, *args: str) -> str:
     result = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
     if result.returncode not in (0, 1):
         raise Fail(result.stderr.strip() or f"git {args[0]} failed")
-    return result.stdout.splitlines()
+    return result.stdout
+
+
+def git_names(root: Path, *args: str) -> list[str]:
+    """Paths from a git command run with -z, which leaves special characters unquoted."""
+    return [name for name in git(root, *args).split("\0") if name]
 
 
 def read_lines(path: Path) -> list[str]:
@@ -113,6 +119,10 @@ def code_symbols(lines: list[str], patterns: list[re.Pattern]) -> list[list]:
         while end > start and not lines[end - 1].strip():
             end -= 1
         symbol[1] = end
+        while start > 1 and indent(lines[start - 2]) == level and \
+                lines[start - 2].strip().startswith(PREFIX):
+            start -= 1
+        symbol[0] = start
     return symbols
 
 
@@ -155,6 +165,17 @@ def symbols(path: Path) -> list[list]:
     return code_symbols(lines, FAMILIES.get(suffix, GENERIC))
 
 
+def qualified(rows: list[list]) -> list[str]:
+    """Dotted names through enclosing symbols: Class.method, Section.Subsection."""
+    stack, names = [], []
+    for row in rows:
+        while stack and not (stack[-1][0][0] < row[0] <= stack[-1][0][1]):
+            stack.pop()
+        names.append(f"{stack[-1][1]}.{row[3]}" if stack else row[3])
+        stack.append((row, names[-1]))
+    return names
+
+
 def page(rows: list[str], limit: int, offset: int) -> str:
     shown = rows[offset:offset + limit]
     rest = len(rows) - offset - len(shown)
@@ -174,26 +195,25 @@ def depths(rows: list[list]) -> list[int]:
 
 
 def cmd_map(root: Path, args) -> list[str]:
-    base = args.path.strip("/") if args.path else ""
-    files = git(root, "ls-files", "-co", "--exclude-standard", "--", base or ".")
+    base = args.path or ""
+    files = git_names(root, "ls-files", "-z", "-co", "--exclude-standard", "--", base or ".")
     if not files:
-        raise Fail(f"no tracked files under {args.path or '.'}")
+        raise Fail(f"no files under {base or '.'}")
     totals = defaultdict(lambda: [0, 0])
-    prefix = len(Path(base).parts) if base else 0
+    prefix = len(Path(base).parts)
     for name in files:
         parts = Path(name).parts
         key = "/".join(parts[:prefix + args.depth])
         if len(parts) > prefix + args.depth:
             key += "/"
-        path = root / name
         try:
-            size = path.stat().st_size
+            data = (root / name).read_bytes()
         except OSError:
             continue
         totals[key][0] += 1
-        totals[key][1] += size
-    return [f"{key}  {count} files, {size // 1024} KiB" if key.endswith("/") else
-            f"{key}  {size // 1024} KiB" for key, (count, size) in sorted(totals.items())]
+        totals[key][1] += 0 if b"\0" in data[:8192] else data.count(b"\n")
+    return [f"{key}  {count} files, {lines} lines" if key.endswith("/") else f"{key}  {lines} lines"
+            for key, (count, lines) in sorted(totals.items())]
 
 
 def cmd_outline(root: Path, args) -> list[str]:
@@ -203,7 +223,10 @@ def cmd_outline(root: Path, args) -> list[str]:
 
 def cmd_show(root: Path, args) -> list[str]:
     path = root / args.file
-    matches = [r for r in symbols(path) if r[3] == args.name and (not args.line or r[0] == args.line)]
+    rows = symbols(path)
+    matches = [r for r, q in zip(rows, qualified(rows))
+               if args.name in (r[3], q) or q.endswith(f".{args.name}")
+               if not args.line or r[0] == args.line]
     if not matches:
         raise Fail(f"{args.file}: no symbol or heading named {args.name!r}; run outline")
     if len(matches) > 1:
@@ -215,7 +238,9 @@ def cmd_show(root: Path, args) -> list[str]:
 
 def cmd_find(root: Path, args) -> list[str]:
     rows = []
-    for name in git(root, "grep", "--untracked", "-I", "-l", "-w", "-F", "-e", args.name, "--", *args.paths):
+    names = git_names(root, "grep", "-z", "--untracked", "-I", "-l", "-w", "-F", "-e", args.name,
+                      "--", *args.paths)
+    for name in names:
         try:
             found = [r for r in symbols(root / name) if r[3] == args.name]
         except (Fail, OSError):
@@ -226,8 +251,11 @@ def cmd_find(root: Path, args) -> list[str]:
 
 def cmd_refs(root: Path, args) -> list[str]:
     hits = defaultdict(list)
-    for line in git(root, "grep", "--untracked", "-I", "-n", "-w", "-F", "-e", args.name, "--", *args.paths):
-        name, number, _ = line.split(":", 2)
+    output = git(root, "grep", "-z", "--untracked", "-I", "-n", "-w", "-F", "-e", args.name,
+                 "--", *args.paths)
+    # With -z each hit is one line of "path\0number\0text".
+    for record in output.splitlines():
+        name, number, _ = record.split("\0", 2)
         hits[name].append(number)
     return [f"{name}: {len(lines)} ({', '.join(lines[:8])}{', ...' if len(lines) > 8 else ''})"
             for name, lines in sorted(hits.items(), key=lambda item: -len(item[1]))]
@@ -255,13 +283,23 @@ def main() -> int:
         p.add_argument("name")
         p.add_argument("paths", nargs="*", help="limit the search to these paths")
     args = parser.parse_args()
-    root = Path(args.root).resolve()
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    here = Path(args.root).resolve()
     try:
-        top = git(root, "rev-parse", "--show-toplevel")
-        if not top:
-            raise Fail("run inside a git repository or pass --root")
+        top = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=here, capture_output=True,
+                             text=True)
+        if top.returncode:
+            raise Fail(f"{here} is not inside a git repository; pass --root")
+        root = Path(top.stdout.strip()).resolve()
+        # Path arguments are relative to the current directory; git runs from the root.
+        relative = lambda p: (here / p).resolve().relative_to(root).as_posix()  # noqa: E731
+        for name in ("file", "path"):
+            if getattr(args, name, None):
+                setattr(args, name, relative(getattr(args, name)))
+        if getattr(args, "paths", None):
+            args.paths = [relative(p) for p in args.paths]
         rows = globals()[f"cmd_{args.command}"](root, args)
-    except (Fail, OSError) as error:
+    except (Fail, OSError, ValueError) as error:
         print(f"index: {error}", file=sys.stderr)
         return 1
     if args.command == "show":
