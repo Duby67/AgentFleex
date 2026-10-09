@@ -33,8 +33,7 @@ find skills by their `description` field, so `AGENTS.md` needs no routing table.
 
 Agent-facing files (`AGENTS.md`, skills, agent docs) are written in English. Human docs are in the
 language set in `AGENTS.md`: the agent asks for it when it creates `AGENTS.md` (English by default)
-and changes it only when the user asks. At the start of each session the agent asks which language to
-use in chat.
+and changes it only when the user asks. In chat the agent replies in the language of the question.
 
 ## Repository layout
 

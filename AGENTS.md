@@ -22,7 +22,6 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
 
 ## Language
 
-- At the start of a session, ask the user which language to use in chat.
 - Agent-facing files (`AGENTS.md`, skills, agent docs) and human docs are in English; change the
   human docs language only when the user asks.
 

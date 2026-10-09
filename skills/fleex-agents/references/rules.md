@@ -26,7 +26,6 @@ Hard rules; stop and report instead of working around them.
 
 ## Language
 
-- At the start of a session, ask the user which language to use in chat.
 - Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in
   <language, English by default>; change it only when the user asks.
 
