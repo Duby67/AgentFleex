@@ -20,8 +20,21 @@ directory; output paths are relative to the repository root.
 
 Every command takes `--limit` (default 60 rows) and `--offset`; a trailer names the next offset.
 
-Symbols come from per-language line patterns and indentation, not a parser. Markdown, TOML, and
-YAML top-level keys are exact; code ranges are hints. Unusual formatting, macros, or generated code
-can hide or misplace a symbol: when a result is empty or surprising, fall back to a bounded search
-and read. `refs` matches text, so it includes comments and strings and misses aliased imports. Use
-an LSP or the language's own tools when they are available for type-aware references.
+## Requirements
+
+If `python3` (`python` on Windows) or `git` is missing, tell the user what to install and use
+bounded searches meanwhile. When the first output line reads `# patterns (ctags not found; ...)`, the user
+can install Universal Ctags for exact symbols; tell them once per session, with the command the line
+gives for their system.
+
+## Accuracy
+
+Code symbols come from Universal Ctags when it is installed, otherwise from per-language line
+patterns; the first output line names the parser and why. Both use one kind vocabulary, and a
+function directly inside a type is a `method`. `--backend ctags` fails without Universal Ctags;
+`--backend patterns` skips it. Ranges ctags leaves open are closed by indentation. Markdown,
+TOML, and YAML top-level keys are always parsed exactly; code ranges are hints. Unusual formatting,
+macros, or generated code can hide or misplace a symbol: when a result is empty or surprising, fall
+back to a bounded search and read. `refs` matches text, so it includes comments and strings and
+misses aliased imports. Use an LSP or the language's own tools when they are available for
+type-aware references.

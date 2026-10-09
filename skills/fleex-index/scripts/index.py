@@ -1,12 +1,15 @@
 """Token-cheap navigation for any git repository: map, outline, show, find, refs.
 
-Standard library only. Symbols come from per-line patterns and indentation, not a parser, so results
-are navigation hints. Output is plain text bounded by --limit; a trailer names the next --offset.
+Standard library only. Code symbols come from Universal Ctags when it is installed, otherwise from
+per-line patterns; ranges ctags leaves open are closed by indentation. Markdown, TOML, and YAML are
+always parsed here. Output is plain text bounded by --limit; a trailer names the next --offset.
 """
 
 from __future__ import annotations
 
 import argparse
+import functools
+import json
 import re
 import subprocess
 import sys
@@ -21,12 +24,14 @@ KEYWORDS = (r"class|function|func|fn|interface|struct|enum|trait|impl|type|modul
 STATEMENTS = {"if", "for", "while", "switch", "catch", "return", "new", "else", "await", "throw",
               "using", "lock", "sizeof", "typeof", "do", "case", "goto", "delete", "yield"}
 PYTHON = [re.compile(r"^(\s*)(?:async\s+)?(?P<kind>def|class)\s+(?P<name>\w+)")]
-SHELL = [re.compile(r"^(\s*)(?:function\s+)?(?P<name>[A-Za-z_][\w-]*)\s*\(\)\s*(?:\{.*)?$"),
+SHELL = [re.compile(r"^(\s*)(?:function\s+)?(?P<name>[A-Za-z_][\w-]*)\s*\(\)\s*[{(]"),
          re.compile(r"^(\s*)function\s+(?P<name>[A-Za-z_][\w-]*)")]
 POWERSHELL = [re.compile(r"^(\s*)(?P<kind>function|filter|class|enum)\s+(?P<name>[\w-]+)", re.I)]
 SQL = [re.compile(r"^(\s*)create\s+(?:or\s+replace\s+)?(?P<kind>table|view|function|procedure|"
                   r"index|trigger|type)\s+(?:if\s+not\s+exists\s+)?(?P<name>[\w.\"]+)", re.I)]
 GENERIC = [
+    # Go types report their concrete kind: type Server struct
+    re.compile(r"^(\s*)type\s+(?P<name>\w+)\s+(?P<kind>struct|interface)\b"),
     # Go method receiver: func (r *T) Name(
     re.compile(r"^(\s*)func\s+\([^)]*\)\s*(?P<name>\w+)"),
     # Keyword definitions: export async function f, pub(crate) struct S, data class C.
@@ -58,6 +63,19 @@ FENCE = re.compile(r"^\s*(```|~~~)")
 TOML_TABLE = re.compile(r"^\s*\[\[?\s*([^\]]+?)\s*\]\]?")
 YAML_KEY = re.compile(r"^([A-Za-z_][\w.-]*):(?:\s|$)")
 PREFIX = ("@", "#[", "///", "//", "/*", "*", "#", "--")
+# Ctags kinds that are not definitions with a body worth navigating to.
+CTAGS_SKIP = {"field", "property", "variable", "local", "parameter", "enumerator", "label",
+              "macroparam", "import", "unknown", "externvar", "alias", "package"}
+# One vocabulary for both parsers; functions directly inside a type become methods.
+KINDS = {"def": "function", "func": "function", "fn": "function", "sub": "function",
+         "subroutine": "function", "proc": "function", "filter": "function", "method": "function",
+         "singletonmethod": "function", "implementation": "impl", "typedef": "type"}
+TYPES = {"class", "struct", "interface", "trait", "impl", "enum", "record", "object", "protocol",
+         "extension", "union"}
+INSTALL_CTAGS = ("for exact symbols install Universal Ctags: apt install universal-ctags, "
+                 "brew install universal-ctags, or winget install UniversalCtags.Ctags")
+MARKUP = {".md", ".markdown", ".mdx", ".toml", ".yaml", ".yml"}
+SKIPPED = {".json", ".lock", ".svg", ".csv", ".txt", ".log", ".rst"}
 CLOSER = re.compile(r"^\s*(\}|\)|\]|end\b|fi\b|done\b|esac\b)")
 
 
@@ -66,10 +84,15 @@ class Fail(Exception):
 
 
 def git(root: Path, *args: str) -> str:
-    result = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True,
-                            encoding="utf-8", errors="replace")
-    if result.returncode not in (0, 1):
-        raise Fail(result.stderr.strip() or f"git {args[0]} failed")
+    # Exit code 1 means no match for git grep.
+    return run(root, ["git", *args], ok=(0, 1))
+
+
+def run(root: Path, command: list[str], ok: tuple[int, ...] = (0,)) -> str:
+    result = subprocess.run(command, cwd=root, capture_output=True, text=True, encoding="utf-8",
+                            errors="replace")
+    if result.returncode not in ok:
+        raise Fail(result.stderr.strip() or f"{command[0]} failed")
     return result.stdout
 
 
@@ -89,7 +112,7 @@ def indent(line: str) -> int:
     return len(line) - len(line.lstrip())
 
 
-def code_symbols(lines: list[str], patterns: list[re.Pattern]) -> list[list]:
+def pattern_symbols(lines: list[str], patterns: list[re.Pattern]) -> list[list]:
     symbols = []
     for number, line in enumerate(lines, 1):
         for pattern in patterns:
@@ -103,27 +126,39 @@ def code_symbols(lines: list[str], patterns: list[re.Pattern]) -> list[list]:
             kind = fields.get("kind") or "def"
             symbols.append([number, 0, kind.lower(), name, indent(line)])
             break
+    return close(lines, symbols)
+
+
+def close(lines: list[str], symbols: list[list]) -> list[list]:
+    """Fill missing ends by indentation and widen starts over decorators and doc comments."""
     for symbol in symbols:
         start, level = symbol[0], symbol[4]
-        end = len(lines)
-        for number in range(start + 1, len(lines) + 1):
-            line = lines[number - 1]
-            if not line.strip() or indent(line) > level:
-                continue
-            stripped = line.strip()
-            # Continuations of the signature or an opening brace on its own line.
-            if stripped == "{" or (CLOSER.match(line) and stripped.endswith(("{", ":"))):
-                continue
-            end = number if CLOSER.match(line) else number - 1
-            break
-        while end > start and not lines[end - 1].strip():
-            end -= 1
-        symbol[1] = end
+        if not symbol[1]:
+            symbol[1] = indented_end(lines, start, level)
         while start > 1 and indent(lines[start - 2]) == level and \
                 lines[start - 2].strip().startswith(PREFIX):
             start -= 1
         symbol[0] = start
     return symbols
+
+
+def indented_end(lines: list[str], start: int, level: int) -> int:
+    end = len(lines)
+    for number in range(start + 1, len(lines) + 1):
+        line = lines[number - 1]
+        if not line.strip() or indent(line) > level:
+            continue
+        stripped = line.strip()
+        # Continuations of the signature or an opening brace on its own line.
+        opens = stripped.endswith(("{", ":", "(", "["))
+        if stripped == "{" or (CLOSER.match(line) and opens):
+            continue
+        # A closer at the symbol's own level ends its block; a shallower one belongs to a parent.
+        end = number if CLOSER.match(line) and indent(line) == level else number - 1
+        break
+    while end > start and not lines[end - 1].strip():
+        end -= 1
+    return max(end, start)
 
 
 def markdown_symbols(lines: list[str]) -> list[list]:
@@ -150,8 +185,71 @@ def key_symbols(lines: list[str], pattern: re.Pattern, kind: str) -> list[list]:
     return result
 
 
-def symbols(path: Path) -> list[list]:
-    """Rows of [start, end, kind, name, level], ordered by start line."""
+@functools.lru_cache(maxsize=None)
+def ctags_missing() -> str:
+    """Why Universal Ctags cannot be used, or an empty string when it can."""
+    try:
+        version = subprocess.run(["ctags", "--version"], capture_output=True, text=True).stdout
+        features = subprocess.run(["ctags", "--list-features"], capture_output=True,
+                                  text=True).stdout
+    except OSError:
+        return "ctags not found"
+    if "Universal Ctags" not in version:
+        return "ctags is not Universal Ctags"
+    if not re.search(r"^json\b", features, re.M):
+        return "ctags lacks JSON output"
+    return ""
+
+
+def ctags_symbols(root: Path, names: list[str]) -> dict[str, list[list]]:
+    """Ctags rows per file for the files whose language ctags knows."""
+    languages = run(root, ["ctags", "--print-language", *names])
+    known = [line.rpartition(": ")[0] for line in languages.splitlines()
+             if not line.endswith(": NONE")]
+    if not known:
+        return {}
+    output = run(root, ["ctags", "--sort=no", "--output-format=json", "--fields=+neKZl",
+                             "--extras=-F", "-o", "-", *known])
+    rows: dict[str, list[list]] = {name: [] for name in known}
+    for line in output.splitlines():
+        tag = json.loads(line)
+        if tag.get("_type") != "tag" or tag["kind"] in CTAGS_SKIP:
+            continue
+        kind = tag["kind"]
+        # Python methods are "member"; elsewhere a member is a field, which patterns skip too.
+        if kind == "member":
+            if tag.get("language") != "Python":
+                continue
+            kind = "function"
+        # Constants count only when they hold a function, as the arrow pattern finds them.
+        if kind == "constant":
+            if not re.search(r"=>|\bfunction\b", tag.get("pattern", "")):
+                continue
+            kind = "function"
+        rows[tag["path"]].append([tag["line"], tag.get("end", 0), kind, tag["name"], 0])
+    for name, found in rows.items():
+        lines = read_lines(root / name)
+        for row in found:
+            row[4] = indent(lines[row[0] - 1])
+        found.sort(key=lambda row: row[0])
+        normalize(close(lines, found))
+    return rows
+
+
+def normalize(rows: list[list]) -> list[list]:
+    """Map parser-specific kinds to one vocabulary and name functions inside types methods."""
+    stack = []
+    for row in rows:
+        row[2] = KINDS.get(row[2].lower(), row[2].lower())
+        while stack and not (stack[-1][0] < row[0] <= stack[-1][1]):
+            stack.pop()
+        if row[2] == "function" and stack and stack[-1][2] in TYPES:
+            row[2] = "method"
+        stack.append(row)
+    return rows
+
+
+def own_symbols(path: Path) -> list[list]:
     lines = read_lines(path)
     suffix = path.suffix.lower()
     if suffix in {".md", ".markdown", ".mdx"}:
@@ -160,9 +258,30 @@ def symbols(path: Path) -> list[list]:
         return key_symbols(lines, TOML_TABLE, "table")
     if suffix in {".yaml", ".yml"}:
         return key_symbols(lines, YAML_KEY, "key")
-    if suffix in {".json", ".lock", ".svg", ".csv"}:
+    if suffix in SKIPPED:
         return []
-    return code_symbols(lines, FAMILIES.get(suffix, GENERIC))
+    return normalize(pattern_symbols(lines, FAMILIES.get(suffix, GENERIC)))
+
+
+def symbols(root: Path, names: list[str], backend: str) -> tuple[dict[str, list[list]], str]:
+    """Rows of [start, end, kind, name, level] per file, and a note on which parser ran."""
+    code = [n for n in names if Path(n).suffix.lower() not in MARKUP | SKIPPED]
+    by_ctags = ctags_symbols(root, code) if backend == "ctags" and code else {}
+    result = {}
+    for name in names:
+        try:
+            result[name] = by_ctags[name] if name in by_ctags else own_symbols(root / name)
+        except (Fail, OSError):
+            continue
+    patterned = [n for n in code if n not in by_ctags]
+    if backend != "ctags":
+        reason = f"{ctags_missing()}; {INSTALL_CTAGS}" if ctags_missing() else "requested"
+        note = f"patterns ({reason})" if code else "markup"
+    elif patterned:
+        note = f"ctags; patterns for {len(patterned)} file(s) ctags cannot parse"
+    else:
+        note = "ctags" if code else "markup"
+    return result, note
 
 
 def qualified(rows: list[list]) -> list[str]:
@@ -217,13 +336,16 @@ def cmd_map(root: Path, args) -> list[str]:
 
 
 def cmd_outline(root: Path, args) -> list[str]:
-    rows = symbols(root / args.file)
-    return [f"{'  ' * d}{r[0]}-{r[1]} {r[2]} {r[3]}" for r, d in zip(rows, depths(rows))]
+    found, note = symbols(root, [args.file], args.backend)
+    rows = found.get(args.file, [])
+    return [f"# {note}"] + [f"{'  ' * d}{r[0]}-{r[1]} {r[2]} {r[3]}"
+                            for r, d in zip(rows, depths(rows))]
 
 
 def cmd_show(root: Path, args) -> list[str]:
     path = root / args.file
-    rows = symbols(path)
+    found, note = symbols(root, [args.file], args.backend)
+    rows = found.get(args.file, [])
     matches = [r for r, q in zip(rows, qualified(rows))
                if args.name in (r[3], q) or q.endswith(f".{args.name}")
                if not args.line or r[0] == args.line]
@@ -233,20 +355,16 @@ def cmd_show(root: Path, args) -> list[str]:
         raise Fail(f"{args.file}: {args.name!r} is ambiguous at lines "
                    f"{', '.join(str(r[0]) for r in matches)}; pass --line")
     start, end = matches[0][:2]
-    return [f"{args.file}:{start}-{end}", *read_lines(path)[start - 1:end]]
+    return [f"{args.file}:{start}-{end} # {note}", *read_lines(path)[start - 1:end]]
 
 
 def cmd_find(root: Path, args) -> list[str]:
-    rows = []
     names = git_names(root, "grep", "-z", "--untracked", "-I", "-l", "-w", "-F", "-e", args.name,
                       "--", *args.paths)
-    for name in names:
-        try:
-            found = [r for r in symbols(root / name) if r[3] == args.name]
-        except (Fail, OSError):
-            continue
-        rows += [f"{name}:{r[0]}-{r[1]} {r[2]} {r[3]}" for r in found]
-    return rows
+    found, note = symbols(root, names, args.backend)
+    rows = [f"{name}:{r[0]}-{r[1]} {r[2]} {r[3]}"
+            for name in names for r in found.get(name, []) if r[3] == args.name]
+    return [f"# {note}"] + rows
 
 
 def cmd_refs(root: Path, args) -> list[str]:
@@ -266,6 +384,8 @@ def main() -> int:
     common.add_argument("--root", default=".", help="repository root (default: current directory)")
     common.add_argument("--limit", type=int, default=60, help="maximum output rows")
     common.add_argument("--offset", type=int, default=0, help="rows to skip")
+    common.add_argument("--backend", choices=("auto", "ctags", "patterns"), default="auto",
+                        help="code symbol parser (default: ctags if Universal Ctags is found)")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     add = lambda name, text: sub.add_parser(name, help=text, parents=[common])  # noqa: E731
@@ -298,11 +418,15 @@ def main() -> int:
                 setattr(args, name, relative(getattr(args, name)))
         if getattr(args, "paths", None):
             args.paths = [relative(p) for p in args.paths]
+        if args.backend == "ctags" and ctags_missing():
+            raise Fail(f"{ctags_missing()}; {INSTALL_CTAGS}, or use --backend patterns")
+        if args.backend == "auto":
+            args.backend = "patterns" if ctags_missing() else "ctags"
         rows = globals()[f"cmd_{args.command}"](root, args)
     except (Fail, OSError, ValueError) as error:
         print(f"index: {error}", file=sys.stderr)
         return 1
-    if args.command == "show":
+    if args.command in ("show", "outline", "find"):
         print(rows[0])
         print(page(rows[1:], args.limit, args.offset))
     else:
