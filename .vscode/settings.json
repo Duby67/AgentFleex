@@ -1,0 +1,3 @@
+{
+  "mypy-type-checker.args": ["--config-file=skills/fleex-hygiene/assets/mypy.ini"]
+}

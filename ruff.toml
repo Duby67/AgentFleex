@@ -1,0 +1,2 @@
+extend = "skills/fleex-hygiene/assets/ruff.toml"
+target-version = "py39"

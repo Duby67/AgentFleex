@@ -6,7 +6,7 @@ description: Navigate any git repository cheaply with a dependency-free script: 
 # Index
 
 Run `scripts/index.py` (relative to this skill's directory) from anywhere in the repository with
-Python 3.8+ (`python3`, or `python` on Windows). It needs only the standard library and `git`, and
+Python 3.9+ (`python3`, or `python` on Windows). It needs only the standard library and `git`, and
 reads tracked and untracked, non-ignored files. Path arguments are relative to the current
 directory; output paths are relative to the repository root.
 

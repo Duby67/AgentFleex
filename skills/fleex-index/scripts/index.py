@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import argparse
 import functools
+import io
 import json
 import re
-import io
 import subprocess
 import sys
 import tokenize
@@ -19,53 +19,115 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-MODIFIERS = (r"(?:(?:export|default|declare|pub(?:\([^)]*\))?|public|private|protected|internal|"
-             r"static|abstract|final|async|override|virtual|sealed|partial|open|data|inline|"
-             r"unsafe|extern|readonly|local|global|companion|@\w+(?:\([^)]*\))?)\s+)*")
-KEYWORDS = (r"class|function|func|fn|interface|struct|enum|trait|impl|type|module|namespace|"
-            r"record|object|protocol|extension|sub|proc|macro|union|def")
-STATEMENTS = {"if", "for", "while", "switch", "catch", "return", "new", "else", "await", "throw",
-              "using", "lock", "sizeof", "typeof", "do", "case", "goto", "delete", "yield"}
+MODIFIERS = (
+    r"(?:(?:export|default|declare|pub(?:\([^)]*\))?|public|private|protected|internal|"
+    r"static|abstract|final|async|override|virtual|sealed|partial|open|data|inline|"
+    r"unsafe|extern|readonly|local|global|companion|@\w+(?:\([^)]*\))?)\s+)*"
+)
+KEYWORDS = (
+    r"class|function|func|fn|interface|struct|enum|trait|impl|type|module|namespace|"
+    r"record|object|protocol|extension|sub|proc|macro|union|def"
+)
+STATEMENTS = {
+    "if",
+    "for",
+    "while",
+    "switch",
+    "catch",
+    "return",
+    "new",
+    "else",
+    "await",
+    "throw",
+    "using",
+    "lock",
+    "sizeof",
+    "typeof",
+    "do",
+    "case",
+    "goto",
+    "delete",
+    "yield",
+}
 PYTHON = [re.compile(r"^(\s*)(?:async\s+)?(?P<kind>def|class)\s+(?P<name>\w+)")]
-SHELL = [re.compile(r"^(\s*)(?:function\s+)?(?P<name>[A-Za-z_][\w-]*)\s*\(\)\s*[{(]"),
-         re.compile(r"^(\s*)function\s+(?P<name>[A-Za-z_][\w-]*)")]
-POWERSHELL = [re.compile(r"^(\s*)(?P<kind>function|filter|class|enum)\s+(?P<name>[\w-]+)",
-                         re.IGNORECASE)]
-SQL = [re.compile(r"^(\s*)create\s+(?:or\s+replace\s+)?(?P<kind>table|view|function|procedure|"
-                  r"index|trigger|type)\s+(?:if\s+not\s+exists\s+)?(?P<name>[\w.\"]+)",
-                  re.IGNORECASE)]
+SHELL = [
+    re.compile(r"^(\s*)(?:function\s+)?(?P<name>[A-Za-z_][\w-]*)\s*\(\)\s*[{(]"),
+    re.compile(r"^(\s*)function\s+(?P<name>[A-Za-z_][\w-]*)"),
+]
+POWERSHELL = [
+    re.compile(r"^(\s*)(?P<kind>function|filter|class|enum)\s+(?P<name>[\w-]+)", re.IGNORECASE)
+]
+SQL = [
+    re.compile(
+        r"^(\s*)create\s+(?:or\s+replace\s+)?(?P<kind>table|view|function|procedure|"
+        r"index|trigger|type)\s+(?:if\s+not\s+exists\s+)?(?P<name>[\w.\"]+)",
+        re.IGNORECASE,
+    )
+]
 GENERIC = [
     # Go types report their concrete kind: type Server struct
     re.compile(r"^(\s*)type\s+(?P<name>\w+)\s+(?P<kind>struct|interface)\b"),
     # Go method receiver: func (r *T) Name(
     re.compile(r"^(\s*)func\s+\([^)]*\)\s*(?P<name>\w+)"),
     # Keyword definitions: export async function f, pub(crate) struct S, data class C.
-    re.compile(rf"^(\s*){MODIFIERS}(?:(?:data|enum|sealed|case|abstract)\s+)?(?P<kind>{KEYWORDS})\s+"
-               r"(?P<name>[A-Za-z_$][\w$]*)"),
+    re.compile(
+        rf"^(\s*){MODIFIERS}(?:(?:data|enum|sealed|case|abstract)\s+)?(?P<kind>{KEYWORDS})\s+"
+        r"(?P<name>[A-Za-z_$][\w$]*)"
+    ),
     # Arrow or function expressions: const f = async (x) =>, let g = function
-    re.compile(r"^(\s*)(?:export\s+)?(?:const|let|var)\s+(?P<name>[A-Za-z_$][\w$]*)\s*=\s*"
-               r"(?:async\s*)?(?:function\b|\([^)]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>)"),
+    re.compile(
+        r"^(\s*)(?:export\s+)?(?:const|let|var)\s+(?P<name>[A-Za-z_$][\w$]*)\s*=\s*"
+        r"(?:async\s*)?(?:function\b|\([^)]*\)\s*=>|[A-Za-z_$][\w$]*\s*=>)"
+    ),
 ]
 # C-like methods: a return type before name(, with the body on this or a later line.
-C_LIKE = GENERIC + [re.compile(r"^(\s*)(?P<first>[\w<>\[\],.?*&:]+)\s+(?:[\w<>\[\],.?*&:]+\s+)*\*?"
-                               r"(?P<name>[A-Za-z_]\w*)\s*\([^;=]*$")]
+C_LIKE = GENERIC + [
+    re.compile(
+        r"^(\s*)(?P<first>[\w<>\[\],.?*&:]+)\s+(?:[\w<>\[\],.?*&:]+\s+)*\*?"
+        r"(?P<name>[A-Za-z_]\w*)\s*\([^;=]*$"
+    )
+]
 # JavaScript and TypeScript class members: async get(id: string): Promise<T> {
-JS = GENERIC + [re.compile(r"^(\s+)(?:(?:public|private|protected|static|async|readonly|override|"
-                           r"get|set)\s+)*\*?(?P<first>)(?P<name>[A-Za-z_$#][\w$]*)\s*(?:<[^>]*>)?"
-                           r"\([^;]*\)\s*(?::[^=;]+)?\{\s*$")]
+JS = GENERIC + [
+    re.compile(
+        r"^(\s+)(?:(?:public|private|protected|static|async|readonly|override|"
+        r"get|set)\s+)*\*?(?P<first>)(?P<name>[A-Za-z_$#][\w$]*)\s*(?:<[^>]*>)?"
+        r"\([^;]*\)\s*(?::[^=;]+)?\{\s*$"
+    )
+]
 SHELL_SUFFIXES = (".sh", ".bash", ".zsh", ".ksh")
 # Files whose Python strings could not be tokenized, reported in the output header.
 UNTOKENIZED: list[str] = []
 HEREDOC = re.compile(r"(?<!<)<<(-?)\s*(['\"]?)([A-Za-z_]\w*)\2")
 FAMILIES = {
-    **dict.fromkeys((".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".vue",
-                     ".svelte"), JS),
+    **dict.fromkeys(
+        (".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx", ".mts", ".cts", ".vue", ".svelte"), JS
+    ),
     **dict.fromkeys((".py", ".pyi"), PYTHON),
     **dict.fromkeys(SHELL_SUFFIXES, SHELL),
     **dict.fromkeys((".ps1", ".psm1"), POWERSHELL),
     ".sql": SQL,
-    **dict.fromkeys((".c", ".h", ".cc", ".cpp", ".hpp", ".cs", ".java", ".kt", ".kts", ".scala",
-                     ".swift", ".dart", ".php", ".m", ".mm", ".groovy"), C_LIKE),
+    **dict.fromkeys(
+        (
+            ".c",
+            ".h",
+            ".cc",
+            ".cpp",
+            ".hpp",
+            ".cs",
+            ".java",
+            ".kt",
+            ".kts",
+            ".scala",
+            ".swift",
+            ".dart",
+            ".php",
+            ".m",
+            ".mm",
+            ".groovy",
+        ),
+        C_LIKE,
+    ),
 }
 HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 FENCE = re.compile(r"^\s*(```|~~~)")
@@ -73,16 +135,52 @@ TOML_TABLE = re.compile(r"^\s*\[\[?\s*([^\]]+?)\s*\]\]?")
 YAML_KEY = re.compile(r"^([A-Za-z_][\w.-]*):(?:\s|$)")
 PREFIX = ("@", "#[", "///", "//", "/*", "*", "#", "--")
 # Ctags kinds that are not definitions with a body worth navigating to.
-CTAGS_SKIP = {"field", "property", "variable", "local", "parameter", "enumerator", "label",
-              "macroparam", "import", "unknown", "externvar", "alias", "package"}
+CTAGS_SKIP = {
+    "field",
+    "property",
+    "variable",
+    "local",
+    "parameter",
+    "enumerator",
+    "label",
+    "macroparam",
+    "import",
+    "unknown",
+    "externvar",
+    "alias",
+    "package",
+}
 # One vocabulary for both parsers; functions directly inside a type become methods.
-KINDS = {"def": "function", "func": "function", "fn": "function", "sub": "function",
-         "subroutine": "function", "proc": "function", "filter": "function", "method": "function",
-         "singletonmethod": "function", "implementation": "impl", "typedef": "type"}
-TYPES = {"class", "struct", "interface", "trait", "impl", "enum", "record", "object", "protocol",
-         "extension", "union"}
-INSTALL_CTAGS = ("for exact symbols install Universal Ctags: apt install universal-ctags, "
-                 "brew install universal-ctags, or winget install UniversalCtags.Ctags")
+KINDS = {
+    "def": "function",
+    "func": "function",
+    "fn": "function",
+    "sub": "function",
+    "subroutine": "function",
+    "proc": "function",
+    "filter": "function",
+    "method": "function",
+    "singletonmethod": "function",
+    "implementation": "impl",
+    "typedef": "type",
+}
+TYPES = {
+    "class",
+    "struct",
+    "interface",
+    "trait",
+    "impl",
+    "enum",
+    "record",
+    "object",
+    "protocol",
+    "extension",
+    "union",
+}
+INSTALL_CTAGS = (
+    "for exact symbols install Universal Ctags: apt install universal-ctags, "
+    "brew install universal-ctags, or winget install UniversalCtags.Ctags"
+)
 MARKUP = {".md", ".markdown", ".mdx", ".toml", ".yaml", ".yml"}
 SKIPPED = {".json", ".lock", ".svg", ".csv", ".txt", ".log", ".rst"}
 TRAILING_COMMENT = re.compile(r"\s+(#|//).*$")
@@ -100,8 +198,15 @@ def git(root: Path, *args: str) -> str:
 
 
 def run(root: Path, command: list[str], ok: tuple[int, ...] = (0,)) -> str:
-    result = subprocess.run(command, cwd=root, capture_output=True, text=True, encoding="utf-8",
-                            errors="replace", check=False)
+    result = subprocess.run(
+        command,
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
     if result.returncode not in ok:
         raise Fail(result.stderr.strip() or f"{command[0]} failed")
     return result.stdout
@@ -149,8 +254,11 @@ def close(lines: list[str], symbols: list[list], verbatim: frozenset = frozenset
         start, level = symbol[0], symbol[4]
         if not symbol[1]:
             symbol[1] = indented_end(lines, start, level, verbatim)
-        while start > 1 and indent(lines[start - 2]) == level and \
-                lines[start - 2].strip().startswith(PREFIX):
+        while (
+            start > 1
+            and indent(lines[start - 2]) == level
+            and lines[start - 2].strip().startswith(PREFIX)
+        ):
             start -= 1
         symbol[0] = start
     return symbols
@@ -185,7 +293,7 @@ def markdown_symbols(lines: list[str]) -> list[list]:
             level = len(match.group(1))
             heads.append([number, 0, f"h{level}", match.group(2), level])
     for i, head in enumerate(heads):
-        later = [h[0] for h in heads[i + 1:] if h[4] <= head[4]]
+        later = [h[0] for h in heads[i + 1 :] if h[4] <= head[4]]
         head[1] = (later[0] - 1) if later else len(lines)
         while head[1] > head[0] and not lines[head[1] - 1].strip():
             head[1] -= 1
@@ -201,14 +309,16 @@ def key_symbols(lines: list[str], pattern: re.Pattern, kind: str) -> list[list]:
     return result
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def ctags_missing() -> str:
     """Why Universal Ctags cannot be used, or an empty string when it can."""
     try:
-        version = subprocess.run(["ctags", "--version"], capture_output=True, text=True,
-                                 check=False).stdout
-        features = subprocess.run(["ctags", "--list-features"], capture_output=True,
-                                  text=True, check=False).stdout
+        version = subprocess.run(
+            ["ctags", "--version"], capture_output=True, text=True, check=False
+        ).stdout
+        features = subprocess.run(
+            ["ctags", "--list-features"], capture_output=True, text=True, check=False
+        ).stdout
     except OSError:
         return "ctags not found"
     if "Universal Ctags" not in version:
@@ -221,12 +331,24 @@ def ctags_missing() -> str:
 def ctags_symbols(root: Path, names: list[str]) -> dict[str, list[list]]:
     """Ctags rows per file for the files whose language ctags knows."""
     languages = run(root, ["ctags", "--print-language", *names])
-    known = [line.rpartition(": ")[0] for line in languages.splitlines()
-             if not line.endswith(": NONE")]
+    known = [
+        line.rpartition(": ")[0] for line in languages.splitlines() if not line.endswith(": NONE")
+    ]
     if not known:
         return {}
-    output = run(root, ["ctags", "--sort=no", "--output-format=json", "--fields=+neKZl",
-                             "--extras=-F", "-o", "-", *known])
+    output = run(
+        root,
+        [
+            "ctags",
+            "--sort=no",
+            "--output-format=json",
+            "--fields=+neKZl",
+            "--extras=-F",
+            "-o",
+            "-",
+            *known,
+        ],
+    )
     rows: dict[str, list[list]] = {name: [] for name in known}
     for line in output.splitlines():
         tag = json.loads(line)
@@ -235,7 +357,8 @@ def ctags_symbols(root: Path, names: list[str]) -> dict[str, list[list]]:
         kind = tag["kind"]
         # Python namespaces are import aliases, and lambdas are values, not definitions.
         if tag.get("language") == "Python" and (
-                kind == "namespace" or re.search(r"=\s*lambda\b", tag.get("pattern", ""))):
+            kind == "namespace" or re.search(r"=\s*lambda\b", tag.get("pattern", ""))
+        ):
             continue
         # Python methods are "member"; elsewhere a member is a field, which patterns skip too.
         if kind == "member":
@@ -299,8 +422,14 @@ def heredocs(lines: list[str]) -> list[list]:
     while number <= len(lines):
         match = HEREDOC.search(lines[number - 1])
         if match:
-            end = next((n for n in range(number + 1, len(lines) + 1)
-                        if lines[n - 1].strip() == match.group(3)), len(lines))
+            end = next(
+                (
+                    n
+                    for n in range(number + 1, len(lines) + 1)
+                    if lines[n - 1].strip() == match.group(3)
+                ),
+                len(lines),
+            )
             docs.append([number, end, "heredoc", match.group(3), indent(lines[number - 1])])
             number = end
         number += 1
@@ -372,7 +501,7 @@ def qualified(rows: list[list]) -> list[str]:
 
 
 def page(rows: list[str], limit: int, offset: int) -> str:
-    shown = rows[offset:offset + limit]
+    shown = rows[offset : offset + limit]
     rest = len(rows) - offset - len(shown)
     if rest > 0:
         shown.append(f"... {rest} more; use --offset {offset + len(shown)}")
@@ -399,7 +528,7 @@ def cmd_map(root: Path, args) -> list[str]:
     prefix = len(Path(base).parts)
     for name in files:
         parts = Path(name).parts
-        key = "/".join(parts[:prefix + args.depth])
+        key = "/".join(parts[: prefix + args.depth])
         if len(parts) > prefix + args.depth:
             key += "/"
         try:
@@ -408,52 +537,90 @@ def cmd_map(root: Path, args) -> list[str]:
             continue
         totals[key][0] += 1
         totals[key][1] += 0 if b"\0" in data[:8192] else data.count(b"\n")
-    return [f"{key}  {count} files, {lines} lines" if key.endswith("/") else f"{key}  {lines} lines"
-            for key, (count, lines) in sorted(totals.items())]
+    return [
+        f"{key}  {count} files, {lines} lines" if key.endswith("/") else f"{key}  {lines} lines"
+        for key, (count, lines) in sorted(totals.items())
+    ]
 
 
 def cmd_outline(root: Path, args) -> list[str]:
     found, note = symbols(root, [args.file], args.backend)
     rows = found.get(args.file, [])
-    return [f"# {note}"] + [f"{'  ' * d}{r[0]}-{r[1]} {r[2]} {r[3]}"
-                            for r, d in zip(rows, depths(rows))]
+    return [f"# {note}"] + [
+        f"{'  ' * d}{r[0]}-{r[1]} {r[2]} {r[3]}" for r, d in zip(rows, depths(rows))
+    ]
 
 
 def cmd_show(root: Path, args) -> list[str]:
     path = root / args.file
     found, note = symbols(root, [args.file], args.backend)
     rows = found.get(args.file, [])
-    matches = [r for r, q in zip(rows, qualified(rows))
-               if args.name in (r[3], q) or q.endswith(f".{args.name}")
-               if not args.line or r[0] == args.line]
+    matches = [
+        r
+        for r, q in zip(rows, qualified(rows))
+        if args.name in (r[3], q) or q.endswith(f".{args.name}")
+        if not args.line or r[0] == args.line
+    ]
     if not matches:
         raise Fail(f"{args.file}: no symbol or heading named {args.name!r}; run outline")
     if len(matches) > 1:
-        raise Fail(f"{args.file}: {args.name!r} is ambiguous at lines "
-                   f"{', '.join(str(r[0]) for r in matches)}; pass --line")
+        raise Fail(
+            f"{args.file}: {args.name!r} is ambiguous at lines "
+            f"{', '.join(str(r[0]) for r in matches)}; pass --line"
+        )
     start, end = matches[0][:2]
-    return [f"{args.file}:{start}-{end} # {note}", *read_lines(path)[start - 1:end]]
+    return [f"{args.file}:{start}-{end} # {note}", *read_lines(path)[start - 1 : end]]
 
 
 def cmd_find(root: Path, args) -> list[str]:
-    names = git_names(root, "grep", "-z", "--untracked", "-I", "-l", "-w", "-F", "-e", args.name,
-                      "--", *args.paths)
+    names = git_names(
+        root,
+        "grep",
+        "-z",
+        "--untracked",
+        "-I",
+        "-l",
+        "-w",
+        "-F",
+        "-e",
+        args.name,
+        "--",
+        *args.paths,
+    )
     found, note = symbols(root, names, args.backend)
-    rows = [f"{name}:{r[0]}-{r[1]} {r[2]} {r[3]}"
-            for name in names for r in found.get(name, []) if r[3] == args.name]
+    rows = [
+        f"{name}:{r[0]}-{r[1]} {r[2]} {r[3]}"
+        for name in names
+        for r in found.get(name, [])
+        if r[3] == args.name
+    ]
     return [f"# {note}"] + rows
 
 
 def cmd_refs(root: Path, args) -> list[str]:
     hits = defaultdict(list)
-    output = git(root, "grep", "-z", "--untracked", "-I", "-n", "-w", "-F", "-e", args.name,
-                 "--", *args.paths)
+    output = git(
+        root,
+        "grep",
+        "-z",
+        "--untracked",
+        "-I",
+        "-n",
+        "-w",
+        "-F",
+        "-e",
+        args.name,
+        "--",
+        *args.paths,
+    )
     # With -z each hit is one line of "path\0number\0text".
     for record in output.splitlines():
         name, number, _ = record.split("\0", 2)
         hits[name].append(number)
-    return [f"{name}: {len(lines)} ({', '.join(lines[:8])}{', ...' if len(lines) > 8 else ''})"
-            for name, lines in sorted(hits.items(), key=lambda item: -len(item[1]))]
+    return [
+        f"{name}: {len(lines)} ({', '.join(lines[:8])}{', ...' if len(lines) > 8 else ''})"
+        for name, lines in sorted(hits.items(), key=lambda item: -len(item[1]))
+    ]
 
 
 def main() -> int:
@@ -461,8 +628,12 @@ def main() -> int:
     common.add_argument("--root", default=".", help="repository root (default: current directory)")
     common.add_argument("--limit", type=int, default=60, help="maximum output rows")
     common.add_argument("--offset", type=int, default=0, help="rows to skip")
-    common.add_argument("--backend", choices=("auto", "ctags", "patterns"), default="auto",
-                        help="code symbol parser (default: ctags if Universal Ctags is found)")
+    common.add_argument(
+        "--backend",
+        choices=("auto", "ctags", "patterns"),
+        default="auto",
+        help="code symbol parser (default: ctags if Universal Ctags is found)",
+    )
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
     add = lambda name, text: sub.add_parser(name, help=text, parents=[common])  # noqa: E731
@@ -475,8 +646,10 @@ def main() -> int:
     p.add_argument("file")
     p.add_argument("name")
     p.add_argument("--line", type=int, help="start line to pick among duplicates")
-    for name, text in (("find", "where a symbol is defined"),
-                       ("refs", "files that mention a word")):
+    for name, text in (
+        ("find", "where a symbol is defined"),
+        ("refs", "files that mention a word"),
+    ):
         p = add(name, text)
         p.add_argument("name")
         p.add_argument("paths", nargs="*", help="limit the search to these paths")
@@ -485,8 +658,13 @@ def main() -> int:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     here = Path(args.root).resolve()
     try:
-        top = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=here, capture_output=True,
-                             text=True, check=False)
+        top = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=here,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
         if top.returncode:
             raise Fail(f"{here} is not inside a git repository; pass --root")
         root = Path(top.stdout.strip()).resolve()

@@ -1,0 +1,5 @@
+# AgentFleex default for repositories without their own Ruff or other Python linter configuration.
+line-length = 100
+
+[lint]
+select = ["E", "W", "F", "B", "I", "UP", "SIM", "FURB", "PLW1510", "RUF100"]
