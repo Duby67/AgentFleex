@@ -75,6 +75,13 @@ class ChecksTest(unittest.TestCase):
             self.assertIn("SETUP: uv sync (mypy is not in the project environment)", output)
             self.assertIn("check: uv run ruff check", output)
 
+    def test_windows_venv_layout(self) -> None:
+        self.write("pyproject.toml", "[tool.ruff]\n")
+        self.write(".venv/Scripts/ruff.exe")
+        output = self.checks()
+        self.assertIn("ruff (pyproject.toml [tool.ruff])\n  check: .venv/Scripts/ruff", output)
+        self.assertNotIn(".venv/bin/", output)
+
     def test_node_without_modules_needs_setup(self) -> None:
         self.write("package.json", '{"scripts": {"lint": "eslint ."}}')
         self.write("eslint.config.js")

@@ -324,8 +324,10 @@ def rows(root: Path) -> list[str]:
                 check = check.replace(f"{name} ", f"{prefix}{name} ")
                 fix = fix and fix.replace(f"{name} ", f"{prefix}{name} ")
             else:
-                check = check.replace(f"{name} ", f".venv/bin/{name} ")
-                fix = fix and fix.replace(f"{name} ", f".venv/bin/{name} ")
+                # Windows venvs keep executables in Scripts/, POSIX ones in bin/.
+                folder = "Scripts" if env and (env / "Scripts").is_dir() else "bin"
+                check = check.replace(f"{name} ", f".venv/{folder}/{name} ")
+                fix = fix and fix.replace(f"{name} ", f".venv/{folder}/{name} ")
             install = {"uv": "uv sync", "poetry": "poetry install", "pdm": "pdm install"}
             if manager and not shutil.which(manager):
                 status = f"  MISSING {manager}"
