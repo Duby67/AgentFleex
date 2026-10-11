@@ -48,6 +48,13 @@ FILES = {
 }
 TIMEOUT = 120
 OUTPUT = 4000
+# Editor analyzers (Pylance, ESLint in the editor) see what command-line checks miss; only the agent
+# can read them, through its client.
+DIAGNOSTICS = (
+    "\n\nIf your client exposes editor diagnostics (such as a VS Code diagnostics tool), read "
+    "them for the changed files too; an empty result for a file the editor has not analyzed is "
+    "not a pass."
+)
 
 
 def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -166,7 +173,7 @@ def stop(event: dict[str, Any]) -> dict[str, Any]:
         else:
             state["asked"] = [str(root), tools]
             save(path, state)
-            listed = "\n".join(f"$ {command}" for name, command, _ in commands)
+            listed = "\n".join(f"$ {command}" for _, command, _ in commands)
             return {
                 "decision": "block",
                 "reason": (
@@ -176,7 +183,7 @@ def stop(event: dict[str, Any]) -> dict[str, Any]:
                     "Ask the user now whether to allow these checks in this repository; do not "
                     "decide for them. Record the answer with\n"
                     f"{consent_command('yes', root)}\nor\n{consent_command('no', root)}\n"
-                    f"If they agree, run the checks yourself this time:\n{listed}"
+                    f"If they agree, run the checks yourself this time:\n{listed}" + DIAGNOSTICS
                 ),
             }
     elif tools and not (isinstance(agreed, dict) and agreed.get("run")):
@@ -219,7 +226,7 @@ def stop(event: dict[str, Any]) -> dict[str, Any]:
         )
         if missing:
             reason += "\n\nNot checked, tool not installed: " + "; ".join(missing)
-        return {"decision": "block", "reason": reason}
+        return {"decision": "block", "reason": reason + DIAGNOSTICS}
     if missing and not state.get("missing"):
         state["missing"] = True
         save(path, state)

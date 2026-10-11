@@ -61,6 +61,9 @@ jobs:
       - name: Ruff
         run: uvx ruff check . && uvx ruff format --check .
       - name: Mypy
+        env:
+          # The hook imports checks.py by path at runtime; this lets mypy resolve and check it.
+          MYPYPATH: skills/fleex-hygiene/scripts
         run: >-
           uvx mypy --config-file skills/fleex-hygiene/assets/mypy.ini
           skills/fleex-hygiene/scripts/checks.py skills/fleex-index/scripts/index.py

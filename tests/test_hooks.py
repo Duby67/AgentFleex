@@ -64,6 +64,7 @@ class HooksTest(unittest.TestCase):
         reply = self.hook("stop")
         self.assertEqual(reply["decision"], "block")
         self.assertIn("git whitespace failed", reply["reason"])
+        self.assertIn("editor diagnostics", reply["reason"])
         self.assertEqual(self.hook("stop"), {})
         self.assertEqual(self.hook("stop", stop_hook_active=True), {})
 
@@ -102,6 +103,7 @@ class HooksTest(unittest.TestCase):
         reason = self.hook("stop")["reason"]
         self.assertIn("Ask the user", reason)
         self.assertIn("consent yes", reason)
+        self.assertIn("editor diagnostics", reason)
         self.assertNotIn("checked", reason)
         # Asked once per session: without an answer the tools stay off.
         self.assertEqual(self.hook("stop"), {})
