@@ -1,6 +1,6 @@
 ---
 name: fleex-skills
-description: Create, split, rename, remove, review, or refactor repository skills shared by Codex and Claude Code, and wire them into .agents/skills and .claude/skills. Use when changing .agents/skills/*/SKILL.md, trigger descriptions, bundled resources, agents/openai.yaml, or the skills symlink. Do not use for AGENTS.md or CLAUDE.md.
+description: Create, split, rename, remove, review, or refactor repository skills shared by Codex and Claude Code, and wire them into a top-level skills directory, .agents/skills, .claude/skills, or .cursor/skills. Use when changing a project skill's SKILL.md, trigger descriptions, bundled resources, agents/openai.yaml, or the skills symlinks. Do not use for AGENTS.md or CLAUDE.md.
 ---
 
 # Skills
@@ -10,17 +10,25 @@ agent direction rather than a script.
 
 ## Wiring
 
-- `.agents/skills/` is the only source of project skills; Codex reads it natively. `.claude/skills`
-  is a relative symlink to it for Claude Code and never holds files of its own.
+- Project skills have one source directory and are never copied between paths. The source is the
+  first that fits: the repository's own top-level `skills/`; `.agents/skills/` when several agents
+  use the repository; the agent's own directory (`.claude/skills/`, `.cursor/skills/`) when only
+  one does.
+- Every other skills path an agent in use needs is a relative symlink to the source. Codex reads
+  only `.agents/skills`, Claude Code only `.claude/skills`, and Cursor `.agents/skills`,
+  `.cursor/skills`, and `.claude/skills`.
+- An agent is in use when it is the client you run in, its directory exists, or the user says so;
+  create an agent's directory only then.
 - Shared `fleex-` skills come from the AgentFleex plugin; never copy them into the repository.
-- A rename, split, or removal updates `.agents/skills/` and every reference in one change, without
-  aliases; search the whole repository, including `.gitignore` comments and `agents/openai.yaml`.
+- A rename, split, or removal updates the source directory and every reference in one change,
+  without aliases; search the whole repository, including `.gitignore` comments and
+  `agents/openai.yaml`.
 
 ## Package
 
-- `.agents/skills/<skill-name>/SKILL.md`; the lowercase hyphenated directory matches the
-  frontmatter `name` (at most 64 characters). Codex reads `.agents/skills` directly and Claude Code
-  through the `.claude/skills` symlink, so write for any capable agent, not for one tool.
+- `<source>/<skill-name>/SKILL.md`; the lowercase hyphenated directory matches the frontmatter
+  `name` (at most 64 characters). Several agents may read the same skill, so write for any capable
+  agent, not for one tool.
 - Frontmatter holds `name` and `description`. A user-gated skill says so in `description`, sets
   `disable-model-invocation: true` in the frontmatter (Claude Code) and
   `policy.allow_implicit_invocation: false` in `agents/openai.yaml` (Codex).
@@ -50,7 +58,7 @@ agent direction rather than a script.
 ## Shared and project skills
 
 Shared `fleex-` skills ship in the AgentFleex plugin and hold reusable procedures with no project
-names, paths, or domain rules. Project skills live in `.agents/skills/`, use the project prefix
+names, paths, or domain rules. Project skills live in the source directory, use the project prefix
 (`<project>-<job>`), supply local context, and refer to shared skills instead of copying them.
 
 ## Best practices
@@ -71,6 +79,8 @@ External examples are guidance, not extra workflow requirements.
 
 - Claude Code-only frontmatter (`disable-model-invocation`, `paths`, `when_to_use`) is ignored by
   Codex and rejected by claude.ai and Skills API uploads; use it only for user gating.
+- Cursor also loads `.claude/skills`, so a repository with both `.agents/skills` and
+  `.claude/skills` may show each skill twice in Cursor; check its skill list.
 - Claude Code cuts `description` at 1,536 characters and Codex shortens descriptions in large skill
   sets, so a trigger placed last may never be seen.
 

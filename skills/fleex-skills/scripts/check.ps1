@@ -13,9 +13,9 @@ if ($LASTEXITCODE -ne 0 -or -not $root) {
 }
 Set-Location $root
 
-$skills = '.agents/skills'
-$dirs = @($skills)
-if ($pluginSkills -eq (Join-Path (Get-Location).Path 'skills')) { $dirs += 'skills' }
+$here = (Get-Location).Path
+$dirs = @()
+if ($pluginSkills -eq (Join-Path $here 'skills')) { $dirs += 'skills' }
 $script:fail = $false
 function Err($path, $message) {
     [Console]::Error.WriteLine("${path}: $message")
@@ -32,8 +32,16 @@ function Get-Field($lines, $name) {
     return ''
 }
 
-if (-not (Test-Path CLAUDE.md) -or (Get-Content -Raw CLAUDE.md).TrimEnd() -ne '@AGENTS.md') {
-    Err 'CLAUDE.md' "must contain exactly '@AGENTS.md'"
+# AGENTS.md is the only entry point; Claude Code, when used, imports it from .claude/CLAUDE.md.
+if (Test-Path CLAUDE.md) {
+    Err 'CLAUDE.md' "move to .claude/CLAUDE.md containing exactly '@../AGENTS.md'"
+}
+if (Test-Path .claude -PathType Container) {
+    if (-not (Test-Path .claude/CLAUDE.md) -or
+        (Get-Content -Raw .claude/CLAUDE.md).TrimEnd() -ne '@../AGENTS.md') {
+        Err '.claude/CLAUDE.md' "must contain exactly '@../AGENTS.md'"
+    }
+    if (-not (Test-Path AGENTS.md)) { Err 'AGENTS.md' 'missing; .claude/CLAUDE.md imports it' }
 }
 # A plugin repository ships one version to both clients.
 if ((Test-Path .claude-plugin/plugin.json) -and (Test-Path .codex-plugin/plugin.json) -and
@@ -48,16 +56,52 @@ function Get-RealPath($path) {
     $target = $item.ResolveLinkTarget($true)
     if ($target) { $target.FullName } else { $item.FullName }
 }
+# A path inside the repository as repository-relative with forward slashes; others unchanged.
+function Get-RepoPath($path) {
+    if ($path.StartsWith($here + [IO.Path]::DirectorySeparatorChar)) {
+        return $path.Substring($here.Length + 1) -replace '\\', '/'
+    }
+    return $path
+}
 
-$link = Get-Item -Force .claude/skills -ErrorAction SilentlyContinue
-if ((Test-Path $skills) -and (-not $link -or -not $link.LinkType -or
-    (Get-RealPath .claude/skills) -ne (Get-RealPath $skills))) {
-    Err '.claude/skills' "must be a symlink that resolves to $skills"
+# Project skills have one real directory, the first present of: a project's own top-level
+# skills/, .agents/skills, an agent's own directory. Every other skills path is a symlink to it.
+$candidates = @('.agents/skills', '.claude/skills', '.cursor/skills')
+if ($pluginSkills -ne (Join-Path $here 'skills') -and (Test-Path skills/*/SKILL.md)) {
+    $candidates = @('skills') + $candidates
+}
+$source = $null
+$found = 0
+foreach ($path in $candidates) {
+    if (-not (Get-Item -Force $path -ErrorAction SilentlyContinue)) { continue }
+    $found++
+    $target = Get-RealPath $path
+    if (-not (Test-Path $target -PathType Container)) { Err $path 'broken symlink'; continue }
+    if (-not $source) {
+        $source = $target
+    } elseif ($target -ne $source) {
+        $to = Get-RepoPath $source
+        Err $path "duplicate skills directory; make it a relative symlink to $to"
+    }
+}
+if ($source) {
+    $sourceRel = Get-RepoPath $source
+    if (($sourceRel -in '.claude/skills', '.cursor/skills') -and $found -gt 1) {
+        Err $sourceRel 'shared by several agents; move to .agents/skills and link agent paths to it'
+    }
+    # Claude Code reads only .claude/skills.
+    if ((Test-Path .claude -PathType Container) -and
+        -not (Get-Item -Force .claude/skills -ErrorAction SilentlyContinue)) {
+        Err '.claude/skills' "Claude Code is used; make it a relative symlink to $sourceRel"
+    }
+    if ($source -ne $pluginSkills) { $dirs += $sourceRel }
 }
 
 $names = @(Get-ChildItem -Directory $pluginSkills |
     Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') } | ForEach-Object Name)
-foreach ($dir in Get-ChildItem -Directory $dirs -ErrorAction SilentlyContinue) {
+$packages = @()
+if ($dirs) { $packages = Get-ChildItem -Directory $dirs -ErrorAction SilentlyContinue }
+foreach ($dir in $packages) {
     $id = $dir.Name
     $rel = (Resolve-Path -Relative $dir.FullName) -replace '\\', '/' -replace '^\./', ''
     $file = "$rel/SKILL.md"
@@ -97,8 +141,13 @@ foreach ($dir in Get-ChildItem -Directory $dirs -ErrorAction SilentlyContinue) {
     }
 }
 
+$refSources = @()
+if ($dirs) {
+    $refSources = Get-ChildItem -Recurse -File $dirs -Include *.md, *.yaml `
+        -ErrorAction SilentlyContinue
+}
 $refFiles = @(Get-Item AGENTS.md -ErrorAction SilentlyContinue | ForEach-Object Name) +
-    (Get-ChildItem -Recurse -File $dirs -Include *.md, *.yaml -ErrorAction SilentlyContinue |
+    @($refSources |
     ForEach-Object { (Resolve-Path -Relative $_.FullName) -replace '\\', '/' -replace '^\./', '' })
 foreach ($f in $refFiles) {
     $refs = [regex]::Matches((Get-Content -Raw $f), '\$[a-z][a-z0-9]*(-[a-z0-9]+)*') |

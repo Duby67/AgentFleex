@@ -23,10 +23,12 @@ codex plugin add agentfleex@agentfleex
 
 | Path | Purpose |
 | --- | --- |
-| `AGENTS.md` | The single rules file; Codex reads it natively |
-| `CLAUDE.md` | One line, `@AGENTS.md`: Claude Code imports the same file |
-| `.agents/skills/` | The only source of project skills; Codex reads it natively |
-| `.claude/skills` | Relative symlink to `.agents/skills/` for Claude Code |
+| `AGENTS.md` | The single rules file and the only entry point; Codex reads it natively |
+| `.claude/CLAUDE.md` | Claude Code only: one line, `@../AGENTS.md`, imports the same file |
+| Skills source | One directory, the first that fits: the repository's own `skills/`; `.agents/skills/` for several agents; the agent's own directory (`.claude/skills/`, `.cursor/skills/`) for one |
+| `.agents/skills`, `.claude/skills` | Relative symlinks to the source, only for agents in use: Codex reads `.agents/skills`, Claude Code `.claude/skills` |
+
+An agent's directory (`.claude/`, `.cursor/`) is created only when the repository uses that agent.
 
 Shared `fleex-*` skills come from the plugin and are not copied into the repository. Both clients
 find skills by their `description` field, so `AGENTS.md` needs no routing table.
@@ -59,7 +61,7 @@ request. Therefore:
 - every fact lives in one place, and everything else links to it.
 
 Each skill owns its files: [fleex-agents](./skills/fleex-agents/SKILL.md) owns `AGENTS.md`,
-`CLAUDE.md`, and the single catalog of shared rules; [fleex-skills](./skills/fleex-skills/SKILL.md)
+`.claude/CLAUDE.md`, and the single catalog of shared rules; [fleex-skills](./skills/fleex-skills/SKILL.md)
 owns skills, their wiring, and links to best practices; [fleex-docs](./skills/fleex-docs/SKILL.md)
 owns human documentation; [fleex-index](./skills/fleex-index/SKILL.md) is a dependency-free
 navigation script (map, outline, show, find, refs) so agents read only the lines they need;

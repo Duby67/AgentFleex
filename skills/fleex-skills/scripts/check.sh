@@ -12,9 +12,9 @@ root=$(git rev-parse --show-toplevel 2>/dev/null) || {
 }
 cd "$root" || exit 2
 
-skills=.agents/skills
-dirs=("$skills")
-[ "$plugin_skills" = "$(pwd -P)/skills" ] && dirs+=(skills)
+here=$(pwd -P)
+dirs=()
+[ "$plugin_skills" = "$here/skills" ] && dirs+=(skills)
 fail=0
 err() { echo "$1: $2" >&2; fail=1; }
 
@@ -24,17 +24,50 @@ field() {
     sed -e 's/[[:space:]]*$//' -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/"
 }
 
-[ "$(cat CLAUDE.md 2>/dev/null)" = "@AGENTS.md" ] ||
-  err CLAUDE.md "must contain exactly '@AGENTS.md'"
+# AGENTS.md is the only entry point; Claude Code, when used, imports it from .claude/CLAUDE.md.
+[ -e CLAUDE.md ] && err CLAUDE.md "move to .claude/CLAUDE.md containing exactly '@../AGENTS.md'"
+if [ -d .claude ]; then
+  [ "$(cat .claude/CLAUDE.md 2>/dev/null)" = "@../AGENTS.md" ] ||
+    err .claude/CLAUDE.md "must contain exactly '@../AGENTS.md'"
+  [ -f AGENTS.md ] || err AGENTS.md "missing; .claude/CLAUDE.md imports it"
+fi
 # A plugin repository ships one version to both clients.
 version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$1" 2>/dev/null; }
 if [ -f .claude-plugin/plugin.json ] && [ -f .codex-plugin/plugin.json ] &&
   [ "$(version .claude-plugin/plugin.json)" != "$(version .codex-plugin/plugin.json)" ]; then
   err .codex-plugin/plugin.json "version must match .claude-plugin/plugin.json"
 fi
-if [ -d "$skills" ] && { [ ! -L .claude/skills ] ||
-  [ "$(cd .claude/skills 2>/dev/null && pwd -P)" != "$(cd "$skills" && pwd -P)" ]; }; then
-  err .claude/skills "must be a symlink that resolves to $skills"
+
+# Project skills have one real directory, the first present of: a project's own top-level
+# skills/, .agents/skills, an agent's own directory. Every other skills path is a symlink to it.
+candidates=(.agents/skills .claude/skills .cursor/skills)
+if [ "$plugin_skills" != "$here/skills" ]; then
+  for file in skills/*/SKILL.md; do
+    [ -f "$file" ] && candidates=(skills "${candidates[@]}") && break
+  done
+fi
+source="" found=0
+for path in "${candidates[@]}"; do
+  [ -e "$path" ] || [ -L "$path" ] || continue
+  found=$((found + 1))
+  target=$(cd "$path" 2>/dev/null && pwd -P) || { err "$path" "broken symlink"; continue; }
+  if [ -z "$source" ]; then
+    source=$target
+  elif [ "$target" != "$source" ]; then
+    err "$path" "duplicate skills directory; make it a relative symlink to ${source#"$here"/}"
+  fi
+done
+if [ -n "$source" ]; then
+  rel=${source#"$here"/}
+  case $rel in .claude/skills | .cursor/skills)
+    [ "$found" -gt 1 ] &&
+      err "$rel" "shared by several agents; move to .agents/skills and link agent paths to it"
+    ;;
+  esac
+  # Claude Code reads only .claude/skills.
+  [ -d .claude ] && [ ! -e .claude/skills ] && [ ! -L .claude/skills ] &&
+    err .claude/skills "Claude Code is used; make it a relative symlink to $rel"
+  [ "$source" = "$plugin_skills" ] || dirs+=("$rel")
 fi
 
 names=" "
@@ -43,7 +76,7 @@ for dir in "$plugin_skills"/*/; do
 done
 # Arrays stay safe under set -u on bash 3.2 (macOS) through the ${a[@]+"${a[@]}"} form.
 packages=()
-for base in "${dirs[@]}"; do
+for base in ${dirs[@]+"${dirs[@]}"}; do
   for dir in "$base"/*/; do [ -d "$dir" ] && packages+=("$dir"); done
 done
 for dir in ${packages[@]+"${packages[@]}"}; do
@@ -87,7 +120,7 @@ for dir in ${packages[@]+"${packages[@]}"}; do
 done
 
 scan=()
-for path in AGENTS.md "${dirs[@]}"; do [ -e "$path" ] && scan+=("$path"); done
+for path in AGENTS.md ${dirs[@]+"${dirs[@]}"}; do [ -e "$path" ] && scan+=("$path"); done
 while IFS=: read -r file ref; do
   case $names in *" ${ref#\$} "*) ;; *) err "$file" "unknown skill reference $ref" ;; esac
 done < <(grep -roE --include='*.md' --include='*.yaml' '\$[a-z][a-z0-9]*(-[a-z0-9]+)*' \
