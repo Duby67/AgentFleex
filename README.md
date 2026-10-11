@@ -59,14 +59,14 @@ Hooks need `python3` or `python` on `PATH`. Codex runs a plugin hook only after 
 
 ## Repository layout
 
-The repository root is the plugin root; skills live in `skills/`, hooks in `hooks/`. Manifests: `.claude-plugin/` and
-`.codex-plugin/` (plugin), `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`
-(marketplaces). To try skill changes, start Claude Code with `claude --plugin-dir .`; in Codex,
-reinstall the plugin from the local marketplace. Tests for the skill scripts live in `tests/` and
-run with `python3 -m unittest discover -s tests`; CI runs them on Linux, macOS, and Windows with
-Python 3.9 and the latest Python, with and without Universal Ctags, plus Ruff, mypy, and ShellCheck;
-installed plugins pick up changes only after `version` is bumped in both manifests. Licensed under
-[MIT](./LICENSE).
+The repository root is the plugin root; skills live in `skills/`, hooks in `hooks/`. Manifests:
+`.claude-plugin/` and `.codex-plugin/` (plugin), `.claude-plugin/marketplace.json` and
+`.agents/plugins/marketplace.json` (marketplaces). To try skill changes, start Claude Code with
+`claude --plugin-dir .`; in Codex, reinstall the plugin from the local marketplace. Tests for the
+skill and hook scripts live in `tests/` and run with `python3 -m unittest discover -s tests`; CI
+runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
+Universal Ctags, plus Ruff, mypy, and ShellCheck; installed plugins pick up changes only after
+`version` is bumped in both manifests. Licensed under [MIT](./LICENSE).
 
 ## Saving tokens
 

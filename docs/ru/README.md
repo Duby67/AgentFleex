@@ -65,7 +65,7 @@ codex plugin add agentfleex@agentfleex
 `.codex-plugin/` (плагин), `.claude-plugin/marketplace.json` и `.agents/plugins/marketplace.json`
 (маркетплейсы). Чтобы попробовать изменения скиллов, запустите Claude Code с
 `claude --plugin-dir .`; в Codex переустановите плагин из локального маркетплейса. Тесты скриптов
-скиллов лежат в `tests/` и запускаются командой `python3 -m unittest discover -s tests`; CI гоняет
+скиллов и хуков лежат в `tests/` и запускаются командой `python3 -m unittest discover -s tests`; CI гоняет
 их на Linux, macOS и Windows с Python 3.9 и последним Python, с Universal Ctags и без, а также
 Ruff, mypy и ShellCheck. Установленные плагины подхватывают изменения только после повышения
 `version` в обоих манифестах. Лицензия — [MIT](../../LICENSE).
