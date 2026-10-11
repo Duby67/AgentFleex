@@ -1,0 +1,28 @@
+{
+  "description": "AgentFleex: style checks on changed files before the agent stops, and an outline instead of a first whole read of a long file",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$(command -v python3 || command -v python)\" \"${CLAUDE_PLUGIN_ROOT}/hooks/agentfleex.py\" stop",
+            "timeout": 600
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$(command -v python3 || command -v python)\" \"${CLAUDE_PLUGIN_ROOT}/hooks/agentfleex.py\" read",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

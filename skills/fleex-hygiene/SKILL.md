@@ -1,6 +1,6 @@
 ---
 name: fleex-hygiene
-description: Keep changes in the repository's single style by finding and running its configured linters, formatters, type checkers, pre-commit hooks, and CI style steps, with plugin defaults where none are configured. Use when finishing a code change, fixing lint, format, or type failures, or setting up or unifying style tooling. Do not use for writing or running tests, or for reviewing logic.
+description: Run the repository's own linters, formatters, and type checkers on changed files, finding them in its configuration, pre-commit, and CI, with plugin defaults where none are configured. Use after editing code and before reporting the task done, when a stop was blocked by AgentFleex style checks, when fixing lint, format, or type failures, or when setting up or unifying style tooling. Do not use for writing or running tests, or for reviewing logic.
 ---
 
 # Hygiene
@@ -23,6 +23,12 @@ HEAD` plus new untracked files, filtered to what the tool handles. When CI runs 
 CI's invocation wins.
 
 ## Apply
+
+The plugin's stop hook runs the listed per-file checks on files changed against HEAD and blocks the
+stop with their failures; project-wide checks, package scripts, Makefile targets, and CI steps stay
+yours to run. Linters run the repository's configuration, which can execute code, so the hook first
+asks you to ask the user: always ask, never answer for them, and record the reply with the command
+it gives.
 
 - Run the check commands on changed files; run project-wide commands (`tsc`, `go vet`, `mypy`
   without files) once.

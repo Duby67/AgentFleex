@@ -63,7 +63,8 @@ jobs:
       - name: Mypy
         run: >-
           uvx mypy --config-file skills/fleex-hygiene/assets/mypy.ini
-          skills/fleex-hygiene/scripts/checks.py skills/fleex-index/scripts/index.py tests
+          skills/fleex-hygiene/scripts/checks.py skills/fleex-index/scripts/index.py
+          hooks/agentfleex.py tests
       - name: ShellCheck
         run: shellcheck skills/fleex-skills/scripts/check.sh
       - name: Whitespace

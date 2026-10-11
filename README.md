@@ -42,9 +42,24 @@ page at the same path inside `docs/ru/`, each file of a set with one language sw
 its heading. `AGENTS.md` lists the languages (`translated to: ru`); removing one deletes its files
 and moves nothing else. In chat the agent replies in the language of the question.
 
+## Hooks
+
+The plugin ships `hooks/hooks.json`, which Claude Code and Codex both load:
+
+- before the agent stops, the fleex-hygiene checks that take files run on the files changed against
+  `HEAD`, once per state of those files, and their failures send the agent back to fix them. Linters
+  run the repository's own configuration, which can execute code, so the agent first asks you
+  whether to allow them in that repository; the answer is kept in the plugin's data, not in the
+  repository, and a new set of tools asks again. `git diff --check` runs without asking;
+- in Claude Code, the first whole read of a file over 400 lines is denied with its fleex-index
+  outline, so the agent reads only the ranges it needs; repeating the read reads the whole file.
+
+Hooks need `python3` or `python` on `PATH`. Codex runs a plugin hook only after you trust it in
+`/hooks`.
+
 ## Repository layout
 
-The repository root is the plugin root; skills live in `skills/`. Manifests: `.claude-plugin/` and
+The repository root is the plugin root; skills live in `skills/`, hooks in `hooks/`. Manifests: `.claude-plugin/` and
 `.codex-plugin/` (plugin), `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`
 (marketplaces). To try skill changes, start Claude Code with `claude --plugin-dir .`; in Codex,
 reinstall the plugin from the local marketplace. Tests for the skill scripts live in `tests/` and

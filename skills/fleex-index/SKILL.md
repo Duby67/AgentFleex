@@ -1,9 +1,12 @@
 ---
 name: fleex-index
-description: Navigate any git repository cheaply with a dependency-free script: directory map with sizes, file outline with symbol and heading line ranges, one symbol or Markdown section, where a symbol is defined, and which files mention a word. Use before reading large files or searching broadly for code, config, or docs. Do not use for type-aware references, diagnostics, or refactoring.
+description: Find where a function, class, or Markdown section is and read only its lines, instead of reading whole files or grepping broadly: file outline with line ranges, one symbol or section, where a symbol is defined, which files mention a word, and a directory map with sizes. Use when exploring an unfamiliar repository, before opening a file over a few hundred lines, or when a Read was denied with an outline. Do not use for type-aware references, diagnostics, or refactoring.
 ---
 
 # Index
+
+In Claude Code the plugin's hook already denies the first whole read of a file over 400 lines and
+returns its outline; read the ranges you need, or repeat the read for the whole file.
 
 Run `scripts/index.py` (relative to this skill's directory) from anywhere in the repository with
 Python 3.9+ (`python3`, or `python` on Windows). It needs only the standard library and `git`, and
