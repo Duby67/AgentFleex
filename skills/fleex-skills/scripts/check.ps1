@@ -157,13 +157,79 @@ foreach ($f in $refFiles) {
     }
 }
 
+# Relative link targets of a Markdown file, outside fenced and inline code.
+function Get-Links($file) {
+    $text = (Get-Content -Raw $file) + ''
+    $text = $text -replace '(?ms)^[ \t]*(```|~~~).*?^[ \t]*(```|~~~)[^\n]*', ''
+    $text = $text -replace '`[^`\n]*`', ''
+    [regex]::Matches($text, '\]\(([^)#\s]+)') | ForEach-Object { $_.Groups[1].Value } |
+        Where-Object { $_ -notmatch ':' }
+}
 foreach ($md in git ls-files -co --exclude-standard '*.md') {
     $base = Split-Path -Parent $md
-    foreach ($m in [regex]::Matches((Get-Content -Raw $md), '\]\(([^)#\s]+)')) {
-        $target = $m.Groups[1].Value
-        if ($target -match ':') { continue }
+    foreach ($target in Get-Links $md) {
         $path = if ($target.StartsWith('/')) { ".$target" } elseif ($base) { "$base/$target" } else { $target }
         if (-not (Test-Path $path)) { Err $md "broken link $target" }
+    }
+}
+
+# Translations: AGENTS.md lists the languages as "translated to: ru, zh-CN". Every translation lives
+# under docs/<code>/: a root file by name, a docs/ page at its path inside docs/. Each file of a set
+# links to all the others.
+function Get-LinkedFiles($file) {
+    $base = Split-Path -Parent $file
+    foreach ($target in Get-Links $file) {
+        $path = if ($base) { Join-Path $base $target } else { $target }
+        if (Test-Path $path -PathType Leaf) { (Resolve-Path $path).Path }
+    }
+}
+$codes = @()
+if ((Test-Path AGENTS.md) -and
+    ((Get-Content -Raw AGENTS.md) -cmatch 'translated to:[ \t]*([A-Za-z0-9, -]*)')) {
+    $codes = @($Matches[1] -split '[, ]+' | Where-Object { $_ })
+}
+$sets = [ordered]@{}
+foreach ($code in $codes) {
+    if ($code -cnotmatch '^[a-z]{2,3}(-[A-Za-z0-9]+)*$') {
+        Err 'AGENTS.md' "'$code' is not a BCP 47 language code"
+        continue
+    }
+    foreach ($file in git ls-files -co --exclude-standard -- "*.$code.md") {
+        Err $file "translations live in docs/$code/, not beside the original"
+    }
+    foreach ($file in git ls-files -co --exclude-standard -- "docs/$code/*.md" 2>$null) {
+        $rest = $file.Substring("docs/$code/".Length)
+        $found = @()
+        if (Test-Path "docs/$rest" -PathType Leaf) { $found += "docs/$rest" }
+        if (-not $rest.Contains('/') -and (Test-Path $rest -PathType Leaf)) { $found += $rest }
+        $original = $null
+        if ($found.Count -eq 0) {
+            if ($rest.Contains('/')) { Err $file "no English original docs/$rest" }
+            else { Err $file "no English original $rest or docs/$rest" }
+        } elseif ($found.Count -eq 1) {
+            $original = $found[0]
+        } else {
+            # A root file and a docs/ page share the name; the switcher picks the original.
+            $targets = @(Get-LinkedFiles $file)
+            $linked = @($found | Where-Object { $targets -contains (Resolve-Path $_).Path })
+            if ($linked.Count -eq 1) { $original = $linked[0] }
+            else { Err $file "link exactly one of $rest and docs/$rest as the English original" }
+        }
+        if ($original) {
+            if (-not $sets.Contains($original)) { $sets[$original] = @() }
+            $sets[$original] += $file
+        }
+    }
+}
+foreach ($original in $sets.Keys) {
+    $members = @($original) + $sets[$original]
+    foreach ($file in $members) {
+        $targets = @(Get-LinkedFiles $file)
+        foreach ($other in $members) {
+            if ($other -ne $file -and $targets -notcontains (Resolve-Path $other).Path) {
+                Err $file "language switcher must link to $other"
+            }
+        }
     }
 }
 

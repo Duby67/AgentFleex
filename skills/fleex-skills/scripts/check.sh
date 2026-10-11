@@ -126,17 +126,92 @@ while IFS=: read -r file ref; do
 done < <(grep -roE --include='*.md' --include='*.yaml' '\$[a-z][a-z0-9]*(-[a-z0-9]+)*' \
   ${scan[@]+"${scan[@]}"} /dev/null | sort -u)
 
+# Relative link targets of a Markdown file, outside fenced and inline code.
+links() {
+  # shellcheck disable=SC2016 # Backticks are Markdown code spans, not command substitution.
+  awk '/^[[:space:]]*(```|~~~)/ { code = !code; next } !code' "$1" | sed 's/`[^`]*`//g' |
+    grep -oE '\]\([^)#[:space:]]+' | sed 's/^](//' | grep -v ':'
+}
 while IFS= read -r md; do
   base=$(dirname "$md")
   while IFS= read -r target; do
     case $target in
-      *:*) continue ;;
       /*) path=.$target ;;
       *) path=$base/$target ;;
     esac
     [ -e "$path" ] || err "$md" "broken link $target"
-  done < <(grep -oE '\]\([^)#[:space:]]+' "$md" | sed 's/^](//')
+  done < <(links "$md")
 done < <(git ls-files -co --exclude-standard '*.md')
+
+# Translations: AGENTS.md lists the languages as "translated to: ru, zh-CN". Every translation lives
+# under docs/<code>/: a root file by name, a docs/ page at its path inside docs/. Each file of a set
+# links to all the others.
+real() { echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"; }
+links_to() {
+  local base target
+  base=$(dirname "$1")
+  while IFS= read -r target; do
+    [ -f "$base/$target" ] && real "$base/$target"
+  done < <(links "$1")
+}
+codes=$(sed -n 's/.*translated to:[[:space:]]*\([A-Za-z0-9, -]*\).*/\1/p' AGENTS.md 2>/dev/null |
+  head -n1 | tr ',' ' ')
+pairs=""
+for code in $codes; do
+  if ! echo "$code" | grep -Eq '^[a-z]{2,3}(-[A-Za-z0-9]+)*$'; then
+    err AGENTS.md "'$code' is not a BCP 47 language code"
+    continue
+  fi
+  while IFS= read -r file; do
+    err "$file" "translations live in docs/$code/, not beside the original"
+  done < <(git ls-files -co --exclude-standard -- "*.$code.md")
+  while IFS= read -r file; do
+    rest=${file#docs/"$code"/}
+    found=()
+    [ -f "docs/$rest" ] && found+=("docs/$rest")
+    case $rest in */*) ;; *) [ -f "$rest" ] && found+=("$rest") ;; esac
+    original=""
+    case ${#found[@]} in
+      0)
+        case $rest in
+          */*) err "$file" "no English original docs/$rest" ;;
+          *) err "$file" "no English original $rest or docs/$rest" ;;
+        esac
+        ;;
+      1) original=${found[0]} ;;
+      *)
+        # A root file and a docs/ page share the name; the switcher picks the original.
+        targets=$(links_to "$file")
+        for candidate in "${found[@]}"; do
+          if printf '%s\n' "$targets" | grep -qxF "$(real "$candidate")"; then
+            [ -z "$original" ] && original=$candidate || original=ambiguous
+          fi
+        done
+        case $original in "" | ambiguous)
+          err "$file" "link exactly one of $rest and docs/$rest as the English original"
+          original=""
+          ;;
+        esac
+        ;;
+    esac
+    [ -n "$original" ] && pairs="$pairs$original	$file
+"
+  done < <(git ls-files -co --exclude-standard -- "docs/$code/*.md" 2>/dev/null)
+done
+while IFS= read -r original; do
+  [ -n "$original" ] || continue
+  members=("$original")
+  while IFS= read -r file; do members+=("$file"); done < <(
+    printf '%s' "$pairs" | awk -F '\t' -v o="$original" '$1 == o { print $2 }')
+  for file in "${members[@]}"; do
+    targets=$(links_to "$file")
+    for other in "${members[@]}"; do
+      [ "$other" = "$file" ] && continue
+      printf '%s\n' "$targets" | grep -qxF "$(real "$other")" ||
+        err "$file" "language switcher must link to $other"
+    done
+  done
+done < <(printf '%s' "$pairs" | cut -f1 | sort -u)
 
 [ $fail = 0 ] && echo "check: ok"
 exit $fail

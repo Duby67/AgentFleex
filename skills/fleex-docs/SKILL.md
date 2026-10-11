@@ -20,8 +20,8 @@ canonical owner.
 
 ## Gotchas
 
-- Human docs use the language `AGENTS.md` sets, English by default; agent-facing files stay in
-  English. Translate existing docs only when asked.
+- Human docs are written in English; their translations, switcher lines, and outdated notes
+  follow $fleex-i18n.
 
 ## Check
 

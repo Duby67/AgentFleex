@@ -23,11 +23,13 @@ Hard rules; stop and report instead of working around them.
 - Fastest checks: `<single test command>`, `<lint changed files command>`,
   `<type check command>`.
 - Do not create plan, summary, or notes files unless asked.
+- Keep the repository root minimal: put a new file in an existing directory or its tool's own
+  (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
 
 ## Language
 
 - Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in
-  <language, English by default>; change it only when the user asks.
+  English<, translated to: <BCP 47 codes>>; add or remove a language only when the user asks.
 
 ## Report
 

@@ -1,5 +1,7 @@
 # AgentFleex
 
+**English** · [Русский](docs/ru/README.md)
+
 A Claude Code and Codex plugin that keeps `AGENTS.md`, repository skills, and documentation short
 and consistent.
 
@@ -33,9 +35,12 @@ An agent's directory (`.claude/`, `.cursor/`) is created only when the repositor
 Shared `fleex-*` skills come from the plugin and are not copied into the repository. Both clients
 find skills by their `description` field, so `AGENTS.md` needs no routing table.
 
-Agent-facing files (`AGENTS.md`, skills, agent docs) are written in English. Human docs are in the
-language set in `AGENTS.md`: the agent asks for it when it creates `AGENTS.md` (English by default)
-and changes it only when the user asks. In chat the agent replies in the language of the question.
+Agent-facing files (`AGENTS.md`, skills, agent docs) are written in English. Human docs are
+written in English. Translations appear only when the user asks for them or `AGENTS.md` already
+lists languages, and all live under `docs/<code>/`: `README.md` as `docs/ru/README.md`, a `docs/`
+page at the same path inside `docs/ru/`, each file of a set with one language switcher line under
+its heading. `AGENTS.md` lists the languages (`translated to: ru`); removing one deletes its files
+and moves nothing else. In chat the agent replies in the language of the question.
 
 ## Repository layout
 
@@ -63,8 +68,9 @@ request. Therefore:
 Each skill owns its files: [fleex-agents](./skills/fleex-agents/SKILL.md) owns `AGENTS.md`,
 `.claude/CLAUDE.md`, and the single catalog of shared rules; [fleex-skills](./skills/fleex-skills/SKILL.md)
 owns skills, their wiring, and links to best practices; [fleex-docs](./skills/fleex-docs/SKILL.md)
-owns human documentation; [fleex-index](./skills/fleex-index/SKILL.md) is a dependency-free
-navigation script (map, outline, show, find, refs) so agents read only the lines they need;
+owns human documentation; [fleex-i18n](./skills/fleex-i18n/SKILL.md) owns its translations;
+[fleex-index](./skills/fleex-index/SKILL.md) is a dependency-free navigation script (map, outline,
+show, find, refs) so agents read only the lines they need;
 [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) finds and runs the repository's configured linters,
 formatters, and type checkers so every change keeps one style. Existing configuration always wins;
 where a repository has none, the plugin's defaults in `skills/fleex-hygiene/assets/` apply. This

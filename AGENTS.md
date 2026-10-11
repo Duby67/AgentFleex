@@ -20,6 +20,8 @@ Make the smallest correct change. Prefer, in order: no change, existing code, th
 an installed dependency, new code. Stay in scope. Read narrowly: focused search, bounded reads,
 `git diff --stat` before diffs, quiet test output.
 
+- Keep the repository root minimal: put a new file in an existing directory or its tool's own
+  (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
 - Checks: run what `.github/workflows/ci.yml` runs; locally, ShellCheck is
   `uvx --from shellcheck-py shellcheck`.
 - Bump `version` in both plugin manifests before a release; installed plugins update only on a new
@@ -27,8 +29,8 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
 
 ## Language
 
-- Agent-facing files (`AGENTS.md`, skills, agent docs) and human docs are in English; change the
-  human docs language only when the user asks.
+- Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in English,
+  translated to: ru; add or remove a language only when the user asks.
 
 ## Report
 
