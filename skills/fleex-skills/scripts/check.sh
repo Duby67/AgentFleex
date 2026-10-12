@@ -38,18 +38,15 @@ if [ -f .claude-plugin/plugin.json ] && [ -f .codex-plugin/plugin.json ] &&
   err .codex-plugin/plugin.json "version must match .claude-plugin/plugin.json"
 fi
 
-# Project skills have one real directory, the first present of: a project's own top-level
-# skills/, .agents/skills, an agent's own directory. Every other skills path is a symlink to it.
-candidates=(.agents/skills .claude/skills .cursor/skills)
-if [ "$plugin_skills" != "$here/skills" ]; then
-  for file in skills/*/SKILL.md; do
-    [ -f "$file" ] && candidates=(skills "${candidates[@]}") && break
-  done
-fi
-source="" found=0
+# Project skills live in skills/; agent paths link to it.
+candidates=(skills .*/skills)
+source=""
 for path in "${candidates[@]}"; do
   [ -e "$path" ] || [ -L "$path" ] || continue
-  found=$((found + 1))
+  if [ "$path" != skills ]; then
+    [ -L "$path" ] && [ "$(readlink "$path")" = ../skills ] ||
+      err "$path" "must be a relative symlink '../skills' to root skills/"
+  fi
   target=$(cd "$path" 2>/dev/null && pwd -P) || { err "$path" "broken symlink"; continue; }
   if [ -z "$source" ]; then
     source=$target
@@ -59,14 +56,12 @@ for path in "${candidates[@]}"; do
 done
 if [ -n "$source" ]; then
   rel=${source#"$here"/}
-  case $rel in .claude/skills | .cursor/skills)
-    [ "$found" -gt 1 ] &&
-      err "$rel" "shared by several agents; move to .agents/skills and link agent paths to it"
-    ;;
-  esac
-  # Claude Code reads only .claude/skills.
-  [ -d .claude ] && [ ! -e .claude/skills ] && [ ! -L .claude/skills ] &&
-    err .claude/skills "Claude Code is used; make it a relative symlink to $rel"
+  [ "$source" = "$here/skills" ] ||
+    err "$rel" "move project skills to skills/ and link agent paths to it"
+  for agent in .agents .claude .cursor; do
+    [ -d "$agent" ] && [ ! -e "$agent/skills" ] && [ ! -L "$agent/skills" ] &&
+      err "$agent/skills" "agent is used; make it a relative symlink '../skills'"
+  done
   [ "$source" = "$plugin_skills" ] || dirs+=("$rel")
 fi
 

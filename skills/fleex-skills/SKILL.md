@@ -10,15 +10,17 @@ agent direction rather than a script.
 
 ## Wiring
 
-- Project skills have one source directory and are never copied between paths. The source is the
-  first that fits: the repository's own top-level `skills/`; `.agents/skills/` when several agents
-  use the repository; the agent's own directory (`.claude/skills/`, `.cursor/skills/`) when only
-  one does.
-- Every other skills path an agent in use needs is a relative symlink to the source. Codex reads
+- Project skills live only in the repository's top-level `skills/`, when present. Move existing
+  skills there; never copy them between paths.
+- Every local agent skills path (`.<agent>/skills`) is a relative symlink `../skills` to the
+  repository's root `skills/`, including paths for agents added later. Codex reads
   only `.agents/skills`, Claude Code only `.claude/skills`, and Cursor `.agents/skills`,
   `.cursor/skills`, and `.claude/skills`.
 - An agent is in use when it is the client you run in, its directory exists, or the user says so;
   create an agent's directory only then.
+- Ignore local agent directories (`.agents/`, `.claude/`, `.cursor/`, and other agents in use)
+  in `.gitignore`; keep local symlinks on disk, outside Git. Preserve an explicit exception for
+  plugin distribution metadata when the repository ships it.
 - Shared `fleex-` skills come from the AgentFleex plugin; never copy them into the repository.
 - A rename, split, or removal updates the source directory and every reference in one change,
   without aliases; search the whole repository, including `.gitignore` comments and

@@ -64,17 +64,18 @@ function Get-RepoPath($path) {
     return $path
 }
 
-# Project skills have one real directory, the first present of: a project's own top-level
-# skills/, .agents/skills, an agent's own directory. Every other skills path is a symlink to it.
-$candidates = @('.agents/skills', '.claude/skills', '.cursor/skills')
-if ($pluginSkills -ne (Join-Path $here 'skills') -and (Test-Path skills/*/SKILL.md)) {
-    $candidates = @('skills') + $candidates
-}
+# Project skills live in skills/; agent paths link to it.
+$candidates = @('skills') + @(Get-ChildItem -Force -Directory |
+    Where-Object { $_.Name.StartsWith('.') } | ForEach-Object { "$($_.Name)/skills" })
 $source = $null
-$found = 0
 foreach ($path in $candidates) {
     if (-not (Get-Item -Force $path -ErrorAction SilentlyContinue)) { continue }
-    $found++
+    if ($path -ne 'skills') {
+        $item = Get-Item -Force $path
+        if ($item.LinkType -ne 'SymbolicLink' -or $item.LinkTarget -ne '../skills') {
+            Err $path "must be a relative symlink '../skills' to root skills/"
+        }
+    }
     $target = Get-RealPath $path
     if (-not (Test-Path $target -PathType Container)) { Err $path 'broken symlink'; continue }
     if (-not $source) {
@@ -86,13 +87,14 @@ foreach ($path in $candidates) {
 }
 if ($source) {
     $sourceRel = Get-RepoPath $source
-    if (($sourceRel -in '.claude/skills', '.cursor/skills') -and $found -gt 1) {
-        Err $sourceRel 'shared by several agents; move to .agents/skills and link agent paths to it'
+    if ($source -ne (Join-Path $here 'skills')) {
+        Err $sourceRel 'move project skills to skills/ and link agent paths to it'
     }
-    # Claude Code reads only .claude/skills.
-    if ((Test-Path .claude -PathType Container) -and
-        -not (Get-Item -Force .claude/skills -ErrorAction SilentlyContinue)) {
-        Err '.claude/skills' "Claude Code is used; make it a relative symlink to $sourceRel"
+    foreach ($agent in @('.agents', '.claude', '.cursor')) {
+        if ((Test-Path $agent -PathType Container) -and
+            -not (Get-Item -Force "$agent/skills" -ErrorAction SilentlyContinue)) {
+            Err "$agent/skills" "agent is used; make it a relative symlink '../skills'"
+        }
     }
     if ($source -ne $pluginSkills) { $dirs += $sourceRel }
 }

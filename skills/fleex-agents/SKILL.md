@@ -8,9 +8,11 @@ description: Create, rewrite, or optimize AGENTS.md and CLAUDE.md: add missing r
 `AGENTS.md` is paid for on every model request; each line must change what the agent does. It is
 the single rules file and the only entry point for agents: Codex reads it natively, and when Claude
 Code is in use, `.claude/CLAUDE.md` holds one line, `@../AGENTS.md`, so Claude Code imports the same
-file. Claude Code is in use when it is the client you run in, `.claude/` exists, or the user says
+file. Other agents' instruction files reference `AGENTS.md` using their supported import or
+reference mechanism; keep no independent rules in them. Claude Code is in use when it is the client you run in, `.claude/` exists, or the user says
 so; otherwise create neither `.claude/` nor the file. A root `CLAUDE.md` moves there, its rules
-merged into `AGENTS.md`.
+merged into `AGENTS.md`. Ignore local agent directories in Git; retain an explicit exception
+only for required plugin distribution metadata.
 
 It holds only what every task needs and the agent cannot infer: one or two sentences on what the
 project is and is not, hard invariants whose violation is costly, and pointers to canonical owners

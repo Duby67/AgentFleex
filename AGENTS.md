@@ -20,6 +20,10 @@ Make the smallest correct change. Prefer, in order: no change, existing code, th
 an installed dependency, new code. Stay in scope. Read narrowly: focused search, bounded reads,
 `git diff --stat` before diffs, quiet test output.
 
+- Keep agent rules only in `AGENTS.md`; other agents' instruction files reference it.
+- Keep project skills only in `skills/`; agent-specific skills paths are relative symlinks.
+- Ignore local agent directories in Git; preserve `.agents/plugins/marketplace.json` as plugin
+  distribution metadata.
 - Keep the repository root minimal: put a new file in an existing directory or its tool's own
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
 - Checks: run what `.github/workflows/ci.yml` runs, with its `env`; locally, ShellCheck is

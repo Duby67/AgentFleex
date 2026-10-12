@@ -4,3 +4,17 @@
 .venv/
 
 __pycache__/
+
+# Local agent configuration; keep the Codex plugin marketplace distributable.
+/.agents/*
+!/.agents/plugins/
+/.agents/plugins/*
+!/.agents/plugins/marketplace.json
+/.agetns/
+/.claude/
+/.cursor/
+/.codex/
+/.gemini/
+/.aider/
+/.windsurf/
+/.opencode/

@@ -27,10 +27,12 @@ codex plugin add agentfleex@agentfleex
 | --- | --- |
 | `AGENTS.md` | The single rules file and the only entry point; Codex reads it natively |
 | `.claude/CLAUDE.md` | Claude Code only: one line, `@../AGENTS.md`, imports the same file |
-| Skills source | One directory, the first that fits: the repository's own `skills/`; `.agents/skills/` for several agents; the agent's own directory (`.claude/skills/`, `.cursor/skills/`) for one |
+| Skills source | The repository's top-level `skills/`, when project skills exist |
 | `.agents/skills`, `.claude/skills` | Relative symlinks to the source, only for agents in use: Codex reads `.agents/skills`, Claude Code `.claude/skills` |
 
-An agent's directory (`.claude/`, `.cursor/`) is created only when the repository uses that agent.
+An agent's directory (`.claude/`, `.cursor/`) is created only when the repository uses that agent
+and is ignored by Git. Local imports and symlinks stay on disk; required plugin distribution
+metadata remains tracked through an explicit exception.
 
 Shared `fleex-*` skills come from the plugin and are not copied into the repository. Both clients
 find skills by their `description` field, so `AGENTS.md` needs no routing table.
