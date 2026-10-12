@@ -93,7 +93,9 @@ owns human documentation; [fleex-i18n](./skills/fleex-i18n/SKILL.md) owns its tr
 [fleex-index](./skills/fleex-index/SKILL.md) is a dependency-free navigation script (map, outline,
 show, find, refs) so agents read only the lines they need;
 [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) finds and runs the repository's configured linters,
-formatters, and type checkers so every change keeps one style. Existing configuration always wins;
+formatters, and type checkers so every change keeps one style.
+[fleex-todo](./skills/fleex-todo/SKILL.md) owns the `TODO.md` backlog of verified findings and
+planned work. Existing configuration always wins;
 where a repository has none, the plugin's defaults in `skills/fleex-hygiene/assets/` apply. This
 repository uses them too: `ruff.toml` extends the default Ruff config, and `.vscode/settings.json`
 points the editor's mypy at the default mypy config. Rules once written into a repository's `AGENTS.md` belong to its owner and
