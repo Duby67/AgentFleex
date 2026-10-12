@@ -44,8 +44,9 @@ source=""
 for path in "${candidates[@]}"; do
   [ -e "$path" ] || [ -L "$path" ] || continue
   if [ "$path" != skills ]; then
-    [ -L "$path" ] && [ "$(readlink "$path")" = ../skills ] ||
+    if ! { [ -L "$path" ] && [ "$(readlink "$path")" = ../skills ]; }; then
       err "$path" "must be a relative symlink '../skills' to root skills/"
+    fi
   fi
   target=$(cd "$path" 2>/dev/null && pwd -P) || { err "$path" "broken symlink"; continue; }
   if [ -z "$source" ]; then
@@ -58,8 +59,10 @@ if [ -n "$source" ]; then
   rel=${source#"$here"/}
   [ "$source" = "$here/skills" ] ||
     err "$rel" "move project skills to skills/ and link agent paths to it"
+  # Only local, untracked content shows an agent in use; committed plugin metadata does not.
   for agent in .agents .claude .cursor; do
     [ -d "$agent" ] && [ ! -e "$agent/skills" ] && [ ! -L "$agent/skills" ] &&
+      [ -n "$(git ls-files --others -- "$agent")" ] &&
       err "$agent/skills" "agent is used; make it a relative symlink '../skills'"
   done
   [ "$source" = "$plugin_skills" ] || dirs+=("$rel")

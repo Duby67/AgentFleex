@@ -16,8 +16,8 @@ agent direction rather than a script.
   repository's root `skills/`, including paths for agents added later. Codex reads
   only `.agents/skills`, Claude Code only `.claude/skills`, and Cursor `.agents/skills`,
   `.cursor/skills`, and `.claude/skills`.
-- An agent is in use when it is the client you run in, its directory exists, or the user says so;
-  create an agent's directory only then.
+- An agent is in use when it is the client you run in, its directory holds local files beyond
+  committed plugin metadata, or the user says so; create an agent's directory only then.
 - Ignore local agent directories (`.agents/`, `.claude/`, `.cursor/`, and other agents in use)
   in `.gitignore`; keep local symlinks on disk, outside Git. Preserve an explicit exception for
   plugin distribution metadata when the repository ships it.

@@ -90,9 +90,11 @@ if ($source) {
     if ($source -ne (Join-Path $here 'skills')) {
         Err $sourceRel 'move project skills to skills/ and link agent paths to it'
     }
+    # Only local, untracked content shows an agent in use; committed plugin metadata does not.
     foreach ($agent in @('.agents', '.claude', '.cursor')) {
         if ((Test-Path $agent -PathType Container) -and
-            -not (Get-Item -Force "$agent/skills" -ErrorAction SilentlyContinue)) {
+            -not (Get-Item -Force "$agent/skills" -ErrorAction SilentlyContinue) -and
+            (git ls-files --others -- $agent)) {
             Err "$agent/skills" "agent is used; make it a relative symlink '../skills'"
         }
     }

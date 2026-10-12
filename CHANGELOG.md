@@ -7,7 +7,11 @@
 - Added the `fleex-todo` skill for the `TODO.md` backlog.
 - Added `CHANGELOG.md`, `.github/SECURITY.md`, and `.gitattributes`.
 - Replaced `VERSION` and `version.py` with a pre-commit check of the manifest versions.
-- CI releases only a new manifest version, with notes from `CHANGELOG.md`.
+- CI releases a manifest version that has no GitHub release yet, with notes from `CHANGELOG.md`;
+  changes wait under `## Unreleased` until the release, and translations are collapsed under their
+  language names.
+- Fixed the skill check failing on a clean clone because of committed plugin metadata in
+  `.agents/`.
 
 ## [0.3.1](https://github.com/Duby67/AgentFleex/releases/tag/0.3.1)
 

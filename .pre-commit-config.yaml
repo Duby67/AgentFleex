@@ -7,15 +7,26 @@ repos:
         language: python
         entry: |
           python -c "
-          import json, re, sys
+          import glob, json, re, sys
           manifests = ('.claude-plugin/plugin.json', '.codex-plugin/plugin.json')
           versions = {json.load(open(p, encoding='utf-8'))['version'] for p in manifests}
           if len(versions) != 1:
               sys.exit('plugin.json versions differ: ' + ', '.join(sorted(versions)))
           version = versions.pop()
-          changelog = open('CHANGELOG.md', encoding='utf-8').read()
-          if not re.search(r'^## \[' + re.escape(version) + r'\]', changelog, re.M):
+          release = re.compile(r'## \[(\d+\.\d+\.\d+)\]\(https://\S+/releases/tag/\1\)')
+          def heads(path):
+              found = re.findall(r'^## .*$', open(path, encoding='utf-8').read(), re.M)
+              for i, head in enumerate(found):
+                  if not (head == '## Unreleased' and i == 0 or release.fullmatch(head)):
+                      sys.exit(path + ': unexpected heading ' + repr(head) + '; use ## Unreleased'
+                               ' first, then ## [x.y.z](<link to the x.y.z release tag>)')
+              return found
+          english = heads('CHANGELOG.md')
+          if not any(h.startswith('## [' + version + ']') for h in english):
               sys.exit('CHANGELOG.md: add a ## [' + version + '] section for the manifest version')
+          for path in glob.glob('docs/*/CHANGELOG.md'):
+              if heads(path) != english:
+                  sys.exit(path + ': headings must match CHANGELOG.md')
           "
-        files: ^(\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|CHANGELOG\.md)$
+        files: ^(\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|(docs/[^/]+/)?CHANGELOG\.md)$
         pass_filenames: false

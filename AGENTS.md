@@ -28,9 +28,10 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
 - Checks: run what `.github/workflows/ci.yml` runs, with its `env`; locally, ShellCheck is
   `uvx --from shellcheck-py shellcheck`.
-- To release, raise `version` in both plugin manifests and add its `CHANGELOG.md` section; CI
-  tags and releases a push to `main` whose version has no tag yet. Installed plugins update only
-  on a new version.
+- Note changes under `## Unreleased` in `CHANGELOG.md` and its translations. To release, raise
+  `version` in both plugin manifests and rename that section to the version; CI tags and releases
+  a push to `main` whose version has no GitHub release yet. Installed plugins update only on a new
+  version.
 
 ## Language
 
