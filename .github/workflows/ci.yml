@@ -67,34 +67,48 @@ jobs:
         run: >-
           uvx mypy --config-file skills/fleex-hygiene/assets/mypy.ini
           skills/fleex-hygiene/scripts/checks.py skills/fleex-index/scripts/index.py
-          hooks/agentfleex.py .github/scripts/version.py tests
+          hooks/agentfleex.py tests
       - name: ShellCheck
         run: shellcheck skills/fleex-skills/scripts/check.sh
+      - name: Pre-commit
+        run: uvx pre-commit run --all-files --show-diff-on-failure
       - name: Whitespace
         run: git diff --check $(git hash-object -t tree /dev/null) HEAD
 
-  version:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # Full history brings every tag for the bump check.
-          fetch-depth: 0
-      - name: Version
-        run: python3 .github/scripts/version.py --check
-
   release:
-    needs: [test, lint, version]
+    needs: [test, lint]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history brings every tag to compare the manifest version with.
+          fetch-depth: 0
+      # The tag is the manifest version, so they always match; a version that already has a tag is
+      # not released again.
       - name: Tag and release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="$(cat VERSION)"
+          version="$(jq -r .version .claude-plugin/plugin.json)"
+          if git rev-parse -q --verify "refs/tags/$version" >/dev/null; then
+            echo "::notice::$version is already released; raise the manifest version to release."
+            exit 0
+          fi
+          latest="$(git tag --list '[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)"
+          if [ -n "$latest" ] &&
+            [ "$(printf '%s\n%s\n' "$latest" "$version" | sort -V | tail -n1)" != "$version" ]; then
+            echo "::error::manifest version $version is lower than the latest release $latest"
+            exit 1
+          fi
+          awk -v head="## [$version]" \
+            'index($0, head) == 1 { found = 1; next } /^## / { found = 0 } found' \
+            CHANGELOG.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::CHANGELOG.md has no notes under ## [$version]"
+            exit 1
+          fi
           gh release create "$version" --target "$GITHUB_SHA" --title "$version" \
-            --generate-notes --latest
+            --notes-file notes.md --latest

@@ -1,0 +1,2 @@
+# LF everywhere, also in Windows checkouts, so shell scripts and hooks run unchanged under bash.
+* text=auto eol=lf

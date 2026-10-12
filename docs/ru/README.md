@@ -69,13 +69,14 @@ codex plugin add agentfleex@agentfleex
 `claude --plugin-dir .`; в Codex переустановите плагин из локального маркетплейса. Тесты скриптов
 скиллов и хуков лежат в `tests/` и запускаются командой `python3 -m unittest discover -s tests`; CI гоняет
 их на Linux, macOS и Windows с Python 3.9 и последним Python, с Universal Ctags и без, а также
-Ruff, mypy и ShellCheck. Установленные плагины подхватывают изменения только после повышения
-версии в корневом `VERSION` и синхронизации обоих манифестов командой
-`python .github/scripts/version.py`. CI запускает
-`python .github/scripts/version.py --check`: проверка падает, если манифесты
-расходятся с `VERSION` или `VERSION` не больше последнего релизного тега. После успешных проверок
-пуша в `main` CI создаёт тег `VERSION` и публикует его как последний релиз на GitHub. Лицензия —
-[MIT](../../LICENSE).
+Ruff, mypy, ShellCheck и pre-commit.
+
+Версия хранится в обоих манифестах плагина, и установленные плагины подхватывают изменения только
+после её повышения. Хук pre-commit (`uvx pre-commit install`) проверяет, что версия в манифестах
+одинакова и что в [CHANGELOG.md](CHANGELOG.md) есть её раздел. После успешных проверок пуша в
+`main`, версия которого ещё без тега, CI создаёт этот тег и публикует релиз на GitHub с заметками
+из её раздела `CHANGELOG.md`; версия ниже последнего релиза — ошибка. Сообщения об уязвимостях:
+[SECURITY.md](../../.github/SECURITY.md). Лицензия — [MIT](../../LICENSE).
 
 ## Экономия токенов
 

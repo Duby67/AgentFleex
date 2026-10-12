@@ -67,12 +67,14 @@ The repository root is the plugin root; skills live in `skills/`, hooks in `hook
 `claude --plugin-dir .`; in Codex, reinstall the plugin from the local marketplace. Tests for the
 skill and hook scripts live in `tests/` and run with `python3 -m unittest discover -s tests`; CI
 runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
-Universal Ctags, plus Ruff, mypy, and ShellCheck; installed plugins pick up changes only after
-root `VERSION` is bumped and `python .github/scripts/version.py` synchronizes both manifests.
-CI runs `python .github/scripts/version.py --check`, which fails when the
-manifests differ from `VERSION` or `VERSION` is not greater than the latest release tag; after
-checks pass on a push to `main`, CI creates the tag `VERSION` and publishes it as the latest
-GitHub release. Licensed under [MIT](./LICENSE).
+Universal Ctags, plus Ruff, mypy, ShellCheck, and pre-commit.
+
+The version lives in both plugin manifests, and installed plugins pick up changes only after it is
+raised. The pre-commit hook (`uvx pre-commit install`) checks that both manifests carry the same
+version and that [CHANGELOG.md](./CHANGELOG.md) has its section. After checks pass on a push to
+`main` whose version has no tag yet, CI creates that tag and publishes the GitHub release with the
+notes of its `CHANGELOG.md` section; a lower version than the latest release fails. Security
+reports: [SECURITY.md](./.github/SECURITY.md). Licensed under [MIT](./LICENSE).
 
 ## Saving tokens
 

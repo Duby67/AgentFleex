@@ -1,0 +1,21 @@
+# Install once per clone: uvx pre-commit install
+repos:
+  - repo: local
+    hooks:
+      - id: plugin-version
+        name: plugin version matches in both manifests and CHANGELOG.md
+        language: python
+        entry: |
+          python -c "
+          import json, re, sys
+          manifests = ('.claude-plugin/plugin.json', '.codex-plugin/plugin.json')
+          versions = {json.load(open(p, encoding='utf-8'))['version'] for p in manifests}
+          if len(versions) != 1:
+              sys.exit('plugin.json versions differ: ' + ', '.join(sorted(versions)))
+          version = versions.pop()
+          changelog = open('CHANGELOG.md', encoding='utf-8').read()
+          if not re.search(r'^## \[' + re.escape(version) + r'\]', changelog, re.M):
+              sys.exit('CHANGELOG.md: add a ## [' + version + '] section for the manifest version')
+          "
+        files: ^(\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|CHANGELOG\.md)$
+        pass_filenames: false

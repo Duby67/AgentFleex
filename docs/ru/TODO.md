@@ -50,8 +50,6 @@
 ## P3 — сопровождение
 
 - [ ] Устранить дублирование логики `check.sh` и `check.ps1` или добавить тест на эквивалентность #chore
-- [ ] Разделить push в `main` и релиз #ci
-  - `version.py --check` требует бампа версии даже для правки README.
 - [ ] Почистить `.gitignore` #chore
   - Опечатка `/.agetns/`.
   - `.vscode/` игнорируется при tracked `.vscode/settings.json`.

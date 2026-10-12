@@ -52,8 +52,6 @@ Tags: `#bug`, `#security`, `#reliability`, `#ci`, `#tests`, `#chore`.
 ## P3 — maintenance
 
 - [ ] Remove the duplicated logic of `check.sh` and `check.ps1` or add an equivalence test #chore
-- [ ] Decouple pushes to `main` from releases #ci
-  - `version.py --check` requires a version bump even for a README fix.
 - [ ] Clean up `.gitignore` #chore
   - Typo `/.agetns/`.
   - `.vscode/` is ignored while `.vscode/settings.json` is tracked.
