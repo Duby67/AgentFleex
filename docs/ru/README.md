@@ -70,7 +70,9 @@ codex plugin add agentfleex@agentfleex
 скиллов и хуков лежат в `tests/` и запускаются командой `python3 -m unittest discover -s tests`; CI гоняет
 их на Linux, macOS и Windows с Python 3.9 и последним Python, с Universal Ctags и без, а также
 Ruff, mypy и ShellCheck. Установленные плагины подхватывают изменения только после повышения
-`version` в обоих манифестах. Лицензия — [MIT](../../LICENSE).
+версии в корневом `VERSION` и синхронизации обоих манифестов командой
+`python .github/scripts/version.py`. CI проверяет синхронизацию командой
+`python .github/scripts/version.py --check`. Лицензия — [MIT](../../LICENSE).
 
 ## Экономия токенов
 

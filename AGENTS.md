@@ -28,8 +28,8 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
 - Checks: run what `.github/workflows/ci.yml` runs, with its `env`; locally, ShellCheck is
   `uvx --from shellcheck-py shellcheck`.
-- Bump `version` in both plugin manifests before a release; installed plugins update only on a new
-  version.
+- Before a release, bump root `VERSION` and run `python .github/scripts/version.py` to synchronize
+  both plugin manifests; installed plugins update only on a new version.
 
 ## Language
 

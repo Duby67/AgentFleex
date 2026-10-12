@@ -68,7 +68,9 @@ The repository root is the plugin root; skills live in `skills/`, hooks in `hook
 skill and hook scripts live in `tests/` and run with `python3 -m unittest discover -s tests`; CI
 runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
 Universal Ctags, plus Ruff, mypy, and ShellCheck; installed plugins pick up changes only after
-`version` is bumped in both manifests. Licensed under [MIT](./LICENSE).
+root `VERSION` is bumped and `python .github/scripts/version.py` synchronizes both manifests.
+CI checks synchronization with `python .github/scripts/version.py --check`. Licensed under
+[MIT](./LICENSE).
 
 ## Saving tokens
 
