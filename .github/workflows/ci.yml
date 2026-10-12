@@ -42,8 +42,6 @@ jobs:
         run: brew install universal-ctags
       - name: Tests
         run: python -m unittest discover -s tests -v
-      - name: Version
-        run: python .github/scripts/version.py --check
       - name: Skill checks
         if: runner.os != 'Windows'
         run: bash skills/fleex-skills/scripts/check.sh
@@ -74,3 +72,29 @@ jobs:
         run: shellcheck skills/fleex-skills/scripts/check.sh
       - name: Whitespace
         run: git diff --check $(git hash-object -t tree /dev/null) HEAD
+
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history brings every tag for the bump check.
+          fetch-depth: 0
+      - name: Version
+        run: python3 .github/scripts/version.py --check
+
+  release:
+    needs: [test, lint, version]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(cat VERSION)"
+          gh release create "$version" --target "$GITHUB_SHA" --title "$version" \
+            --generate-notes --latest

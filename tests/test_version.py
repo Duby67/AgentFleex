@@ -53,6 +53,13 @@ class VersionTest(unittest.TestCase):
             version.sync(self.root, check=False)
         self.assertEqual(original, self.paths[0].read_bytes())
 
+    def test_require_bump(self) -> None:
+        version.require_bump("0.3.1", [])
+        version.require_bump("0.10.0", ["0.9.0", "0.3.1", "nightly", "v9.9.9"])
+        for tags in (["0.3.1"], ["0.3.2", "0.3.0"], ["1.0.0"]):
+            with self.subTest(tags=tags), self.assertRaisesRegex(ValueError, "greater than"):
+                version.require_bump("0.3.1", tags)
+
 
 if __name__ == "__main__":
     unittest.main()

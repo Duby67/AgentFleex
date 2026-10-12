@@ -1,21 +1,61 @@
-"""Synchronize plugin manifest versions with the root VERSION file."""
+"""Synchronize plugin manifest versions with the root VERSION file.
+
+VERSION must be greater than every release tag before anything is checked or written.
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFESTS = (".claude-plugin/plugin.json", ".codex-plugin/plugin.json")
+RELEASE = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
+
+
+def parse(version: str) -> tuple[int, ...] | None:
+    match = RELEASE.fullmatch(version)
+    return tuple(int(part) for part in match.groups()) if match else None
+
+
+def read_version(root: Path) -> str:
+    version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    if parse(version) is None:
+        raise ValueError("VERSION: expected a release version such as 0.3.1")
+    return version
+
+
+def require_bump(version: str, tags: list[str]) -> None:
+    """Fail unless version is greater than every tag that is a release version."""
+    current = parse(version)
+    if current is None:
+        raise ValueError(f"VERSION: {version} is not a release version such as 0.3.1")
+    released = [(parsed, tag) for tag in tags if (parsed := parse(tag)) is not None]
+    if released and current <= max(released)[0]:
+        raise ValueError(
+            f"VERSION: {version} must be greater than the latest release tag "
+            f"{max(released)[1]}; bump VERSION and run python .github/scripts/version.py"
+        )
+
+
+def git_tags(root: Path) -> list[str]:
+    result = subprocess.run(
+        ["git", "-C", str(root), "tag", "--list"],
+        capture_output=True,
+        check=False,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise ValueError(f"git tag --list failed: {result.stderr.strip()}")
+    return result.stdout.split()
 
 
 def sync(root: Path, *, check: bool) -> None:
-    version = (root / "VERSION").read_text(encoding="utf-8").strip()
-    if not re.fullmatch(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)", version):
-        raise ValueError("VERSION: expected a release version such as 0.3.1")
+    version = read_version(root)
     updates = []
     for name in MANIFESTS:
         path = root / name
@@ -41,6 +81,7 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="check without changing manifests")
     args = parser.parse_args()
     try:
+        require_bump(read_version(ROOT), git_tags(ROOT))
         sync(ROOT, check=args.check)
     except (OSError, ValueError) as error:
         print(error, file=sys.stderr)

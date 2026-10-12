@@ -69,8 +69,10 @@ skill and hook scripts live in `tests/` and run with `python3 -m unittest discov
 runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
 Universal Ctags, plus Ruff, mypy, and ShellCheck; installed plugins pick up changes only after
 root `VERSION` is bumped and `python .github/scripts/version.py` synchronizes both manifests.
-CI checks synchronization with `python .github/scripts/version.py --check`. Licensed under
-[MIT](./LICENSE).
+CI runs `python .github/scripts/version.py --check`, which fails when the
+manifests differ from `VERSION` or `VERSION` is not greater than the latest release tag; after
+checks pass on a push to `main`, CI creates the tag `VERSION` and publishes it as the latest
+GitHub release. Licensed under [MIT](./LICENSE).
 
 ## Saving tokens
 
