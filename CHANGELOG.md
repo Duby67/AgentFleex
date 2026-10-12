@@ -11,7 +11,7 @@
   changes wait under `## Unreleased` until the release, and translations are collapsed under their
   language names.
 - Fixed the skill check failing on a clean clone because of committed plugin metadata in
-  `.agents/`.
+  `.agents/`, and on macOS, where bash 3.2 matched `./skills` as an agent skills path.
 
 ## [0.3.1](https://github.com/Duby67/AgentFleex/releases/tag/0.3.1)
 

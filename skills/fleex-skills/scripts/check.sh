@@ -42,6 +42,8 @@ fi
 candidates=(skills .*/skills)
 source=""
 for path in "${candidates[@]}"; do
+  # Bash before 5.2 (macOS ships 3.2) also matches . and .. with .*
+  case $path in ./skills | ../skills) continue ;; esac
   [ -e "$path" ] || [ -L "$path" ] || continue
   if [ "$path" != skills ]; then
     if ! { [ -L "$path" ] && [ "$(readlink "$path")" = ../skills ]; }; then
