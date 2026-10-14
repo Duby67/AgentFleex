@@ -9,6 +9,7 @@
 - Stopped tracking `.vscode/settings.json`; `.vscode/` is ignored.
 - Added a branch model to the `AGENTS.md` rule catalog: `develop` for work, `staging` for
   testing, `main` for releases.
+- Development moved to `develop`; CI runs only for pull requests into and pushes to `main`.
 
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 

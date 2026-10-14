@@ -9,6 +9,7 @@
 - `.vscode/settings.json` больше не отслеживается; `.vscode/` в игноре.
 - В каталог правил `AGENTS.md` добавлена модель веток: `develop` для работы, `staging` для
   тестирования, `main` для релизов.
+- Разработка перенесена в `develop`; CI запускается только на pull request в `main` и пуш в неё.
 
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 

@@ -14,6 +14,11 @@ Hard rules; stop and report instead of working around them.
 - Start another agent only with the user's permission.
 - When docs, config, code, and tests disagree, report the contradiction instead of choosing.
 
+## Branches
+
+- `develop` is the working branch: start branches and forks from it and target every PR at it.
+- `main`, the default branch, holds releases: only `develop` merges into it.
+
 ## Work
 
 Make the smallest correct change. Prefer, in order: no change, existing code, the standard library,
