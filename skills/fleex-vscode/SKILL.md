@@ -11,11 +11,11 @@ description: Prepare a project's VS Code workspace for a task by writing extensi
 | Set | When |
 | --- | --- |
 | `default` | Always: editor, Git, Markdown, YAML, TOML, EditorConfig |
-| `personal` | Always: theme, layout, AI assistants |
+| `personal` | Always: theme and layout |
 | `python` | `pyproject.toml`, `setup.py`, or Python sources |
 | `cpp` | `CMakeLists.txt` or C/C++ sources |
 | `infrastructure` | Dockerfiles, compose files, CI workflows, shell scripts, remote hosts |
-| `tools` | REST, draw.io, hex, CSV, XML, or Inno Setup files, or when the user asks |
+| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup, or npm `package.json` files, or on request |
 
 Choose sets from the task and the files present, then merge them into `.vscode/extensions.json`
 and `.vscode/settings.json` at the repository root: union of `recommendations` in set order, and
@@ -25,6 +25,7 @@ conflict instead of overwriting it. Read only the chosen sets.
 `.vscode/` stays out of Git: add `/.vscode/` to `.gitignore` if it is missing. If Git already
 tracks files under `.vscode/`, stop and report them instead of untracking or editing them.
 
-VS Code applies workspace settings on save and offers to install the recommendations; settings with
-application or machine scope and keybindings take effect only in the user profile, so leave those
-to the user.
+Writing these files is the whole job: never install, enable, or disable extensions. Tell the user
+to install the recommendations with `Extensions: Show Recommended Extensions` and its Install
+Workspace Recommended Extensions button. Keybindings, profiles, and settings with application or
+machine scope live in the user profile and stay with the user.

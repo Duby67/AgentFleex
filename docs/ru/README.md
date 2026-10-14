@@ -65,17 +65,18 @@ codex plugin add agentfleex@agentfleex
 
 Попросите агента подготовить рабочее пространство VS Code под задачу: скилл `fleex-vscode` выбирает
 наборы из `skills/fleex-vscode/assets/` по задаче и файлам проекта и сливает их рекомендации
-расширений и настройки в `.vscode/` проекта, которая остаётся в игноре Git. Затем VS Code
-предлагает установить рекомендованные расширения.
+расширений и настройки в `.vscode/` проекта, которая остаётся в игноре Git. На новой машине весь
+набор ставится разом: `Extensions: Show Recommended Extensions`, затем кнопка Install Workspace
+Recommended Extensions. Сам агент ничего не устанавливает; дальнейшая настройка за вами.
 
 | Набор | Когда |
 | --- | --- |
 | `default` | Всегда: редактор, Git, Markdown, YAML, TOML, EditorConfig |
-| `personal` | Всегда: тема, раскладка интерфейса, ИИ-ассистенты |
+| `personal` | Всегда: тема и раскладка интерфейса |
 | `python` | Проекты на Python |
 | `cpp` | Проекты на C и C++ |
 | `infrastructure` | Docker, CI, shell-скрипты, удалённые хосты |
-| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup |
+| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup, npm |
 
 Горячие клавиши и настройки уровня приложения или машины работают только в профиле пользователя;
 держите их там, например через Settings Sync.

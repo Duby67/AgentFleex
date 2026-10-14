@@ -6,6 +6,7 @@
     "ms-python.vscode-python-envs",
     "charliermarsh.ruff",
     "ms-python.mypy-type-checker",
-    "njpwerner.autodocstring"
+    "njpwerner.autodocstring",
+    "kevinrose.vsc-python-indent"
   ]
 }

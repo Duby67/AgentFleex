@@ -5,6 +5,7 @@
     "ms-vscode.hexeditor",
     "mechatroner.rainbow-csv",
     "redhat.vscode-xml",
-    "chouzz.vscode-innosetup"
+    "chouzz.vscode-innosetup",
+    "christian-kohler.npm-intellisense"
   ]
 }

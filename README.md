@@ -61,19 +61,20 @@ Hooks need `python3` or `python` on `PATH`. Codex runs a plugin hook only after 
 
 ## VS Code
 
-Ask the agent to prepare the VS Code workspace for a task: the `fleex-vscode` skill picks sets
-from `skills/fleex-vscode/assets/` by the task and the project files and merges their extension
-recommendations and settings into the project's `.vscode/`, which stays ignored by Git. VS Code
-then offers to install the recommended extensions.
+Ask the agent to prepare the VS Code workspace for a task: the `fleex-vscode` skill picks sets from
+`skills/fleex-vscode/assets/` by the task and the project files and merges their extension
+recommendations and settings into the project's `.vscode/`, which stays ignored by Git. On a new
+machine the whole set installs at once: `Extensions: Show Recommended Extensions`, then the Install
+Workspace Recommended Extensions button. The agent installs nothing itself; further setup is yours.
 
 | Set | When |
 | --- | --- |
 | `default` | Always: editor, Git, Markdown, YAML, TOML, EditorConfig |
-| `personal` | Always: theme, layout, AI assistants |
+| `personal` | Always: theme and layout |
 | `python` | Python projects |
 | `cpp` | C and C++ projects |
 | `infrastructure` | Docker, CI, shell scripts, remote hosts |
-| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup |
+| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup, npm |
 
 Keybindings and settings with application or machine scope work only in the user profile; keep them
 there, for example with Settings Sync.
