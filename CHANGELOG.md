@@ -7,6 +7,8 @@
 - Added the `fleex-vscode` skill: VS Code extension recommendations and settings by set, merged
   into the project's ignored `.vscode/`.
 - Stopped tracking `.vscode/settings.json`; `.vscode/` is ignored.
+- Added a branch model to the `AGENTS.md` rule catalog: `develop` for work, `staging` for
+  testing, `main` for releases.
 
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 

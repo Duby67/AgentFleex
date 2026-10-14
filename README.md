@@ -122,9 +122,14 @@ formatters, and type checkers so every change keeps one style.
 [fleex-todo](./skills/fleex-todo/SKILL.md) owns the `TODO.md` backlog of verified findings and
 planned work. Existing configuration always wins;
 where a repository has none, the plugin's defaults in `skills/fleex-hygiene/assets/` apply. This
-repository uses them too: `ruff.toml` extends the default Ruff config, and `.vscode/settings.json`
-points the editor's mypy at the default mypy config. Rules once written into a repository's `AGENTS.md` belong to its owner and
-are not synced with the catalog.
+repository uses them too: `ruff.toml` extends the default Ruff config, and CI passes the default
+mypy config. Rules once written into a repository's `AGENTS.md` belong to its owner and are not
+synced with the catalog.
+
+Every `AGENTS.md` gets one branch model: `develop` is the working branch that all branches, forks,
+and PRs start from and target; `staging` receives `develop` for deployment to the test server, and
+its bugs are fixed on `develop`; `main`, the default branch, takes only tested `staging` and holds
+releases. A repository keeps its own branch names when the user names them.
 
 ## References
 

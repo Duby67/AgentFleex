@@ -7,6 +7,8 @@
 - Добавлен скилл `fleex-vscode`: рекомендации расширений и настройки VS Code по наборам,
   сливаемые в игнорируемую `.vscode/` проекта.
 - `.vscode/settings.json` больше не отслеживается; `.vscode/` в игноре.
+- В каталог правил `AGENTS.md` добавлена модель веток: `develop` для работы, `staging` для
+  тестирования, `main` для релизов.
 
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 
