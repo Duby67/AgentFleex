@@ -59,6 +59,33 @@ The plugin ships `hooks/hooks.json`, which Claude Code and Codex both load:
 Hooks need `python3` or `python` on `PATH`. Codex runs a plugin hook only after you trust it in
 `/hooks`.
 
+## VS Code
+
+`skills/fleex-vscode/assets/packs/` holds extension packs, each with its own `settings.json`;
+`profiles.json` maps VS Code profiles to packs.
+
+| Pack | When to use |
+| --- | --- |
+| `minimal` | Every profile: editor, Git, Markdown, and interface |
+| `python` | Python projects |
+| `cpp` | C and C++ projects |
+| `infrastructure` | Servers and deployment: Remote SSH, Docker, YAML |
+
+Run `/agentfleex:fleex-vscode` (`$fleex-vscode` in Codex) or the script directly:
+
+```bash
+python3 skills/fleex-vscode/scripts/vscode.py list
+python3 skills/fleex-vscode/scripts/vscode.py apply Python --add infrastructure --open ~/projects/app
+```
+
+`apply` creates the profile if missing, installs its packs and the added ones, merges their
+settings into the profile's `settings.json` (it must be plain JSON, without comments), and opens
+the folder with the profile. CI builds the packs as `.vsix` files and attaches them to each
+release; the script downloads those of the installed plugin version, or takes local ones with
+`--vsix DIR`. Under WSL it configures the Windows VS Code; extensions that run in WSL are then
+installed there with `Install Local Extensions in 'WSL'`. The skill runs only when called, so its
+packs and settings never reach the agent's context.
+
 ## Repository layout
 
 The repository root is the plugin root; skills live in `skills/`, hooks in `hooks/`. Manifests:

@@ -2,6 +2,11 @@
 
 **English** · [Русский](docs/ru/CHANGELOG.md)
 
+## Unreleased
+
+- Added the user-invoked `fleex-vscode` skill: VS Code extension packs and settings per
+  profile, built as `.vsix` files and attached to releases.
+
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 
 - Added the `fleex-todo` skill for the `TODO.md` backlog.

@@ -1,0 +1,17 @@
+{
+  "Default": [
+    "minimal"
+  ],
+  "Python": [
+    "minimal",
+    "python"
+  ],
+  "Cpp": [
+    "minimal",
+    "cpp"
+  ],
+  "Infrastructure": [
+    "minimal",
+    "infrastructure"
+  ]
+}

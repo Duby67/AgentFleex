@@ -1,0 +1,22 @@
+{
+  "name": "fleex-pack-cpp",
+  "displayName": "Fleex Pack: C/C++",
+  "description": "C and C++ projects: clangd, CMake, and debugger.",
+  "publisher": "duby67",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Duby67/AgentFleex"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Extension Packs"
+  ],
+  "files": [
+    "package.json"
+  ],
+  "extensionPack": []
+}

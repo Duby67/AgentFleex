@@ -67,11 +67,19 @@ jobs:
         run: >-
           uvx mypy --config-file skills/fleex-hygiene/assets/mypy.ini
           skills/fleex-hygiene/scripts/checks.py skills/fleex-index/scripts/index.py
-          hooks/agentfleex.py tests
+          skills/fleex-vscode/scripts/vscode.py hooks/agentfleex.py tests
       - name: ShellCheck
         run: uvx --from shellcheck-py shellcheck skills/fleex-skills/scripts/check.sh
       - name: Pre-commit
         run: uvx pre-commit run --all-files --show-diff-on-failure
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Extension packs
+        run: |
+          for pack in skills/fleex-vscode/assets/packs/*/; do
+            (cd "$pack" && npx --yes @vscode/vsce@3.9.2 package --skip-license --out "$RUNNER_TEMP/")
+          done
       - name: Whitespace
         run: git diff --check $(git hash-object -t tree /dev/null) HEAD
 
@@ -86,6 +94,9 @@ jobs:
         with:
           # Full history brings every tag to compare the manifest version with.
           fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
       # The tag is the manifest version, so they always match. A version with a release is skipped;
       # a tag without a release, such as one pushed by hand, gets its release from the existing tag.
       - name: Tag and release
@@ -137,6 +148,13 @@ jobs:
             printf '\n<details><summary>%s</summary>\n\n%s\n\n</details>\n' \
               "$language" "$(section "$changelog")" >> notes.md
           done
+          # Extension packs carry the plugin version, so the plugin's script finds them by it.
+          mkdir dist
+          for pack in skills/fleex-vscode/assets/packs/*/; do
+            jq --arg v "$version" '.version = $v' "$pack/package.json" > package.json.tmp
+            mv package.json.tmp "$pack/package.json"
+            (cd "$pack" && npx --yes @vscode/vsce@3.9.2 package --skip-license --out "$GITHUB_WORKSPACE/dist/")
+          done
           # Only the newest version is marked as the latest release.
-          gh release create "$version" "${target[@]}" --title "$version" \
+          gh release create "$version" dist/*.vsix "${target[@]}" --title "$version" \
             --notes-file notes.md --latest="$([ "$newest" = "$version" ] && echo true || echo false)"

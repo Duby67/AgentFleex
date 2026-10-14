@@ -61,6 +61,33 @@ codex plugin add agentfleex@agentfleex
 Хукам нужен `python3` или `python` в `PATH`. Codex запускает хук плагина только после того, как
 вы одобрите его в `/hooks`.
 
+## VS Code
+
+В `skills/fleex-vscode/assets/packs/` лежат наборы расширений (extension packs), у каждого свой
+`settings.json`; `profiles.json` сопоставляет профили VS Code наборам.
+
+| Набор | Когда использовать |
+| --- | --- |
+| `minimal` | В каждом профиле: редактор, Git, Markdown и интерфейс |
+| `python` | Проекты на Python |
+| `cpp` | Проекты на C и C++ |
+| `infrastructure` | Серверы и развёртывание: Remote SSH, Docker, YAML |
+
+Вызовите `/agentfleex:fleex-vscode` (`$fleex-vscode` в Codex) или запустите скрипт напрямую:
+
+```bash
+python3 skills/fleex-vscode/scripts/vscode.py list
+python3 skills/fleex-vscode/scripts/vscode.py apply Python --add infrastructure --open ~/projects/app
+```
+
+`apply` создаёт профиль, если его нет, ставит его наборы и добавленные, сливает их настройки в
+`settings.json` профиля (это должен быть обычный JSON, без комментариев) и открывает папку с этим
+профилем. CI собирает наборы в файлы `.vsix` и прикладывает их к каждому релизу; скрипт скачивает
+файлы установленной версии плагина или берёт локальные через `--vsix DIR`. Под WSL настраивается
+VS Code на Windows; расширения, работающие в WSL, затем ставятся туда командой
+`Install Local Extensions in 'WSL'`. Скилл запускается только по вызову, поэтому наборы и
+настройки не попадают в контекст агента.
+
 ## Устройство репозитория
 
 Корень репозитория — это корень плагина; скиллы лежат в `skills/`, хуки — в `hooks/`. Манифесты: `.claude-plugin/` и

@@ -2,6 +2,11 @@
 
 [English](../../CHANGELOG.md) · **Русский**
 
+## Unreleased
+
+- Добавлен вызываемый пользователем скилл `fleex-vscode`: наборы расширений и настройки VS Code
+  по профилям; CI собирает их в `.vsix` и прикладывает к релизам.
+
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 
 - Добавлен скилл `fleex-todo` для бэклога `TODO.md`.

@@ -1,0 +1,22 @@
+{
+  "name": "fleex-pack-minimal",
+  "displayName": "Fleex Pack: Minimal",
+  "description": "Base set for every profile: editor, Git, Markdown, and interface. Install first.",
+  "publisher": "duby67",
+  "version": "0.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Duby67/AgentFleex"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Extension Packs"
+  ],
+  "files": [
+    "package.json"
+  ],
+  "extensionPack": []
+}
