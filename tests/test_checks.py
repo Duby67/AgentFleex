@@ -59,6 +59,15 @@ class ChecksTest(unittest.TestCase):
         self.assertNotIn("\\", output)
         self.assertNotIn("'", output)
 
+    def test_pre_commit_runs_the_tools_it_lists(self) -> None:
+        self.write("ruff.toml")
+        self.write("app.py")
+        self.write(".pre-commit-config.yaml", "repos:\n  - hooks:\n      - id: ruff-check\n")
+        output = self.checks()
+        self.assertIn("pre-commit (.pre-commit-config.yaml)", output)
+        self.assertNotIn("ruff (", output)
+        self.assertIn("mypy (AgentFleex default", output)
+
     def test_no_python_means_no_python_defaults(self) -> None:
         self.write("README.md", "# Title\n")
         self.assertNotIn("ruff", self.checks())

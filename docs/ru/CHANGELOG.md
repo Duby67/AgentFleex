@@ -9,7 +9,13 @@
 - `.vscode/settings.json` больше не отслеживается; `.vscode/` в игноре.
 - В каталог правил `AGENTS.md` добавлена модель веток: `develop` для работы, `staging` для
   тестирования, `main` для релизов.
-- Разработка перенесена в `develop`; CI запускается только на pull request в `main` и пуш в неё.
+- Разработка перенесена в `develop`: пуш в неё запускает тесты и pre-commit, pull request в
+  `main` добавляет проверку релиза, а пуш в `main` выпускает релиз.
+- Ruff, mypy, ShellCheck и проверки файлов работают как хуки pre-commit; `fleex-hygiene` делает
+  pre-commit средством гигиены каждого репозитория и проверяет перечисленный в нём инструмент только
+  через него.
+- Каждое слияние в `main` — релиз: CI отклоняет версию не выше последнего тега, а
+  `.github/scripts/release.py` содержит проверки версии и changelog для CI и pre-commit.
 
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 

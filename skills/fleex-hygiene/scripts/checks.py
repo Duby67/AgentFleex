@@ -312,10 +312,16 @@ def rows(root: Path) -> list[str]:
     result = []
     prefix, manager, env = python_env(root)
     npm = runner(root)
-    present = set()
+    # A tool that pre-commit runs is checked through pre-commit only.
+    hooks = read(root / ".pre-commit-config.yaml")
+    present = {
+        name
+        for name, *_ in TOOLS
+        if name != "pre-commit" and re.search(rf"\b{re.escape(name)}\b", hooks)
+    }
     for name, evidence, check, fix, executable in TOOLS:
         source = configured(root, evidence, package)
-        if not source:
+        if not source or name in present:
             continue
         present.add(name)
         status = "" if shutil.which(executable) else f"  MISSING {executable}"
@@ -343,6 +349,9 @@ def rows(root: Path) -> list[str]:
             command, status = default_tool(name)
             check = check.replace(f"{name} ", f"{command} ")
             fix = fix and fix.replace(f"{name} ", f"{command} ")
+        elif name == "pre-commit":
+            command, status = default_tool(name)
+            check = check.replace(f"{name} ", f"{command} ")
         elif executable == "npx":
             status = node_status(root, npm, check.split()[1])
         result.append(

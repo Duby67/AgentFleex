@@ -87,19 +87,22 @@ The repository root is the plugin root; skills live in `skills/`, hooks in `hook
 `claude --plugin-dir .`; in Codex, reinstall the plugin from the local marketplace. Tests for the
 skill and hook scripts live in `tests/` and run with `python3 -m unittest discover -s tests`; CI
 runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
-Universal Ctags, plus Ruff, mypy, ShellCheck, and pre-commit.
+Universal Ctags. Every other check is a pre-commit hook in
+[.pre-commit-config.yaml](./.pre-commit-config.yaml): Ruff, mypy, ShellCheck, file hygiene, and the
+version check; install it once with `uvx pre-commit install`.
 
 The version lives in both plugin manifests, and installed plugins pick up changes only after it is
 raised. Changes are noted under `## Unreleased` in [CHANGELOG.md](./CHANGELOG.md); a release renames
-that section to the version. The pre-commit hook (`uvx pre-commit install`) checks that both
-manifests carry the same version, that `CHANGELOG.md` has its section, and that translations have
-the same headings. CI runs only for `main`: on pull requests into it and on pushes to it. Work goes
-to `develop`, which alone merges into `main`, so a raised version is released only when it reaches
-`main`. After checks pass on a push to `main` whose version has no GitHub release yet, CI creates
-its tag if missing and publishes the release with the notes of its section, each translation's
-section collapsed under its language name, marked latest only for the newest version; a new version
-lower than the latest release or items left under `## Unreleased` fail. Security reports:
-[SECURITY.md](./.github/SECURITY.md). Licensed under [MIT](./LICENSE).
+that section to the version. Work goes to `develop`, and every merge into `main` is a release.
+[release.py](./.github/scripts/release.py) checks that both manifests carry one x.y.z version, that
+`CHANGELOG.md` has its section, and that translations have the same headings. A push to `develop`
+runs the tests and pre-commit; a pull request into `main` shows those results for its head commit
+and adds the release check: an empty `## Unreleased`, notes in every changelog, and a version above
+the latest tag. Require these checks for `main` in the branch protection settings, so a failing
+`develop` cannot be merged. A push to `main` repeats the release check, tags the version, and
+publishes it as the latest release with the notes of its section, each translation's section
+collapsed under its language name. Security reports: [SECURITY.md](./.github/SECURITY.md). Licensed
+under [MIT](./LICENSE).
 
 ## Saving tokens
 

@@ -1,32 +1,32 @@
-# Install once per clone: uvx pre-commit install
+# The repository's hygiene checks; CI runs them all. Install once per clone: uvx pre-commit install
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: a56c0b927e6465d37cae3e97d35d4d18ab2b96cd # frozen: v0.16.9
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 7ff8d35ae36a7d2b968f2f90b4c723e292e594ee # frozen: v2.3.1
+    hooks:
+      - id: mypy
+        args: [--config-file=skills/fleex-hygiene/assets/mypy.ini]
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: 745eface02aef23e168a8afb6b5737818efbea95 # frozen: v0.11.0.1
+    hooks:
+      - id: shellcheck
   - repo: local
     hooks:
       - id: plugin-version
-        name: plugin version matches in both manifests and CHANGELOG.md
+        name: plugin version and changelogs
         language: python
-        entry: |
-          python -c "
-          import glob, json, re, sys
-          manifests = ('.claude-plugin/plugin.json', '.codex-plugin/plugin.json')
-          versions = {json.load(open(p, encoding='utf-8'))['version'] for p in manifests}
-          if len(versions) != 1:
-              sys.exit('plugin.json versions differ: ' + ', '.join(sorted(versions)))
-          version = versions.pop()
-          release = re.compile(r'## \[(\d+\.\d+\.\d+)\]\(https://\S+/releases/tag/\1\)')
-          def heads(path):
-              found = re.findall(r'^## .*$', open(path, encoding='utf-8').read(), re.M)
-              for i, head in enumerate(found):
-                  if not (head == '## Unreleased' and i == 0 or release.fullmatch(head)):
-                      sys.exit(path + ': unexpected heading ' + repr(head) + '; use ## Unreleased'
-                               ' first, then ## [x.y.z](<link to the x.y.z release tag>)')
-              return found
-          english = heads('CHANGELOG.md')
-          if not any(h.startswith('## [' + version + ']') for h in english):
-              sys.exit('CHANGELOG.md: add a ## [' + version + '] section for the manifest version')
-          for path in glob.glob('docs/*/CHANGELOG.md'):
-              if heads(path) != english:
-                  sys.exit(path + ': headings must match CHANGELOG.md')
-          "
+        entry: python .github/scripts/release.py check
         files: ^(\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|(docs/[^/]+/)?CHANGELOG\.md)$
         pass_filenames: false

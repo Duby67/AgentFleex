@@ -1,8 +1,10 @@
 name: CI
 
+# A push to develop runs the checks; a pull request into main shows them for its head commit and
+# adds the release check; a push to main releases.
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
   pull_request:
     branches: [main]
 
@@ -11,6 +13,7 @@ permissions:
 
 jobs:
   test:
+    if: github.ref == 'refs/heads/develop'
     name: test (${{ matrix.os }}, Python ${{ matrix.python }}${{ matrix.ctags && ', ctags' || '' }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -52,6 +55,7 @@ jobs:
         run: ./skills/fleex-skills/scripts/check.ps1
 
   lint:
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -59,25 +63,23 @@ jobs:
         with:
           # uvx tools only: no lock file to key a cache on.
           enable-cache: false
-      - name: Ruff
-        run: uvx ruff check . && uvx ruff format --check .
-      - name: Mypy
-        env:
-          # The hook imports checks.py by path at runtime; this lets mypy resolve and check it.
-          MYPYPATH: skills/fleex-hygiene/scripts
-        run: >-
-          uvx mypy --config-file skills/fleex-hygiene/assets/mypy.ini
-          skills/fleex-hygiene/scripts/checks.py skills/fleex-index/scripts/index.py
-          hooks/agentfleex.py tests
-      - name: ShellCheck
-        run: uvx --from shellcheck-py shellcheck skills/fleex-skills/scripts/check.sh
       - name: Pre-commit
         run: uvx pre-commit run --all-files --show-diff-on-failure
-      - name: Whitespace
-        run: git diff --check $(git hash-object -t tree /dev/null) HEAD
+
+  # Every merge into main is a release: its version must be new and above the latest tag. The
+  # release job repeats this check before tagging.
+  version:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history brings every tag to compare the manifest version with.
+          fetch-depth: 0
+      - name: Version and changelogs
+        run: python3 .github/scripts/release.py check --release
 
   release:
-    needs: [test, lint]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -85,59 +87,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # Full history brings every tag to compare the manifest version with.
           fetch-depth: 0
-      # The tag is the manifest version, so they always match. A version with a release is skipped;
-      # a tag without a release, such as one pushed by hand, gets its release from the existing tag.
       - name: Tag and release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="$(jq -r .version .claude-plugin/plugin.json)"
-          if gh release view "$version" >/dev/null 2>&1; then
-            echo "::notice::$version is already released; raise the manifest version to release."
-            exit 0
-          fi
-          latest="$(git tag --list '[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)"
-          newest="$(printf '%s\n%s\n' "$latest" "$version" | sort -V | tail -n1)"
-          target=()
-          if ! git rev-parse -q --verify "refs/tags/$version" >/dev/null; then
-            target=(--target "$GITHUB_SHA")
-            unreleased="$(awk '$0 == "## Unreleased" { found = 1; next } /^## / { found = 0 } found' \
-              CHANGELOG.md)"
-            if grep -q '[^[:space:]]' <<<"$unreleased"; then
-              echo "::error::CHANGELOG.md: move the ## Unreleased items to ## [$version]"
-              exit 1
-            fi
-            if [ "$newest" != "$version" ]; then
-              echo "::error::manifest version $version is lower than the latest release $latest"
-              exit 1
-            fi
-          fi
-          # Notes: the English section, then each translation's section collapsed under its language
-          # name, taken from the bold current language in the translation's switcher line.
-          section() {
-            awk -v head="## [$version]" \
-              'index($0, head) == 1 { found = 1; next } /^## / { found = 0 } found' "$1"
-          }
-          for changelog in CHANGELOG.md docs/*/CHANGELOG.md; do
-            [ -f "$changelog" ] || continue
-            if ! grep -q '[^[:space:]]' <<<"$(section "$changelog")"; then
-              echo "::error::$changelog has no notes under ## [$version]"
-              exit 1
-            fi
-          done
-          section CHANGELOG.md > notes.md
-          for changelog in docs/*/CHANGELOG.md; do
-            [ -f "$changelog" ] || continue
-            language="$(sed -n 's/.*\*\*\([^*]*\)\*\*.*/\1/p' "$changelog" | head -n1)"
-            if [ -z "$language" ]; then
-              echo "::error::$changelog: no bold language name in its switcher line"
-              exit 1
-            fi
-            printf '\n<details><summary>%s</summary>\n\n%s\n\n</details>\n' \
-              "$language" "$(section "$changelog")" >> notes.md
-          done
-          # Only the newest version is marked as the latest release.
-          gh release create "$version" "${target[@]}" --title "$version" \
-            --notes-file notes.md --latest="$([ "$newest" = "$version" ] && echo true || echo false)"
+          version="$(python3 .github/scripts/release.py check --release)"
+          python3 .github/scripts/release.py notes > "$RUNNER_TEMP/notes.md"
+          gh release create "$version" --target "$GITHUB_SHA" --title "$version" \
+            --notes-file "$RUNNER_TEMP/notes.md" --latest
