@@ -1,6 +1,4 @@
 interface:
   display_name: "VS Code"
-  short_description: "Set up a VS Code profile from AgentFleex extension packs"
-  default_prompt: "Use $fleex-vscode to set up the Python profile."
-policy:
-  allow_implicit_invocation: false
+  short_description: "Prepare the VS Code workspace with extension and settings sets"
+  default_prompt: "Use $fleex-vscode to prepare the VS Code workspace for this task."

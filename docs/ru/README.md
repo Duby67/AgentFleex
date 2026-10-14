@@ -63,30 +63,22 @@ codex plugin add agentfleex@agentfleex
 
 ## VS Code
 
-В `skills/fleex-vscode/assets/packs/` лежат наборы расширений (extension packs), у каждого свой
-`settings.json`; `profiles.json` сопоставляет профили VS Code наборам.
+Попросите агента подготовить рабочее пространство VS Code под задачу: скилл `fleex-vscode` выбирает
+наборы из `skills/fleex-vscode/assets/` по задаче и файлам проекта и сливает их рекомендации
+расширений и настройки в `.vscode/` проекта, которая остаётся в игноре Git. Затем VS Code
+предлагает установить рекомендованные расширения.
 
-| Набор | Когда использовать |
+| Набор | Когда |
 | --- | --- |
-| `minimal` | В каждом профиле: редактор, Git, Markdown и интерфейс |
+| `default` | Всегда: редактор, Git, Markdown, YAML, TOML, EditorConfig |
+| `personal` | Всегда: тема, раскладка интерфейса, ИИ-ассистенты |
 | `python` | Проекты на Python |
 | `cpp` | Проекты на C и C++ |
-| `infrastructure` | Серверы и развёртывание: Remote SSH, Docker, YAML |
+| `infrastructure` | Docker, CI, shell-скрипты, удалённые хосты |
+| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup |
 
-Вызовите `/agentfleex:fleex-vscode` (`$fleex-vscode` в Codex) или запустите скрипт напрямую:
-
-```bash
-python3 skills/fleex-vscode/scripts/vscode.py list
-python3 skills/fleex-vscode/scripts/vscode.py apply Python --add infrastructure --open ~/projects/app
-```
-
-`apply` создаёт профиль, если его нет, ставит его наборы и добавленные, сливает их настройки в
-`settings.json` профиля (это должен быть обычный JSON, без комментариев) и открывает папку с этим
-профилем. CI собирает наборы в файлы `.vsix` и прикладывает их к каждому релизу; скрипт скачивает
-файлы установленной версии плагина или берёт локальные через `--vsix DIR`. Под WSL настраивается
-VS Code на Windows; расширения, работающие в WSL, затем ставятся туда командой
-`Install Local Extensions in 'WSL'`. Скилл запускается только по вызову, поэтому наборы и
-настройки не попадают в контекст агента.
+Горячие клавиши и настройки уровня приложения или машины работают только в профиле пользователя;
+держите их там, например через Settings Sync.
 
 ## Устройство репозитория
 

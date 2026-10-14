@@ -1,0 +1,6 @@
+{
+  "workbench.editorAssociations": {
+    "*.dot": "default",
+    "*.bin": "default"
+  }
+}

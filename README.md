@@ -61,30 +61,22 @@ Hooks need `python3` or `python` on `PATH`. Codex runs a plugin hook only after 
 
 ## VS Code
 
-`skills/fleex-vscode/assets/packs/` holds extension packs, each with its own `settings.json`;
-`profiles.json` maps VS Code profiles to packs.
+Ask the agent to prepare the VS Code workspace for a task: the `fleex-vscode` skill picks sets
+from `skills/fleex-vscode/assets/` by the task and the project files and merges their extension
+recommendations and settings into the project's `.vscode/`, which stays ignored by Git. VS Code
+then offers to install the recommended extensions.
 
-| Pack | When to use |
+| Set | When |
 | --- | --- |
-| `minimal` | Every profile: editor, Git, Markdown, and interface |
+| `default` | Always: editor, Git, Markdown, YAML, TOML, EditorConfig |
+| `personal` | Always: theme, layout, AI assistants |
 | `python` | Python projects |
 | `cpp` | C and C++ projects |
-| `infrastructure` | Servers and deployment: Remote SSH, Docker, YAML |
+| `infrastructure` | Docker, CI, shell scripts, remote hosts |
+| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup |
 
-Run `/agentfleex:fleex-vscode` (`$fleex-vscode` in Codex) or the script directly:
-
-```bash
-python3 skills/fleex-vscode/scripts/vscode.py list
-python3 skills/fleex-vscode/scripts/vscode.py apply Python --add infrastructure --open ~/projects/app
-```
-
-`apply` creates the profile if missing, installs its packs and the added ones, merges their
-settings into the profile's `settings.json` (it must be plain JSON, without comments), and opens
-the folder with the profile. CI builds the packs as `.vsix` files and attaches them to each
-release; the script downloads those of the installed plugin version, or takes local ones with
-`--vsix DIR`. Under WSL it configures the Windows VS Code; extensions that run in WSL are then
-installed there with `Install Local Extensions in 'WSL'`. The skill runs only when called, so its
-packs and settings never reach the agent's context.
+Keybindings and settings with application or machine scope work only in the user profile; keep them
+there, for example with Settings Sync.
 
 ## Repository layout
 

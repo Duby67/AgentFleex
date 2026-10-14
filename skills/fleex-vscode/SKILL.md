@@ -1,22 +1,30 @@
 ---
 name: fleex-vscode
-description: Set up a VS Code profile from AgentFleex extension packs and settings, or add packs to a profile. Runs only when the user invokes it.
-disable-model-invocation: true
+description: Prepare a project's VS Code workspace for a task by writing extension recommendations and settings from AgentFleex sets into its ignored .vscode/. Use when the user asks to set up, prepare, or adjust the VS Code workspace, its extensions, or its editor settings. Do not use for VS Code user profiles, keybindings, or launch and task configurations.
 ---
 
-# VS Code
+# VS Code workspace
 
-Run `scripts/vscode.py` (relative to this skill's directory) with Python 3.9+; it does the whole
-job, so do not read the packs or settings yourself.
+`assets/<set>/` (relative to this skill's directory) holds `extensions.json` (recommendations) and
+`settings.json` for one set:
 
-- `list`: packs with their purpose, and the packs of each profile.
-- `apply <profile> [--add PACK...] [--open DIR]`: create the profile if missing, install its packs
-  plus the added ones, merge their settings into the profile's `settings.json`, and optionally
-  open a folder with the profile. `Default` is VS Code's own profile.
+| Set | When |
+| --- | --- |
+| `default` | Always: editor, Git, Markdown, YAML, TOML, EditorConfig |
+| `personal` | Always: theme, layout, AI assistants |
+| `python` | `pyproject.toml`, `setup.py`, or Python sources |
+| `cpp` | `CMakeLists.txt` or C/C++ sources |
+| `infrastructure` | Dockerfiles, compose files, CI workflows, shell scripts, remote hosts |
+| `tools` | REST, draw.io, hex, CSV, XML, or Inno Setup files, or when the user asks |
 
-Packs are downloaded from the GitHub release of the plugin version; `--vsix DIR` uses local
-`fleex-pack-*.vsix` files instead. Under WSL the script configures the Windows VS Code; afterwards,
-extensions that run in WSL are installed there with the command `Install Local Extensions in 'WSL'`.
+Choose sets from the task and the files present, then merge them into `.vscode/extensions.json`
+and `.vscode/settings.json` at the repository root: union of `recommendations` in set order, and
+settings where a later set wins. Keys already in the project's files win over sets; report each
+conflict instead of overwriting it. Read only the chosen sets.
 
-Report a failure with the script's message; never edit VS Code settings or profiles by hand
-instead.
+`.vscode/` stays out of Git: add `/.vscode/` to `.gitignore` if it is missing. If Git already
+tracks files under `.vscode/`, stop and report them instead of untracking or editing them.
+
+VS Code applies workspace settings on save and offers to install the recommendations; settings with
+application or machine scope and keybindings take effect only in the user profile, so leave those
+to the user.

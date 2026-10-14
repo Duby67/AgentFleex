@@ -4,8 +4,9 @@
 
 ## Unreleased
 
-- Added the user-invoked `fleex-vscode` skill: VS Code extension packs and settings per
-  profile, built as `.vsix` files and attached to releases.
+- Added the `fleex-vscode` skill: VS Code extension recommendations and settings by set, merged
+  into the project's ignored `.vscode/`.
+- Stopped tracking `.vscode/settings.json`; `.vscode/` is ignored.
 
 ## [0.3.2](https://github.com/Duby67/AgentFleex/releases/tag/0.3.2)
 

@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "humao.rest-client",
+    "hediet.vscode-drawio",
+    "ms-vscode.hexeditor",
+    "mechatroner.rainbow-csv",
+    "redhat.vscode-xml",
+    "chouzz.vscode-innosetup"
+  ]
+}

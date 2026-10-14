@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "anthropic.claude-code",
+    "pkief.material-icon-theme",
+    "oderwat.indent-rainbow",
+    "aaron-bond.better-comments",
+    "johnpapa.vscode-peacock",
+    "alefragnani.project-manager"
+  ]
+}

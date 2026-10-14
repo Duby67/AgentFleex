@@ -97,7 +97,6 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 - [ ] Remove the duplicated logic of `check.sh` and `check.ps1` or add an equivalence test #chore
 - [ ] Clean up `.gitignore` #chore
   - Typo `/.agetns/`.
-  - `.vscode/` is ignored while `.vscode/settings.json` is tracked.
 - [ ] Decide how `.github/SECURITY.md` is translated #docs
   - Human docs are translated to ru, but `check.sh` and `fleex-i18n` accept translations only of
     root files and `docs/` pages; move the file to the root or extend the rule.
