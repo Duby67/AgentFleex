@@ -24,6 +24,10 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 
 ## P3 — features
 
+- [ ] Create a concise branch-naming skill listing allowed names and their purposes #feature
+  - List special branch names such as `main` and `develop`, and task branch patterns such as
+    `feature/<task>` for implementing a feature. Keep each entry to a name or pattern and a brief
+    purpose; use the repository's branch model to decide which names are allowed.
 - [ ] Create the `fleex-repo` skill: audit and templates for repository service files #feature
   - Combined mode: the audit reports missing required files as errors and missing recommended
     files as suggestions; findings can go to `TODO.md` through `fleex-todo`.

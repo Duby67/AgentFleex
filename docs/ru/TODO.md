@@ -2,6 +2,8 @@
 
 [English](../../TODO.md) · **Русский**
 
+> Перевод отстаёт от [английской версии](../../TODO.md).
+
 Состояния: `- [ ]` открыта, `- [-]` отклонена.
 Теги: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests`, `#docs`,
 `#chore`.
