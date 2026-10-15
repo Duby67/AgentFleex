@@ -5,7 +5,9 @@
 ## Unreleased
 
 - Added the `fleex-vscode` skill: VS Code extension recommendations and settings by set, merged
-  into the project's ignored `.vscode/`.
+  into the project's ignored `.vscode/`; it may suggest other extensions, never suggests removing
+  installed ones, and on request syncs installed extensions with the sets, uninstalling extras as a
+  separate confirmed step.
 - Stopped tracking `.vscode/settings.json`; `.vscode/` is ignored.
 - Added a branch model to the `AGENTS.md` rule catalog: `develop` for work, `staging` for
   testing, `main` for releases.

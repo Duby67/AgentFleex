@@ -65,7 +65,10 @@ Ask the agent to prepare the VS Code workspace for a task: the `fleex-vscode` sk
 `skills/fleex-vscode/assets/` by the task and the project files and merges their extension
 recommendations and settings into the project's `.vscode/`, which stays ignored by Git. On a new
 machine the whole set installs at once: `Extensions: Show Recommended Extensions`, then the Install
-Workspace Recommended Extensions button. The agent installs nothing itself; further setup is yours.
+Workspace Recommended Extensions button. The agent may suggest other extensions for the task but
+never suggests removing yours, and it installs nothing itself. Only when you ask it to sync installed
+extensions with the recommendations does it install the missing ones and then, as a separate step
+you confirm, uninstall the extras.
 
 | Set | When |
 | --- | --- |
