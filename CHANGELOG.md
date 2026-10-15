@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## [0.3.3](https://github.com/Duby67/AgentFleex/releases/tag/0.3.3)
+
 - Release notes now describe solved problems and resulting behavior without task-list bookkeeping.
 - Added the `fleex-vscode` skill: VS Code extension recommendations and settings by set, merged
   into the project's ignored `.vscode/`; it may suggest other extensions, never suggests removing
