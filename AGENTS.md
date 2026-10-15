@@ -31,7 +31,10 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
   distribution metadata.
 - Keep the repository root minimal: put a new file in an existing directory or its tool's own
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
-- Checks: `uvx pre-commit run --all-files` and `python3 -m unittest discover -s tests`.
+- Use uv and the ignored `.venv` for Python, including tests; sync with `uv sync --locked`,
+  add dependencies with `uv add`, and run commands with `uv run` instead of pip or system Python.
+- Checks: `uv run --locked pre-commit run --all-files` and
+  `uv run --locked python -m unittest discover -s tests`.
 - Note changes under `## Unreleased` in `CHANGELOG.md` and its translations. Every merge into `main`
   is a release: raise `version` in both plugin manifests above the latest tag and rename that
   section to the version; CI then tags and releases it. Installed plugins update only on a new

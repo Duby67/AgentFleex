@@ -27,6 +27,10 @@ Hard rules; stop and report instead of working around them.
 - Make the smallest correct change. Prefer, in order: no change, existing code, the standard
   library, an installed dependency, new code. Stay in scope.
 - Read narrowly: focused search, bounded reads, `git diff --stat` before diffs, quiet test output.
+- For repositories with Python files, including tests, default to uv and an ignored `.venv`:
+  declare dependencies in `pyproject.toml`, commit `uv.lock`, and use `uv sync`, `uv add`, and
+  `uv run` instead of pip or system Python. Preserve an established environment manager unless
+  the user requests migration.
 - Never read or search `<generated, vendored, lockfile, snapshot, build output, and data paths>`.
 - Fastest checks: `<single test command>`, `<lint changed files command>`,
   `<type check command>`.

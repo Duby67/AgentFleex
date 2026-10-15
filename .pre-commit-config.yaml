@@ -1,4 +1,4 @@
-# The repository's hygiene checks; CI runs them all. Install once per clone: uvx pre-commit install
+# The repository's hygiene checks; CI runs them all. Install: uv run --locked pre-commit install
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0

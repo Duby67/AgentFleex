@@ -91,10 +91,16 @@ Recommended Extensions. Агент может посоветовать друг�
 `.agents/plugins/marketplace.json` (маркетплейсы). Чтобы попробовать изменения скиллов, запустите
 Claude Code с `claude --plugin-dir .`; в Codex переустановите плагин из локального маркетплейса.
 Тесты скриптов скиллов и хуков лежат в `tests/` и запускаются командой
-`python3 -m unittest discover -s tests`; CI гоняет их на Linux, macOS и Windows с Python 3.9 и
+`uv run --locked python -m unittest discover -s tests`; CI гоняет их на Linux, macOS и Windows с Python 3.9 и
 последним Python, с Universal Ctags и без. Все остальные проверки — хуки pre-commit в
 [.pre-commit-config.yaml](../../.pre-commit-config.yaml): Ruff, mypy, ShellCheck, гигиена файлов и
-проверка версии; установите его один раз командой `uvx pre-commit install`.
+проверка версии. Установите [uv](https://docs.astral.sh/uv/getting-started/installation/), затем
+выполните `uv sync --locked`: команда создаст игнорируемую `.venv` из `pyproject.toml` и `uv.lock`.
+Добавляйте зависимости разработки через `uv add --dev`, запускайте Python-команды через
+`uv run --locked`. Установите хук коммита командой `uv run --locked pre-commit install`;
+проверяйте все файлы через `uv run --locked pre-commit run --all-files`.
+Набор настроек Python для VS Code по умолчанию указывает на `.venv`; если интерпретатор уже был
+выбран, укажите его через `Python: Select Interpreter`.
 
 Версия хранится в обоих манифестах плагина, и установленные плагины подхватывают изменения только
 после её повышения. Изменения записываются в раздел `## Unreleased` файла

@@ -88,11 +88,17 @@ The repository root is the plugin root; skills live in `skills/`, hooks in `hook
 `.claude-plugin/` and `.codex-plugin/` (plugin), `.claude-plugin/marketplace.json` and
 `.agents/plugins/marketplace.json` (marketplaces). To try skill changes, start Claude Code with
 `claude --plugin-dir .`; in Codex, reinstall the plugin from the local marketplace. Tests for the
-skill and hook scripts live in `tests/` and run with `python3 -m unittest discover -s tests`; CI
+skill and hook scripts live in `tests/` and run with
+`uv run --locked python -m unittest discover -s tests`; CI
 runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
 Universal Ctags. Every other check is a pre-commit hook in
 [.pre-commit-config.yaml](./.pre-commit-config.yaml): Ruff, mypy, ShellCheck, file hygiene, and the
-version check; install it once with `uvx pre-commit install`.
+version check. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run
+`uv sync --locked` to create the ignored `.venv` from `pyproject.toml` and `uv.lock`.
+Use `uv add --dev` for development dependencies and `uv run --locked` for Python commands.
+Install the commit hook once with `uv run --locked pre-commit install`; check all files with
+`uv run --locked pre-commit run --all-files`. VS Code's Python settings set defaults to `.venv`;
+if an interpreter was already selected, choose it with `Python: Select Interpreter`.
 
 The version lives in both plugin manifests, and installed plugins pick up changes only after it is
 raised. Changes are noted under `## Unreleased` in [CHANGELOG.md](./CHANGELOG.md); a release renames

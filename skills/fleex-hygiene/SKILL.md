@@ -49,10 +49,17 @@ it gives.
 
 ## Setting up
 
+When setting up Python tooling, including a repository with only Python tests, default to a
+non-packaged uv project (`[tool.uv] package = false`) unless it builds a Python distribution.
+Keep dependencies in `pyproject.toml`, commit `uv.lock`, ignore `.venv/`, and create it with
+`uv sync`. Add development tools with `uv add --dev`; run tests and tools with `uv run --locked`.
+Preserve an established environment manager unless the user requests migration.
+
 Every repository runs its hygiene checks through pre-commit: `.pre-commit-config.yaml` lists the
 linters, formatters, type checkers, and file checks (whitespace, end of file, merge conflicts,
 YAML, JSON) with `rev` pinned to a commit, CI runs `pre-commit run --all-files`, and contributors
-install it once with `uvx pre-commit install`. A tool pre-commit runs is checked only through it.
+install it once with `uv run --locked pre-commit install` in a uv project, or
+`uvx pre-commit install` otherwise. A tool pre-commit runs is checked only through it.
 When a repository has no such file, propose one built from its existing tools and CI steps.
 
 When asked to add or unify tooling, start from the plugin defaults: copy their settings into an

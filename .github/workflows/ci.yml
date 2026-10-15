@@ -38,6 +38,10 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+          python-version: ${{ matrix.python }}
       - name: Install Universal Ctags
         if: matrix.ctags && runner.os == 'Linux'
         run: sudo apt-get install -y universal-ctags
@@ -45,7 +49,7 @@ jobs:
         if: matrix.ctags && runner.os == 'macOS'
         run: brew install universal-ctags
       - name: Tests
-        run: python -m unittest discover -s tests -v
+        run: uv run --locked --no-dev python -m unittest discover -s tests -v
       - name: Skill checks
         if: runner.os != 'Windows'
         run: bash skills/fleex-skills/scripts/check.sh
@@ -61,10 +65,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          # uvx tools only: no lock file to key a cache on.
           enable-cache: false
       - name: Pre-commit
-        run: uvx pre-commit run --all-files --show-diff-on-failure
+        run: uv run --locked pre-commit run --all-files --show-diff-on-failure
 
   # Every merge into main is a release: its version must be new and above the latest tag. The
   # release job repeats this check before tagging.
@@ -76,8 +79,11 @@ jobs:
         with:
           # Full history brings every tag to compare the manifest version with.
           fetch-depth: 0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
       - name: Version and changelogs
-        run: python3 .github/scripts/release.py check --release
+        run: uv run --locked --no-dev python .github/scripts/release.py check --release
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -88,11 +94,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
       - name: Tag and release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="$(python3 .github/scripts/release.py check --release)"
-          python3 .github/scripts/release.py notes > "$RUNNER_TEMP/notes.md"
+          version="$(uv run --locked --no-dev python .github/scripts/release.py check --release)"
+          uv run --locked --no-dev python .github/scripts/release.py notes > "$RUNNER_TEMP/notes.md"
           gh release create "$version" --target "$GITHUB_SHA" --title "$version" \
             --notes-file "$RUNNER_TEMP/notes.md" --latest
