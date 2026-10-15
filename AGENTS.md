@@ -14,6 +14,11 @@ Hard rules; stop and report instead of working around them.
 - Start another agent only with the user's permission.
 - When docs, config, code, and tests disagree, report the contradiction instead of choosing.
 
+## Branches
+
+- `develop` is the working branch: start branches and forks from it and target every PR at it.
+- `main`, the default branch, holds releases: only `develop` merges into it.
+
 ## Work
 
 Make the smallest correct change. Prefer, in order: no change, existing code, the standard library,
@@ -26,11 +31,10 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
   distribution metadata.
 - Keep the repository root minimal: put a new file in an existing directory or its tool's own
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
-- Checks: run what `.github/workflows/ci.yml` runs, with its `env`; locally, ShellCheck is
-  `uvx --from shellcheck-py shellcheck`.
-- Note changes under `## Unreleased` in `CHANGELOG.md` and its translations. To release, raise
-  `version` in both plugin manifests and rename that section to the version; CI tags and releases
-  a push to `main` whose version has no GitHub release yet. Installed plugins update only on a new
+- Checks: `uvx pre-commit run --all-files` and `python3 -m unittest discover -s tests`.
+- Note changes under `## Unreleased` in `CHANGELOG.md` and its translations. Every merge into `main`
+  is a release: raise `version` in both plugin manifests above the latest tag and rename that
+  section to the version; CI then tags and releases it. Installed plugins update only on a new
   version.
 
 ## Language

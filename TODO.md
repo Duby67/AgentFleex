@@ -8,12 +8,6 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 
 ## P0 — blocks a release
 
-- [ ] Fix the red CI on `main`: `check.sh` requires a `.agents/skills` symlink #ci #bug
-  - `.agents/` exists in every clone because of the tracked `.agents/plugins/marketplace.json`,
-    while `.gitignore` excludes `/.agents/*`; the check in
-    [check.sh:61-64](skills/fleex-skills/scripts/check.sh#L61-L64) and `check.ps1` fails on a
-    fresh clone.
-  - Decide: commit the symlink or relax the check. Release 0.3.2 is blocked by this.
 - [ ] Stop the stop hook from silently dropping files with non-ASCII names #bug
   - `changed()` calls `git diff`/`ls-files` without `-z`, git quotes the name, and `is_file()` is
     false ([agentfleex.py:92-99](hooks/agentfleex.py#L92-L99)). `index.py` already uses `-z`.
@@ -45,6 +39,12 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 
 ## P2 — reliability
 
+- [ ] Fix repeated hook consent prompts and investigate excessive hook calls #bug #reliability #tokens
+  - In a Codex session with installed 0.3.2, the stop hook requested permission after pre-commit
+    had already passed; the user reports an endless permission loop that prevents useful checks.
+  - Suspected excessive invocation and token use are not measured yet. Reproduce across turns and
+    sessions, verify consent persistence and the `asked` guard, and prevent redundant checks and
+    prompts ([agentfleex.py:168-189](hooks/agentfleex.py#L168-L189)).
 - [ ] Reconcile timeouts: 120 s per command against 600 s for the whole stop hook #reliability
   - With many tools the hook is killed without a clear error.
 - [ ] Handle an invalid `package.json` in the stop hook #reliability #bug
@@ -97,7 +97,6 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 - [ ] Remove the duplicated logic of `check.sh` and `check.ps1` or add an equivalence test #chore
 - [ ] Clean up `.gitignore` #chore
   - Typo `/.agetns/`.
-  - `.vscode/` is ignored while `.vscode/settings.json` is tracked.
 - [ ] Decide how `.github/SECURITY.md` is translated #docs
   - Human docs are translated to ru, but `check.sh` and `fleex-i18n` accept translations only of
     root files and `docs/` pages; move the file to the root or extend the rule.

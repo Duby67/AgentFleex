@@ -1,0 +1,7 @@
+{
+  "workbench.editorAssociations": {
+    "*.dot": "default",
+    "*.bin": "default"
+  },
+  "rest-client.enableTelemetry": false
+}

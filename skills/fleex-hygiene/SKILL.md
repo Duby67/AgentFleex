@@ -1,6 +1,6 @@
 ---
 name: fleex-hygiene
-description: Run the repository's own linters, formatters, and type checkers on changed files, finding them in its configuration, pre-commit, and CI, with plugin defaults where none are configured. Use after editing code and before reporting the task done, when a stop was blocked by AgentFleex style checks, when fixing lint, format, or type failures, or when setting up or unifying style tooling. Do not use for writing or running tests, or for reviewing logic.
+description: Run the repository's own linters, formatters, and type checkers on changed files, finding them in its configuration, pre-commit, and CI, with plugin defaults where none are configured. Use after editing code and before reporting the task done, when a stop was blocked by AgentFleex style checks, when fixing lint, format, or type failures, or when setting up or unifying style tooling or pre-commit. Do not use for writing or running tests, or for reviewing logic.
 ---
 
 # Hygiene
@@ -48,6 +48,12 @@ it gives.
   project environment. Tell the user once, never install on your own, and run the remaining checks.
 
 ## Setting up
+
+Every repository runs its hygiene checks through pre-commit: `.pre-commit-config.yaml` lists the
+linters, formatters, type checkers, and file checks (whitespace, end of file, merge conflicts,
+YAML, JSON) with `rev` pinned to a commit, CI runs `pre-commit run --all-files`, and contributors
+install it once with `uvx pre-commit install`. A tool pre-commit runs is checked only through it.
+When a repository has no such file, propose one built from its existing tools and CI steps.
 
 When asked to add or unify tooling, start from the plugin defaults: copy their settings into an
 existing file (`pyproject.toml`, `package.json`) where possible, so the repository no longer depends

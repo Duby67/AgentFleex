@@ -59,6 +59,29 @@ The plugin ships `hooks/hooks.json`, which Claude Code and Codex both load:
 Hooks need `python3` or `python` on `PATH`. Codex runs a plugin hook only after you trust it in
 `/hooks`.
 
+## VS Code
+
+Ask the agent to prepare the VS Code workspace for a task: the `fleex-vscode` skill picks sets from
+`skills/fleex-vscode/assets/` by the task and the project files and merges their extension
+recommendations and settings into the project's `.vscode/`, which stays ignored by Git. On a new
+machine the whole set installs at once: `Extensions: Show Recommended Extensions`, then the Install
+Workspace Recommended Extensions button. The agent may suggest other extensions for the task but
+never suggests removing yours, and it installs nothing itself. Only when you ask it to sync installed
+extensions with the recommendations does it install the missing ones and then, as a separate step
+you confirm, uninstall the extras.
+
+| Set | When |
+| --- | --- |
+| `default` | Always: editor, Git, Markdown, YAML, TOML, EditorConfig |
+| `personal` | Always: theme and layout |
+| `python` | Python projects |
+| `cpp` | C and C++ projects |
+| `infrastructure` | Docker, CI, shell scripts, remote hosts |
+| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup, npm |
+
+Keybindings and settings with application or machine scope work only in the user profile; keep them
+there, for example with Settings Sync.
+
 ## Repository layout
 
 The repository root is the plugin root; skills live in `skills/`, hooks in `hooks/`. Manifests:
@@ -67,17 +90,22 @@ The repository root is the plugin root; skills live in `skills/`, hooks in `hook
 `claude --plugin-dir .`; in Codex, reinstall the plugin from the local marketplace. Tests for the
 skill and hook scripts live in `tests/` and run with `python3 -m unittest discover -s tests`; CI
 runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
-Universal Ctags, plus Ruff, mypy, ShellCheck, and pre-commit.
+Universal Ctags. Every other check is a pre-commit hook in
+[.pre-commit-config.yaml](./.pre-commit-config.yaml): Ruff, mypy, ShellCheck, file hygiene, and the
+version check; install it once with `uvx pre-commit install`.
 
 The version lives in both plugin manifests, and installed plugins pick up changes only after it is
-raised. Changes are noted under `## Unreleased` in [CHANGELOG.md](./CHANGELOG.md); a release
-renames that section to the version. The pre-commit hook (`uvx pre-commit install`) checks that
-both manifests carry the same version, that `CHANGELOG.md` has its section, and that translations
-have the same headings. After checks pass on a push to `main` whose version has no GitHub release
-yet, CI creates its tag if missing and publishes the release with the notes of its section, each
-translation's section collapsed under its language name, marked latest only for the newest
-version; a new version lower than the latest release or items left under `## Unreleased` fail.
-Security reports: [SECURITY.md](./.github/SECURITY.md). Licensed under [MIT](./LICENSE).
+raised. Changes are noted under `## Unreleased` in [CHANGELOG.md](./CHANGELOG.md); a release renames
+that section to the version. Work goes to `develop`, and every merge into `main` is a release.
+[release.py](./.github/scripts/release.py) checks that both manifests carry one x.y.z version, that
+`CHANGELOG.md` has its section, and that translations have the same headings. A push to `develop`
+runs the tests and pre-commit; a pull request into `main` shows those results for its head commit
+and adds the release check: an empty `## Unreleased`, notes in every changelog, and a version above
+the latest tag. Require these checks for `main` in the branch protection settings, so a failing
+`develop` cannot be merged. A push to `main` repeats the release check, tags the version, and
+publishes it as the latest release with the notes of its section, each translation's section
+collapsed under its language name. Security reports: [SECURITY.md](./.github/SECURITY.md). Licensed
+under [MIT](./LICENSE).
 
 ## Saving tokens
 
@@ -102,9 +130,14 @@ formatters, and type checkers so every change keeps one style.
 [fleex-todo](./skills/fleex-todo/SKILL.md) owns the `TODO.md` backlog of verified findings and
 planned work. Existing configuration always wins;
 where a repository has none, the plugin's defaults in `skills/fleex-hygiene/assets/` apply. This
-repository uses them too: `ruff.toml` extends the default Ruff config, and `.vscode/settings.json`
-points the editor's mypy at the default mypy config. Rules once written into a repository's `AGENTS.md` belong to its owner and
-are not synced with the catalog.
+repository uses them too: `ruff.toml` extends the default Ruff config, and CI passes the default
+mypy config. Rules once written into a repository's `AGENTS.md` belong to its owner and are not
+synced with the catalog.
+
+Every `AGENTS.md` gets one branch model: `develop` is the working branch that all branches, forks,
+and PRs start from and target; `staging` receives `develop` for deployment to the test server, and
+its bugs are fixed on `develop`; `main`, the default branch, takes only tested `staging` and holds
+releases. A repository keeps its own branch names when the user names them.
 
 ## References
 
