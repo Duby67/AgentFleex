@@ -84,38 +84,11 @@ you confirm, uninstall the extras.
 Keybindings and settings with application or machine scope work only in the user profile; keep them
 there, for example with Settings Sync.
 
-## Repository layout
+## Contributing
 
-The repository root is the plugin root; skills live in `skills/`, hooks in `hooks/`. Manifests:
-`.claude-plugin/` and `.codex-plugin/` (plugin), `.claude-plugin/marketplace.json` and
-`.agents/plugins/marketplace.json` (marketplaces). To try skill changes, start Claude Code with
-`claude --plugin-dir .`; in Codex, reinstall the plugin from the local marketplace. Tests for the
-skill and hook scripts live in `tests/` and run with
-`uv run --locked python -m unittest discover -s tests`; CI
-runs them on Linux, macOS, and Windows with Python 3.9 and the latest Python, with and without
-Universal Ctags. Every other check is a pre-commit hook in
-[.pre-commit-config.yaml](./.pre-commit-config.yaml): Ruff, mypy, ShellCheck, file hygiene, and the
-version check. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run
-`uv sync --locked` to create the ignored `.venv` from `pyproject.toml` and `uv.lock`.
-Use `uv add --dev` for development dependencies and `uv run --locked` for Python commands.
-Install the commit hook once with `uv run --locked pre-commit install`; check all files with
-`uv run --locked pre-commit run --all-files`. VS Code's Python settings set defaults to `.venv`;
-if an interpreter was already selected, choose it with `Python: Select Interpreter`.
-
-The version is owned by `project.version` in `pyproject.toml`. After changing it, run `uv lock`
-and `uv run --locked python .github/scripts/release.py sync` to update both plugin manifests.
-Installed plugins pick up changes only after the version is raised.
-Changes are noted under `## Unreleased` in [CHANGELOG.md](./CHANGELOG.md); a release renames
-that section to the version. Work goes to `develop`, and every merge into `main` is a release.
-[release.py](./.github/scripts/release.py) checks that both manifests match the TOML x.y.z version, that
-`CHANGELOG.md` has its section, and that translations have the same headings. A push to `develop`
-runs the tests and pre-commit; a pull request into `main` shows those results for its head commit
-and adds the release check: an empty `## Unreleased`, notes in every changelog, and a version above
-the latest tag. Require these checks for `main` in the branch protection settings, so a failing
-`develop` cannot be merged. A push to `main` repeats the release check, tags the version, and
-publishes it as the latest release with the notes of its section, each translation's section
-collapsed under its language name. Security reports: [SECURITY.md](./.github/SECURITY.md). Licensed
-under [MIT](./LICENSE).
+Development setup, checks, branches, pull requests, and releases:
+[CONTRIBUTING.md](docs/CONTRIBUTING.md). Security reports: [SECURITY.md](./.github/SECURITY.md).
+Licensed under [MIT](./LICENSE).
 
 ## Saving tokens
 

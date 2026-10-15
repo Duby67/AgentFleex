@@ -1,8 +1,8 @@
 # TODO
 
-`TODO.md` at the repository root is a durable backlog of known defects, risks, and planned work
-that people and agents both read: every item must stay true, findable, and actionable without the
-conversation that produced it. It is not for TODO comments in code or an external issue tracker.
+`TODO.md` is a durable backlog of known defects, risks, and planned work that people and agents
+both read: every item must stay true, findable, and actionable without the conversation that
+produced it. It is not for TODO comments in code or an external issue tracker.
 
 ## Format
 
@@ -49,8 +49,8 @@ Tags: `#bug`, `#security`, `#reliability`, `#ci`, `#tests`, `#chore`.
   not raised again.
 - When the user decides an open question, record the decision and drop the alternatives.
 - When code moves, update the line links of items that point to it; a stale line link is a defect.
-- Create `TODO.md` only when the user asks for a TODO list, and ask whether it should be committed
-  or listed in `.gitignore`.
+- Create `docs/TODO.md` only when the user asks for a TODO list, and ask whether it should be
+  committed or listed in `.gitignore`; an existing `TODO.md` stays where it is.
 
 ## Check
 

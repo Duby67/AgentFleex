@@ -69,8 +69,8 @@ jobs:
       - name: Pre-commit
         run: uv run --locked pre-commit run --all-files --show-diff-on-failure
 
-  # Every merge into main is a release: its version must be new and above the latest tag. The
-  # release job repeats this check before tagging.
+  # Every merge into main is a release from develop: its version must be new and above the latest
+  # tag. The release job repeats this check before tagging.
   version:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -82,6 +82,11 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
+      - name: Source branch
+        if: github.head_ref != 'develop'
+        run: |
+          echo "::error::Only develop merges into main; retarget this pull request at develop."
+          exit 1
       - name: Version and changelogs
         run: uv run --locked --no-dev python .github/scripts/release.py check --release
 

@@ -21,6 +21,7 @@ Hard rules; stop and report instead of working around them.
   bug found there is fixed on `<develop>` and merged again.
 - `<main>`, the default branch, holds releases: only `<staging>` merges into it, after its tests
   pass.
+- Name task branches `<type>/<kebab-description>` with a type from `<contributing guide#branches>`.
 
 ## Work
 

@@ -1,9 +1,18 @@
 # Changelog
 
-**English** · [Русский](docs/ru/CHANGELOG.md)
+**English** · [Русский](ru/CHANGELOG.md)
 
 ## Unreleased
 
+- Moved `CHANGELOG.md` and `TODO.md` to `docs/`; the release check reads `docs/CHANGELOG.md`, and
+  `fleex-docs` creates a new backlog as `docs/TODO.md`.
+- Added `docs/CONTRIBUTING.md` with setup, checks, branch naming (`<type>/<description>`), pull
+  requests, Semantic Versioning, and the release steps; the README links to it instead of
+  describing development.
+- Added issue forms for bugs and features, a pull request template, and a contact link for private
+  vulnerability reports; blank issues are disabled.
+- CI fails a pull request into `main` from any branch other than `develop`.
+- The `AGENTS.md` rule catalog names task branches `<type>/<kebab-description>`.
 - `fleex-vscode` runs only when invoked explicitly, so its description no longer loads into every
   request in Claude Code or Codex.
 - The `fleex-todo` skill became a `fleex-docs` reference, read only when `TODO.md` is edited.

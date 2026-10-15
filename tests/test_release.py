@@ -39,17 +39,15 @@ class ReleaseTest(unittest.TestCase):
             )
         head = "## Unreleased\n\n" + unreleased + "\n"
         body = f"## [{version}]({LINK}/{version})\n\n{{}}\n## [1.0.0]({LINK}/1.0.0)\n\n- Old.\n"
-        (self.root / "CHANGELOG.md").write_text(
-            "# Changelog\n\n**English** · [Русский](docs/ru/CHANGELOG.md)\n\n"
+        (self.root / "docs/ru").mkdir(parents=True, exist_ok=True)
+        (self.root / "docs/CHANGELOG.md").write_text(
+            "# Changelog\n\n**English** · [Русский](ru/CHANGELOG.md)\n\n"
             + head
             + body.format(notes),
             encoding="utf-8",
         )
-        (self.root / "docs/ru").mkdir(parents=True, exist_ok=True)
         (self.root / "docs/ru/CHANGELOG.md").write_text(
-            "# Changelog\n\n[English](../../CHANGELOG.md) · **Русский**\n\n"
-            + head
-            + body.format(ru),
+            "# Changelog\n\n[English](../CHANGELOG.md) · **Русский**\n\n" + head + body.format(ru),
             encoding="utf-8",
         )
 

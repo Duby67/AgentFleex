@@ -28,5 +28,5 @@ repos:
         name: plugin version and changelogs
         language: system
         entry: uv run --locked python .github/scripts/release.py check
-        files: ^(pyproject\.toml|\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|(docs/[^/]+/)?CHANGELOG\.md)$
+        files: ^(pyproject\.toml|\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|docs/([^/]+/)?CHANGELOG\.md)$
         pass_filenames: false

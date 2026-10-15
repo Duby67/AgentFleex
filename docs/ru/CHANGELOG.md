@@ -1,9 +1,18 @@
 # Changelog
 
-[English](../../CHANGELOG.md) · **Русский**
+[English](../CHANGELOG.md) · **Русский**
 
 ## Unreleased
 
+- `CHANGELOG.md` и `TODO.md` перенесены в `docs/`; проверка релиза читает `docs/CHANGELOG.md`, а
+  `fleex-docs` создаёт новый бэклог как `docs/TODO.md`.
+- Добавлен `docs/CONTRIBUTING.md`: окружение, проверки, именование веток (`<type>/<description>`),
+  pull request, семантическое версионирование и шаги релиза; README ссылается на него вместо
+  описания разработки.
+- Добавлены формы issue для ошибок и предложений, шаблон pull request и ссылка для приватных
+  сообщений об уязвимостях; пустые issue отключены.
+- CI отклоняет pull request в `main` из любой ветки, кроме `develop`.
+- Каталог правил `AGENTS.md` задаёт имена веток задач `<type>/<kebab-description>`.
 - `fleex-vscode` запускается только явным вызовом, поэтому его описание больше не загружается в
   каждый запрос Claude Code и Codex.
 - Скилл `fleex-todo` стал справочником `fleex-docs`, читаемым только при правке `TODO.md`.

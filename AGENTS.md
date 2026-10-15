@@ -18,6 +18,8 @@ Hard rules; stop and report instead of working around them.
 
 - `develop` is the working branch: start branches and forks from it and target every PR at it.
 - `main`, the default branch, holds releases: only `develop` merges into it.
+- Name task branches `<type>/<kebab-description>` with a type from
+  [CONTRIBUTING](docs/CONTRIBUTING.md#branches).
 
 ## Work
 
@@ -36,7 +38,7 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
 - Checks: `uv run --locked pre-commit run --all-files` and
   `uv run --locked python -m unittest discover -s tests`.
 - Run full checks on request and before a PR or merge, rather than after every edit.
-- Note changes under `## Unreleased` in `CHANGELOG.md`. Every merge into `main`
+- Note changes under `## Unreleased` in `docs/CHANGELOG.md`. Every merge into `main`
   is a release: raise `project.version` in `pyproject.toml` above the latest tag, run `uv lock`
   and `uv run --locked python .github/scripts/release.py sync`, and rename that section to the
   version; CI then tags and releases it. Installed plugins update only on a new

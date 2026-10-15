@@ -86,38 +86,10 @@ Recommended Extensions. Агент может посоветовать друг�
 Горячие клавиши и настройки уровня приложения или машины работают только в профиле пользователя;
 держите их там, например через Settings Sync.
 
-## Устройство репозитория
+## Участие в разработке
 
-Корень репозитория — это корень плагина; скиллы лежат в `skills/`, хуки — в `hooks/`. Манифесты:
-`.claude-plugin/` и `.codex-plugin/` (плагин), `.claude-plugin/marketplace.json` и
-`.agents/plugins/marketplace.json` (маркетплейсы). Чтобы попробовать изменения скиллов, запустите
-Claude Code с `claude --plugin-dir .`; в Codex переустановите плагин из локального маркетплейса.
-Тесты скриптов скиллов и хуков лежат в `tests/` и запускаются командой
-`uv run --locked python -m unittest discover -s tests`; CI гоняет их на Linux, macOS и Windows с Python 3.9 и
-последним Python, с Universal Ctags и без. Все остальные проверки — хуки pre-commit в
-[.pre-commit-config.yaml](../../.pre-commit-config.yaml): Ruff, mypy, ShellCheck, гигиена файлов и
-проверка версии. Установите [uv](https://docs.astral.sh/uv/getting-started/installation/), затем
-выполните `uv sync --locked`: команда создаст игнорируемую `.venv` из `pyproject.toml` и `uv.lock`.
-Добавляйте зависимости разработки через `uv add --dev`, запускайте Python-команды через
-`uv run --locked`. Установите хук коммита командой `uv run --locked pre-commit install`;
-проверяйте все файлы через `uv run --locked pre-commit run --all-files`.
-Набор настроек Python для VS Code по умолчанию указывает на `.venv`; если интерпретатор уже был
-выбран, укажите его через `Python: Select Interpreter`.
-
-Источник версии — `project.version` в `pyproject.toml`. После изменения выполните `uv lock`
-и `uv run --locked python .github/scripts/release.py sync`, чтобы обновить оба манифеста плагина.
-Установленные плагины подхватывают изменения только после повышения версии.
-Изменения записываются в раздел `## Unreleased` файла
-[CHANGELOG.md](CHANGELOG.md); при выпуске он переименовывается в версию. Работа идёт в `develop`, и
-каждое слияние в `main` — это релиз. [release.py](../../.github/scripts/release.py) проверяет, что в
-обоих манифестах версия x.y.z совпадает с TOML, что в `CHANGELOG.md` есть её раздел и что у переводов те же
-заголовки. Пуш в `develop` запускает тесты и pre-commit; pull request в `main` показывает их
-результаты для своего последнего коммита и добавляет проверку релиза: пустой `## Unreleased`,
-заметки во всех changelog и версию выше последнего тега. Сделайте эти проверки обязательными для
-`main` в настройках защиты веток, чтобы `develop` с ошибками нельзя было слить. Пуш в `main`
-повторяет проверку релиза, ставит тег версии и публикует её как последний релиз с заметками из её
-раздела, а разделы переводов свёрнуты под названием языка. Сообщения об уязвимостях:
-[SECURITY.md](../../.github/SECURITY.md). Лицензия — [MIT](../../LICENSE).
+Окружение, проверки, ветки, pull request и релизы: [CONTRIBUTING.md](CONTRIBUTING.md). Сообщения
+об уязвимостях: [SECURITY.md](../../.github/SECURITY.md). Лицензия — [MIT](../../LICENSE).
 
 ## Экономия токенов
 

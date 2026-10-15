@@ -1,7 +1,7 @@
 """Check the plugin version and changelogs, and print release notes.
 
 `sync`: copy project.version from pyproject.toml to both manifests.
-`check`: both manifests match project.version, `CHANGELOG.md` has `## Unreleased` first at most
+`check`: both manifests match project.version, `docs/CHANGELOG.md` has `## Unreleased` first at most
 and then `## [x.y.z](<link to the x.y.z release tag>)` sections, the version has a section, and
 every translation has the same headings. `check --release` also requires an empty `## Unreleased`,
 notes for the version in every changelog, and a version above every x.y.z tag with no tag of its
@@ -57,8 +57,11 @@ def manifests(root: Path, value: str, sync: bool = False) -> None:
         file.write_text(json.dumps(found, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+ENGLISH = "docs/CHANGELOG.md"
+
+
 def changelogs(root: Path) -> list[Path]:
-    return [root / "CHANGELOG.md", *sorted(root.glob("docs/*/CHANGELOG.md"))]
+    return [root / ENGLISH, *sorted(root.glob("docs/*/CHANGELOG.md"))]
 
 
 def sections(path: Path) -> dict[str, str]:
@@ -77,20 +80,20 @@ def sections(path: Path) -> dict[str, str]:
 def check(root: Path, release: bool) -> str:
     value = version(root)
     manifests(root, value)
-    english = list(sections(root / "CHANGELOG.md"))
+    english = list(sections(root / ENGLISH))
     for i, head in enumerate(english):
         if not (head == "## Unreleased" and i == 0 or RELEASE.fullmatch(head)):
             raise Fail(
-                f"CHANGELOG.md: unexpected heading {head!r}; use ## Unreleased first, "
+                f"{ENGLISH}: unexpected heading {head!r}; use ## Unreleased first, "
                 "then ## [x.y.z](<link to the x.y.z release tag>)"
             )
     if not any(head.startswith(f"## [{value}]") for head in english):
-        raise Fail(f"CHANGELOG.md: add a ## [{value}] section for the manifest version")
+        raise Fail(f"{ENGLISH}: add a ## [{value}] section for the manifest version")
     for path in changelogs(root):
         found = sections(path)
         name = path.relative_to(root).as_posix()
         if list(found) != english:
-            raise Fail(f"{name}: headings must match CHANGELOG.md")
+            raise Fail(f"{name}: headings must match {ENGLISH}")
         if release and found.get("## Unreleased", "").strip():
             raise Fail(f"{name}: move the ## Unreleased items to ## [{value}]")
         if release and not section(found, value).strip():
