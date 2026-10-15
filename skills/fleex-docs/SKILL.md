@@ -20,8 +20,9 @@ canonical owner.
 
 ## Gotchas
 
-- Human docs are written in English; their translations, switcher lines, and outdated notes
-  follow $fleex-i18n.
+- Write human docs in English. Translations may lag during development: mark existing stale
+  translations with a note linking the English source, and keep switchers linked to existing
+  files. Use $fleex-i18n only for a requested translation pass, including before a PR.
 
 ## Check
 

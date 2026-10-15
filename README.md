@@ -38,26 +38,27 @@ Shared `fleex-*` skills come from the plugin and are not copied into the reposit
 find skills by their `description` field, so `AGENTS.md` needs no routing table.
 
 Agent-facing files (`AGENTS.md`, skills, agent docs) are written in English. Human docs are
-written in English. Translations appear only when the user asks for them or `AGENTS.md` already
-lists languages, and all live under `docs/<code>/`: `README.md` as `docs/ru/README.md`, a `docs/`
+written in English. Translation passes run on request, including before a PR; translations may
+lag during development, with an outdated note linking the English source. Languages are listed in
+`AGENTS.md`, and all translations live under `docs/<code>/`: `README.md` as `docs/ru/README.md`, a `docs/`
 page at the same path inside `docs/ru/`, each file of a set with one language switcher line under
 its heading. `AGENTS.md` lists the languages (`translated to: ru`); removing one deletes its files
 and moves nothing else. In chat the agent replies in the language of the question.
 
 ## Hooks
 
-The plugin ships `hooks/hooks.json`, which Claude Code and Codex both load:
+The plugin ships only a `PreToolUse` hook matching Claude Code's `Read` tool. The first whole read
+of a file over 400 lines is denied with its fleex-index outline; repeating the read allows the
+whole file. Ranged reads and short or binary files pass through. Line counting uses bounded
+buffers, and atomic markers prevent repeated denials when reads run concurrently.
 
-- before the agent stops, the fleex-hygiene checks that take files run on the files changed against
-  `HEAD`, once per state of those files, and their failures send the agent back to fix them. Linters
-  run the repository's own configuration, which can execute code, so the agent first asks you
-  whether to allow them in that repository; the answer is kept in the plugin's data, not in the
-  repository, and a new set of tools asks again. `git diff --check` runs without asking;
-- in Claude Code, the first whole read of a file over 400 lines is denied with its fleex-index
-  outline, so the agent reads only the ranges it needs; repeating the read reads the whole file.
+Hooks need `python3` or `python` on `PATH` and `CLAUDE_PLUGIN_DATA` or `PLUGIN_DATA` pointing to
+a private plugin data directory. There is no shared temporary-directory fallback. Codex must trust
+plugin hooks in `/hooks`, but this matcher does not intercept shell commands or other read tools.
 
-Hooks need `python3` or `python` on `PATH`. Codex runs a plugin hook only after you trust it in
-`/hooks`.
+Hygiene and translations are user-invoked skills: use `$fleex-hygiene` for checks and
+`$fleex-i18n` for a translation pass, for example when preparing a PR or merge. Neither runs after
+every edit or response. Existing pre-commit and CI checks remain the validation checkpoints.
 
 ## VS Code
 
@@ -134,7 +135,7 @@ owns human documentation; [fleex-i18n](./skills/fleex-i18n/SKILL.md) owns its tr
 [fleex-index](./skills/fleex-index/SKILL.md) is a dependency-free navigation script (map, outline,
 show, find, refs) so agents read only the lines they need;
 [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) finds and runs the repository's configured linters,
-formatters, and type checkers so every change keeps one style.
+formatters, and type checkers on request or for a requested PR or merge check.
 [fleex-todo](./skills/fleex-todo/SKILL.md) owns the `TODO.md` backlog of verified findings and
 planned work. Existing configuration always wins;
 where a repository has none, the plugin's defaults in `skills/fleex-hygiene/assets/` apply. This

@@ -34,6 +34,7 @@ Hard rules; stop and report instead of working around them.
 - Never read or search `<generated, vendored, lockfile, snapshot, build output, and data paths>`.
 - Fastest checks: `<single test command>`, `<lint changed files command>`,
   `<type check command>`.
+- Run full hygiene checks on request or before a PR or merge, rather than after every edit.
 - Do not create plan, summary, or notes files unless asked.
 - Keep the repository root minimal: put a new file in an existing directory or its tool's own
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
@@ -42,6 +43,8 @@ Hard rules; stop and report instead of working around them.
 
 - Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in
   English<, translated to: <BCP 47 codes>>; add or remove a language only when the user asks.
+- Translations may lag during development; mark stale copies and synchronize on request or before
+  a PR. Release changelog sections must match in every language.
 
 ## Report
 

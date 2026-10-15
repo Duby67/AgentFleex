@@ -1,6 +1,7 @@
 ---
 name: fleex-hygiene
-description: Run the repository's own linters, formatters, and type checkers on changed files, finding them in its configuration, pre-commit, and CI, with plugin defaults where none are configured. Use after editing code and before reporting the task done, when a stop was blocked by AgentFleex style checks, when fixing lint, format, or type failures, or when setting up or unifying style tooling or pre-commit. Do not use for writing or running tests, or for reviewing logic.
+description: User-invoked repository linting, formatting, type checks, and style tooling setup. Use only when the user requests these checks, fixes, or setup, including a requested check before a PR or merge. Do not invoke automatically after edits or at the end of a response. Do not use for tests or logic review.
+disable-model-invocation: true
 ---
 
 # Hygiene
@@ -24,11 +25,11 @@ CI's invocation wins.
 
 ## Apply
 
-The plugin's stop hook runs the listed per-file checks on files changed against HEAD and blocks the
-stop with their failures; project-wide checks, package scripts, Makefile targets, and CI steps stay
-yours to run. Linters run the repository's configuration, which can execute code, so the hook first
-asks you to ask the user: always ask, never answer for them, and record the reply with the command
-it gives.
+Run this skill only on request. A requested PR or merge check is a suitable checkpoint; ordinary
+edits and completed responses do not trigger a hygiene pass. Honor explicit repository checks
+without loading this skill on every edit. Use the existing pre-commit and CI checks when available;
+do not repeat checks on an unchanged state. Repository configuration can execute code; the user's
+request authorizes the requested checks, subject to the client's normal execution approvals.
 
 - Run the check commands on changed files; run project-wide commands (`tsc`, `go vet`, `mypy`
   without files) once.

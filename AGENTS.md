@@ -35,7 +35,8 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
   add dependencies with `uv add`, and run commands with `uv run` instead of pip or system Python.
 - Checks: `uv run --locked pre-commit run --all-files` and
   `uv run --locked python -m unittest discover -s tests`.
-- Note changes under `## Unreleased` in `CHANGELOG.md` and its translations. Every merge into `main`
+- Run full checks on request and before a PR or merge, rather than after every edit.
+- Note changes under `## Unreleased` in `CHANGELOG.md`. Every merge into `main`
   is a release: raise `project.version` in `pyproject.toml` above the latest tag, run `uv lock`
   and `uv run --locked python .github/scripts/release.py sync`, and rename that section to the
   version; CI then tags and releases it. Installed plugins update only on a new
@@ -45,6 +46,8 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
 
 - Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in English,
   translated to: ru; add or remove a language only when the user asks.
+- Translations may lag during development; mark stale copies and synchronize on request or before
+  a PR. Release changelog sections must match in every language.
 
 ## Report
 

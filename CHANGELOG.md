@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- Removed automatic stop-time checks and consent prompts; hygiene and translations now require
+  explicit invocation, with full checks before PRs or merges and translation lag allowed in development.
+- Read hooks count lines in bounded buffers and use atomic per-file session markers with private
+  plugin data; concurrent reads no longer lose state or repeatedly deny the same file.
+- Rare subtasks belong in related skills' references; standalone skills retain distinct triggers.
 - Made `pyproject.toml` the version source; `release.py sync` updates both plugin manifests,
   and pre-commit and CI reject version mismatches.
 - Added a uv-managed development environment with a lockfile, `.venv`, and matching CI commands;

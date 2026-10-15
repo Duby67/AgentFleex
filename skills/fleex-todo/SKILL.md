@@ -40,8 +40,8 @@ Tags: `#bug`, `#security`, `#reliability`, `#ci`, `#tests`, `#chore`.
   to the legend first. `@name` assigns an owner, `#123` or a URL refers to an issue.
 - Nested lines hold the evidence and open decisions: why it matters, relative links to code as
   `[file:line](path#Lx-Ly)`, the command that shows it. No prose paragraphs.
-- `TODO.md` is a human doc: written in English, and its translations under `docs/<code>/`, their
-  switcher lines, and outdated notes follow $fleex-i18n.
+- `TODO.md` is a human doc written in English. Translations may lag: mark stale copies with an
+  outdated note linking the English source. Use $fleex-i18n only for a requested translation pass.
 
 ## Rules
 
