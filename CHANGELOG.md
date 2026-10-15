@@ -6,6 +6,7 @@
 
 - Added a uv-managed development environment with a lockfile, `.venv`, and matching CI commands;
   Python repositories default to uv, and VS Code's Python settings point to `.venv`.
+
 ## [0.3.3](https://github.com/Duby67/AgentFleex/releases/tag/0.3.3)
 
 - Fixed release notes failing on Cyrillic text on Windows by writing UTF-8 output.
