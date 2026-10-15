@@ -4,7 +4,6 @@
     "oderwat.indent-rainbow",
     "aaron-bond.better-comments",
     "johnpapa.vscode-peacock",
-    "alefragnani.project-manager",
-    "catppuccin.catppuccin-vsc"
+    "alefragnani.project-manager"
   ]
 }

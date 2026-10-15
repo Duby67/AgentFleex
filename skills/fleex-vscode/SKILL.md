@@ -6,7 +6,7 @@ description: Prepare a project's VS Code workspace for a task by writing extensi
 # VS Code workspace
 
 `assets/<set>/` (relative to this skill's directory) holds `extensions.json` (recommendations) and
-`settings.json` for one set:
+`settings.json` for one set. Sets list each extension by its own ID, never an extension pack:
 
 | Set | When |
 | --- | --- |
@@ -14,7 +14,7 @@ description: Prepare a project's VS Code workspace for a task by writing extensi
 | `personal` | Always: theme and layout |
 | `python` | `pyproject.toml`, `setup.py`, or Python sources |
 | `cpp` | `CMakeLists.txt` or C/C++ sources |
-| `infrastructure` | Dockerfiles, compose files, CI workflows, shell scripts, remote hosts |
+| `infrastructure` | Dockerfiles, compose files, CI workflows, shell scripts, WSL, remote hosts |
 | `tools` | REST, draw.io, hex, CSV, XML, Inno Setup, or npm `package.json` files, or on request |
 
 Choose sets from the task and the files present, then merge them into `.vscode/extensions.json`
