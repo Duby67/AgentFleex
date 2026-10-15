@@ -6,6 +6,7 @@
 
 ## [0.3.3](https://github.com/Duby67/AgentFleex/releases/tag/0.3.3)
 
+- Fixed release notes failing on Cyrillic text on Windows by writing UTF-8 output.
 - Release notes now describe solved problems and resulting behavior without task-list bookkeeping.
 - Added the `fleex-vscode` skill: VS Code extension recommendations and settings by set, merged
   into the project's ignored `.vscode/`; it may suggest other extensions, never suggests removing

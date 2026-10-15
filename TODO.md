@@ -39,6 +39,12 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 
 ## P2 — reliability
 
+- [ ] Fix repeated hook consent prompts and investigate excessive hook calls #bug #reliability #tokens
+  - In a Codex session with installed 0.3.2, the stop hook requested permission after pre-commit
+    had already passed; the user reports an endless permission loop that prevents useful checks.
+  - Suspected excessive invocation and token use are not measured yet. Reproduce across turns and
+    sessions, verify consent persistence and the `asked` guard, and prevent redundant checks and
+    prompts ([agentfleex.py:168-189](hooks/agentfleex.py#L168-L189)).
 - [ ] Reconcile timeouts: 120 s per command against 600 s for the whole stop hook #reliability
   - With many tools the hook is killed without a clear error.
 - [ ] Handle an invalid `package.json` in the stop hook #reliability #bug

@@ -119,7 +119,7 @@ def main() -> int:
         if args.command == "check":
             print(check(root, args.release))
         else:
-            sys.stdout.write(notes(root))
+            sys.stdout.buffer.write(notes(root).encode("utf-8"))
     except Fail as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -55,6 +56,7 @@ class ReleaseTest(unittest.TestCase):
             cwd=self.root,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             check=False,
         )
 
@@ -67,6 +69,18 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stderr)
         self.assertTrue(run.stdout.startswith("- New.\n"))
         self.assertIn("<details><summary>Русский</summary>\n\n- Новое.\n", run.stdout)
+
+    def test_notes_use_utf8_with_cp1252_stdout(self) -> None:
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT), "notes"],
+            cwd=self.root,
+            env={**os.environ, "PYTHONIOENCODING": "cp1252"},
+            capture_output=True,
+            encoding="utf-8",
+            check=False,
+        )
+        self.assertEqual(run.returncode, 0, run.stderr)
+        self.assertIn("<summary>Русский</summary>\n\n- Новое.\n", run.stdout)
 
     def test_unreleased_items_pass_check_but_block_release(self) -> None:
         self.write("1.1.0", "- Pending.\n", "- New.\n", "- Новое.\n")
