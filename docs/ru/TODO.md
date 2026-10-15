@@ -8,11 +8,6 @@
 
 ## P0 — блокирует релиз
 
-- [ ] Починить красный CI на `main`: `check.sh` требует симлинк `.agents/skills` #ci #bug
-  - `.agents/` есть в каждом клоне из-за tracked `.agents/plugins/marketplace.json`, а `.gitignore`
-    исключает `/.agents/*`; проверка в [check.sh:61-64](../../skills/fleex-skills/scripts/check.sh#L61-L64)
-    и `check.ps1` падает на чистом клоне.
-  - Решить: коммитить симлинк или ослабить проверку. Релиз 0.3.2 из-за этого не вышел.
 - [ ] Stop-хук молча теряет файлы с не-ASCII именами #bug
   - `changed()` вызывает `git diff`/`ls-files` без `-z`, git экранирует имя, `is_file()` ложен
     ([agentfleex.py:92-99](../../hooks/agentfleex.py#L92-L99)). В `index.py` `-z` уже используется.

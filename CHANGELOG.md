@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Release notes now describe solved problems and resulting behavior without task-list bookkeeping.
 - Added the `fleex-vscode` skill: VS Code extension recommendations and settings by set, merged
   into the project's ignored `.vscode/`; it may suggest other extensions, never suggests removing
   installed ones, and on request syncs installed extensions with the sets, uninstalling extras as a

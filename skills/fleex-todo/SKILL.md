@@ -51,6 +51,9 @@ Tags: `#bug`, `#security`, `#reliability`, `#ci`, `#tests`, `#chore`.
 - An item is not permission to change code. Work on one only when the user asks for it.
 - Remove a finished item only after the fix is in place and the checks that prove it ran after the
   last change; git history records it.
+- Use the backlog as a local task checklist. Record completed work in `CHANGELOG.md` as the solved
+  problem and resulting behavior, without mentioning or linking `TODO.md` or describing its
+  cleanup, item closure, or reopening. Do not duplicate an existing changelog entry for the fix.
 - A declined item stays in place as `- [-]` with a nested line saying why, so the same finding is
   not raised again.
 - When the user decides an open question, record the decision and drop the alternatives.

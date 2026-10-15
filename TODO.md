@@ -8,12 +8,6 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 
 ## P0 — blocks a release
 
-- [ ] Fix the red CI on `main`: `check.sh` requires a `.agents/skills` symlink #ci #bug
-  - `.agents/` exists in every clone because of the tracked `.agents/plugins/marketplace.json`,
-    while `.gitignore` excludes `/.agents/*`; the check in
-    [check.sh:61-64](skills/fleex-skills/scripts/check.sh#L61-L64) and `check.ps1` fails on a
-    fresh clone.
-  - Decide: commit the symlink or relax the check. Release 0.3.2 is blocked by this.
 - [ ] Stop the stop hook from silently dropping files with non-ASCII names #bug
   - `changed()` calls `git diff`/`ls-files` without `-z`, git quotes the name, and `is_file()` is
     false ([agentfleex.py:92-99](hooks/agentfleex.py#L92-L99)). `index.py` already uses `-z`.
