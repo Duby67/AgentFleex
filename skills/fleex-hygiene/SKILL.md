@@ -17,7 +17,7 @@ configuration always wins over a default.
 Run `scripts/checks.py` (relative to this skill's directory) from anywhere in the repository with
 Python 3.9+. It reads configuration only and prints each configured or default tool with its check
 and fix commands, run through the project environment (`uv run`, `poetry run`, `.venv`, `npx`, the
-lockfile's package manager) or, for a Python tool the project does not install, `uvx`, and the CI
+lockfile's package manager) or, for a Python tool the project does not install, `uvx` at a pinned version, and the CI
 commands that run them in GitHub Actions, GitLab, CircleCI, Azure, Bitbucket, Travis, Drone,
 Woodpecker, Buildkite, and Jenkins. `{files}` stands for the changed files: `git diff --name-only
 HEAD` plus new untracked files, filtered to what the tool handles. When CI runs a tool differently,

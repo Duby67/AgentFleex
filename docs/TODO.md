@@ -6,22 +6,6 @@ States: `- [ ]` open, `- [-]` declined.
 Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests`, `#docs`,
 `#chore`.
 
-## P1 — security
-
-- [ ] Avoid executing Poetry while discovering checks #security
-  - Poetry 2 can install plugins declared in `pyproject.toml`
-    ([checks.py:166-176](../skills/fleex-hygiene/scripts/checks.py#L166-L176)).
-- [ ] Escape `%` in generated check commands on Windows #security
-  - `shell_path()` leaves `%VAR%` unescaped; cmd expands it if a generated command is executed
-    ([checks.py:292-296](../skills/fleex-hygiene/scripts/checks.py#L292-L296)).
-- [ ] Pin the versions of the default `uvx ruff` / `uvx mypy` #security
-  - Without a version, check results drift over time.
-
-- [ ] Enable private vulnerability reporting on GitHub #security
-  - [SECURITY.md](../.github/SECURITY.md) sends reports to **Report a vulnerability**, but the
-    repository has it disabled (`gh api repos/Duby67/AgentFleex/private-vulnerability-reporting`
-    returns `"enabled":false`). Settings → Code security → Private vulnerability reporting.
-
 ## P3 — features
 
 - [ ] Create the `fleex-repo` skill: audit and templates for repository service files #feature
@@ -34,12 +18,14 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
   - Rare jobs go to `references/` of this skill, loaded on demand, not to separate skills.
 - [ ] Create the `fleex-release` skill from this repository's release mechanism #feature
   - Version in the manifests, pre-commit check
-    ([.pre-commit-config.yaml](../.pre-commit-config.yaml)), `CHANGELOG.md` with
-    `## [x.y.z](tag link)` and a brief list, CI tags and releases only a new version ([ci.yml](../.github/workflows/ci.yml)).
+    ([.pre-commit-config.yaml](../.pre-commit-config.yaml)), `docs/CHANGELOG.md` with
+    `## [x.y.z](tag link)` and a brief list, CI tags and releases only a new version from `develop`
+    ([ci.yml](../.github/workflows/ci.yml)); the steps are in
+    [CONTRIBUTING](CONTRIBUTING.md#versions-and-releases).
   - Decide for GitLab: release through CI or tags only.
 - [ ] Add `fleex-hygiene` defaults for Markdown, YAML, JSON, and `.editorconfig` #feature
   - Defaults exist only for Ruff, mypy, and ShellCheck
-    ([checks.py:258-289](../skills/fleex-hygiene/scripts/checks.py#L258-L289)).
+    ([checks.py:251-282](../skills/fleex-hygiene/scripts/checks.py#L251-L282)).
 - [ ] Extend read savings beyond the Read tool #tokens
   - The hook matches only `Read` ([hooks.json:6](../hooks/hooks.json#L6)); `cat`, `grep -r`, and
     long Bash output bypass it.
@@ -55,11 +41,10 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 ## P4 — maintenance
 
 - [ ] Remove the duplicated logic of `check.sh` and `check.ps1` or add an equivalence test #chore
-- [ ] Clean up `.gitignore` #chore
-  - Typo `/.agetns/`.
 - [ ] Decide how `.github/SECURITY.md` is translated #docs
   - Human docs are translated to ru, but `check.sh` and `fleex-docs` accept translations only of
-    root files and `docs/` pages; move the file to the root or extend the rule.
+    root files and `docs/` pages; move the file to `docs/`, where GitHub also finds it, as was done
+    for `CONTRIBUTING.md`, or extend the rule.
 - [ ] Add regression tests for generated Windows commands and clean-clone skill checks #tests
-  - Command escaping on Windows, including `%VAR%` in paths.
+  - Command escaping on Windows.
   - `check.sh` on a fresh clone.

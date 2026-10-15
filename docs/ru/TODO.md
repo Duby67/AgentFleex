@@ -8,23 +8,6 @@
 Теги: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests`, `#docs`,
 `#chore`.
 
-## P1 — безопасность
-
-- [ ] Не выполнять Poetry при обнаружении проверок #security
-  - Poetry 2 может ставить плагины из `pyproject.toml`
-    ([checks.py:166-176](../../skills/fleex-hygiene/scripts/checks.py#L166-L176)).
-- [ ] Экранировать `%` в генерируемых командах проверок на Windows #security
-  - `shell_path()` оставляет `%VAR%` без экранирования; cmd раскроет его при выполнении команды
-    ([checks.py:292-296](../../skills/fleex-hygiene/scripts/checks.py#L292-L296)).
-- [ ] Закрепить версии дефолтных `uvx ruff` / `uvx mypy` #security
-  - Без версии результат проверок меняется со временем.
-
-- [ ] Включить на GitHub приватные сообщения об уязвимостях #security
-  - [SECURITY.md](../../.github/SECURITY.md) отправляет сообщения на **Report a vulnerability**,
-    но в репозитории это выключено
-    (`gh api repos/Duby67/AgentFleex/private-vulnerability-reporting` возвращает
-    `"enabled":false`). Settings → Code security → Private vulnerability reporting.
-
 ## P3 — возможности
 
 - [ ] Создать скилл `fleex-repo`: аудит и шаблоны служебных файлов репозитория #feature
@@ -39,14 +22,15 @@
     скиллы.
 - [ ] Создать скилл `fleex-release` на основе механизма релизов этого репозитория #feature
   - Версия в манифестах, проверка pre-commit
-    ([.pre-commit-config.yaml](../../.pre-commit-config.yaml)), `CHANGELOG.md` с
+    ([.pre-commit-config.yaml](../../.pre-commit-config.yaml)), `docs/CHANGELOG.md` с
     `## [x.y.z](ссылка на тег)` и кратким списком, CI ставит тег и выпускает релиз только для
-    новой версии ([ci.yml](../../.github/workflows/ci.yml)).
+    новой версии из `develop` ([ci.yml](../../.github/workflows/ci.yml)); шаги описаны в
+    [CONTRIBUTING](CONTRIBUTING.md#версии-и-релизы).
   - Решить для GitLab: релиз через CI или только теги.
 - [ ] Добавить в `fleex-hygiene` настройки по умолчанию для Markdown, YAML, JSON и
   `.editorconfig` #feature
   - Сейчас они есть только для Ruff, mypy и ShellCheck
-    ([checks.py:258-289](../../skills/fleex-hygiene/scripts/checks.py#L258-L289)).
+    ([checks.py:251-282](../../skills/fleex-hygiene/scripts/checks.py#L251-L282)).
 - [ ] Расширить экономию чтения за пределы инструмента Read #tokens
   - Хук срабатывает только на `Read` ([hooks.json:6](../../hooks/hooks.json#L6)); `cat`,
     `grep -r` и длинный вывод Bash его обходят.
@@ -62,11 +46,10 @@
 ## P4 — сопровождение
 
 - [ ] Устранить дублирование логики `check.sh` и `check.ps1` или добавить тест на эквивалентность #chore
-- [ ] Почистить `.gitignore` #chore
-  - Опечатка `/.agetns/`.
 - [ ] Решить, как переводить `.github/SECURITY.md` #docs
   - Документы для людей переводятся на ru, но `check.sh` и `fleex-docs` принимают переводы только
-    корневых файлов и страниц `docs/`; перенести файл в корень или расширить правило.
+    корневых файлов и страниц `docs/`; перенести файл в `docs/`, где GitHub его тоже находит, как
+    сделано с `CONTRIBUTING.md`, или расширить правило.
 - [ ] Добавить регрессионные тесты команд Windows и проверок скиллов на чистом клоне #tests
-  - Экранирование команд Windows, включая `%VAR%` в путях.
+  - Экранирование команд Windows.
   - `check.sh` на чистом клоне.

@@ -4,6 +4,13 @@
 
 ## Unreleased
 
+- `fleex-hygiene` no longer runs Poetry to find the project environment, since Poetry can install
+  plugins the repository declares; it inspects only an in-project `.venv`.
+- `fleex-hygiene` fails with an actionable error instead of printing a command whose path contains
+  `%`, which cmd would expand on Windows.
+- The default Ruff and mypy run through `uvx` at pinned versions, matching this repository's
+  pre-commit hooks, so results no longer drift with new releases.
+- Enabled private vulnerability reporting on GitHub.
 - Moved `CHANGELOG.md` and `TODO.md` to `docs/`; the release check reads `docs/CHANGELOG.md`, and
   `fleex-docs` creates a new backlog as `docs/TODO.md`.
 - Added `docs/CONTRIBUTING.md` with setup, checks, branch naming (`<type>/<description>`), pull
