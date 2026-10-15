@@ -1,0 +1,11 @@
+# AgentFleex default for repositories without their own yamllint configuration.
+extends: default
+rules:
+  line-length:
+    max: 100
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1
+  # GitHub Actions uses `on:` as a key.
+  truthy:
+    check-keys: false

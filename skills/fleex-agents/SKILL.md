@@ -49,11 +49,11 @@ The repository owner's rules are decisions, not drafts. Change their form, never
 [The rule catalog](references/rules.md) is the only source of shared rules. A new `AGENTS.md` is the
 project sentence plus the catalog rules that hold for the repository; an existing one gains only the
 missing ones. Fill placeholders with the repository's real commands and paths, verified first; skip
-a rule you cannot make concrete. The Branches section goes into every `AGENTS.md` with the names
-`develop`, `staging`, and `main`, unless the user or the repository's existing setup names other
-branches; report a named branch that does not exist instead of creating it. The `translated to:`
-list in the Language section belongs to $fleex-docs. Once written, the rules belong to the owner and
-are not synced back.
+a rule you cannot make concrete. The Branches section goes into every `AGENTS.md` with `develop`
+and `main`, plus `staging` when the repository deploys to a test server, unless the user or the
+repository's existing setup names other branches; report a named branch that does not exist
+instead of creating it. The `translated to:` list in the Language section belongs to $fleex-docs.
+Once written, the rules belong to the owner and are not synced back.
 
 ## Gotchas
 

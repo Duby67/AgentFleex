@@ -62,6 +62,12 @@ class ChecksTest(unittest.TestCase):
         self.assertIn("ruff (AgentFleex default", output)
         self.assertIn("mypy (AgentFleex default", output)
         self.assertIn("shellcheck (built-in rules)", output)
+        self.assertNotIn("markdownlint (", output)
+        self.write("README.md", "# Title\n")
+        self.write("ci.yml", "on: push\n")
+        output = self.checks()
+        self.assertIn("markdownlint (AgentFleex default", output)
+        self.assertIn("yamllint (AgentFleex default", output)
         self.assertIn("assets/ruff.toml", output)
         self.assertNotIn("\\", output)
         self.assertNotIn("'", output)
@@ -120,12 +126,22 @@ class ChecksTest(unittest.TestCase):
         with mock.patch.object(checks.shutil, "which", lambda name: name == "uvx"):
             self.assertEqual(checks.default_tool("ruff")[0], "uvx ruff@0.16.9")
             self.assertEqual(checks.default_tool("mypy")[0], "uvx mypy@2.3.1")
+        with mock.patch.object(checks.shutil, "which", lambda name: name == "npx"):
+            self.assertEqual(
+                checks.npx_tool("markdownlint-cli2"), ("npx --yes markdownlint-cli2@0.23.3", "")
+            )
         hooks = (SCRIPT.parents[3] / ".pre-commit-config.yaml").read_text(encoding="utf-8")
-        for name, repo in (("ruff", "ruff-pre-commit"), ("mypy", "mirrors-mypy")):
+        pinned = {**checks.UVX_VERSIONS, **checks.NPX_VERSIONS}
+        for name, repo in (
+            ("ruff", "ruff-pre-commit"),
+            ("mypy", "mirrors-mypy"),
+            ("yamllint", "yamllint"),
+            ("markdownlint-cli2", "markdownlint-cli2"),
+        ):
             frozen = re.search(rf"{repo}\n\s+rev: \S+ # frozen: v(\S+)", hooks)
             self.assertIsNotNone(frozen, repo)
             assert frozen
-            self.assertEqual(checks.UVX_VERSIONS[name], frozen.group(1), name)
+            self.assertEqual(pinned[name], frozen.group(1), name)
 
     def test_windows_venv_layout(self) -> None:
         self.write("pyproject.toml", "[tool.ruff]\n")

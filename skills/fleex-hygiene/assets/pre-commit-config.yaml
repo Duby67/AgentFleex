@@ -1,0 +1,22 @@
+# AgentFleex base pre-commit configuration: copy to the repository root as .pre-commit-config.yaml,
+# copy markdownlint.yaml and yamllint.yaml to .github/linters/ as dotfiles, add the repository's
+# linters, then pin every rev to a commit with pre-commit autoupdate --freeze.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: 916ad0aaa108c64d294101002066f530ea170b10 # frozen: v0.23.3
+    hooks:
+      - id: markdownlint-cli2
+        args: [--config, .github/linters/.markdownlint.yaml]
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530 # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+        args: [-c, .github/linters/.yamllint.yaml]

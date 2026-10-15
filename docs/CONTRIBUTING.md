@@ -5,7 +5,7 @@
 ## Issues
 
 Report bugs and propose features with the issue forms. Report vulnerabilities privately as
-described in [SECURITY.md](../.github/SECURITY.md), never in a public issue.
+described in [SECURITY.md](SECURITY.md), never in a public issue.
 
 ## Setup
 
@@ -68,14 +68,19 @@ its own; it carries the last released one until a release raises it.
 Every merge into `main` is a release, made by the maintainer:
 
 1. On `develop`, raise `project.version` in `pyproject.toml` above the latest tag, then run
-   `uv lock` and `uv run --locked python .github/scripts/release.py sync` to update both plugin
-   manifests.
+   `uv lock` and the sync command to update both plugin manifests:
+
+   ```bash
+   uv run --locked python skills/fleex-repo/scripts/release.py \
+     --manifest .claude-plugin/plugin.json --manifest .codex-plugin/plugin.json sync
+   ```
+
 2. Rename `## Unreleased` to `## [x.y.z](https://github.com/Duby67/AgentFleex/releases/tag/x.y.z)`
    in every changelog, leave an empty `## Unreleased` above it, and synchronize the translations.
 3. Push `develop`; CI runs the tests and pre-commit.
 4. Open a pull request from `develop` into `main`. CI shows the `develop` results, fails a pull
    request from any other branch, and adds the release check
-   ([release.py](../.github/scripts/release.py)): both manifests match the version, `## Unreleased`
+   ([release.py](../skills/fleex-repo/scripts/release.py)): both manifests match the version, `## Unreleased`
    is empty, every changelog has the version's section with the same headings, and the version is
    above the latest tag.
 5. Merge with **Create a merge commit**. Squash and rebase merges rewrite the commits, so `main` and
@@ -84,9 +89,6 @@ Every merge into `main` is a release, made by the maintainer:
    GitHub release with the notes of its section, each translation collapsed under its language.
 
 A bug in a release is fixed on `develop` and shipped with the next patch version.
-
-Protect `main` with a ruleset: require a pull request, allow only merge commits, require the
-`test`, `lint`, and `version` checks, and block force pushes and deletion.
 
 ## License
 

@@ -18,6 +18,16 @@ repos:
     hooks:
       - id: mypy
         args: [--config-file=skills/fleex-hygiene/assets/mypy.ini]
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: 916ad0aaa108c64d294101002066f530ea170b10 # frozen: v0.23.3
+    hooks:
+      - id: markdownlint-cli2
+        args: [--config, skills/fleex-hygiene/assets/markdownlint.yaml]
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530 # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+        args: [-c, skills/fleex-hygiene/assets/yamllint.yaml]
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: 745eface02aef23e168a8afb6b5737818efbea95 # frozen: v0.11.0.1
     hooks:
@@ -27,6 +37,9 @@ repos:
       - id: plugin-version
         name: plugin version and changelogs
         language: system
-        entry: uv run --locked python .github/scripts/release.py check
-        files: ^(pyproject\.toml|\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|docs/([^/]+/)?CHANGELOG\.md)$
+        entry: >-
+          uv run --locked python skills/fleex-repo/scripts/release.py
+          --manifest .claude-plugin/plugin.json --manifest .codex-plugin/plugin.json check
+        files: >-
+          ^(pyproject\.toml|\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|docs/([^/]+/)?CHANGELOG\.md)$
         pass_filenames: false

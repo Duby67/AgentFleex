@@ -1,4 +1,4 @@
-"""Behavior of .github/scripts/release.py on small repositories."""
+"""Behavior of skills/fleex-repo/scripts/release.py on small repositories."""
 
 from __future__ import annotations
 
@@ -10,7 +10,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parent.parent / ".github/scripts/release.py"
+SCRIPT = Path(__file__).resolve().parent.parent / "skills/fleex-repo/scripts/release.py"
+MANIFESTS = ["--manifest", ".claude-plugin/plugin.json", "--manifest", ".codex-plugin/plugin.json"]
 LINK = "https://github.com/o/r/releases/tag"
 
 
@@ -53,7 +54,7 @@ class ReleaseTest(unittest.TestCase):
 
     def run_script(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
-            [sys.executable, str(SCRIPT), *args],
+            [sys.executable, str(SCRIPT), *MANIFESTS, *args],
             cwd=self.root,
             capture_output=True,
             text=True,
@@ -131,6 +132,31 @@ class ReleaseTest(unittest.TestCase):
         self.assertEqual(run.returncode, 1)
         self.assertIn("project.version", run.stderr)
         self.assertEqual(path.read_bytes(), before)
+
+    def test_package_json_and_version_file_are_sources(self) -> None:
+        (self.root / "pyproject.toml").unlink()
+        (self.root / "package.json").write_text('{"version": "1.1.0"}', encoding="utf-8")
+        run = self.run_script("check")
+        self.assertEqual((run.returncode, run.stdout), (0, "1.1.0\n"), run.stderr)
+        (self.root / "package.json").unlink()
+        (self.root / "VERSION").write_text("1.1.0\n", encoding="utf-8")
+        run = self.run_script("check")
+        self.assertEqual((run.returncode, run.stdout), (0, "1.1.0\n"), run.stderr)
+        (self.root / "VERSION").unlink()
+        run = self.run_script("check")
+        self.assertIn("no version source", run.stderr)
+
+    def test_root_changelog_without_manifests(self) -> None:
+        (self.root / "docs/CHANGELOG.md").rename(self.root / "CHANGELOG.md")
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT), "check", "--release"],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        self.assertEqual((run.returncode, run.stdout), (0, "1.1.0\n"), run.stderr)
 
     def test_translation_headings_must_match(self) -> None:
         path = self.root / "docs/ru/CHANGELOG.md"

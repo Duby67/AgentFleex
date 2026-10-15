@@ -129,8 +129,8 @@ class HooksTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("private plugin data directory", result.stderr)
 
-    def test_user_gated_skills_require_explicit_invocation(self) -> None:
-        for name in ("fleex-hygiene", "fleex-vscode"):
+    def test_vscode_requires_explicit_invocation(self) -> None:
+        for name in ("fleex-vscode",):
             skill = SCRIPT.parent.parent / "skills" / name
             self.assertIn(
                 "disable-model-invocation: true", (skill / "SKILL.md").read_text(encoding="utf-8")

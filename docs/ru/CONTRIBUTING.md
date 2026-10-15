@@ -5,7 +5,7 @@
 ## Issues
 
 Сообщайте об ошибках и предлагайте возможности через формы issue. Об уязвимостях сообщайте
-приватно, как описано в [SECURITY.md](../../.github/SECURITY.md), и никогда — в публичном issue.
+приватно, как описано в [SECURITY.md](SECURITY.md), и никогда — в публичном issue.
 
 ## Окружение
 
@@ -69,15 +69,20 @@
 Каждое слияние в `main` — это релиз, его делает мейнтейнер:
 
 1. В `develop` повысьте `project.version` в `pyproject.toml` выше последнего тега, затем выполните
-   `uv lock` и `uv run --locked python .github/scripts/release.py sync`, чтобы обновить оба
-   манифеста плагина.
+   `uv lock` и команду синхронизации, чтобы обновить оба манифеста плагина:
+
+   ```bash
+   uv run --locked python skills/fleex-repo/scripts/release.py \
+     --manifest .claude-plugin/plugin.json --manifest .codex-plugin/plugin.json sync
+   ```
+
 2. Переименуйте `## Unreleased` в
    `## [x.y.z](https://github.com/Duby67/AgentFleex/releases/tag/x.y.z)` во всех changelog,
    оставьте над ним пустой `## Unreleased` и синхронизируйте переводы.
 3. Запушьте `develop`; CI запустит тесты и pre-commit.
 4. Откройте pull request из `develop` в `main`. CI покажет результаты `develop`, отклонит pull
    request из любой другой ветки и добавит проверку релиза
-   ([release.py](../../.github/scripts/release.py)): оба манифеста совпадают с версией,
+   ([release.py](../../skills/fleex-repo/scripts/release.py)): оба манифеста совпадают с версией,
    `## Unreleased` пуст, во всех changelog есть раздел версии с одинаковыми заголовками, а версия
    выше последнего тега.
 5. Слейте через **Create a merge commit**. Squash и rebase переписывают коммиты, и `main` с
@@ -86,9 +91,6 @@
    GitHub с заметками из её раздела, где каждый перевод свёрнут под названием языка.
 
 Ошибка в релизе исправляется в `develop` и выходит со следующей патч-версией.
-
-Защитите `main` ruleset'ом: обязательный pull request, только merge-коммиты, обязательные проверки
-`test`, `lint` и `version`, запрет force push и удаления.
 
 ## Лицензия
 

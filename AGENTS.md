@@ -38,11 +38,11 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
 - Checks: `uv run --locked pre-commit run --all-files` and
   `uv run --locked python -m unittest discover -s tests`.
 - Run full checks on request and before a PR or merge, rather than after every edit.
-- Note changes under `## Unreleased` in `docs/CHANGELOG.md`. Every merge into `main`
-  is a release: raise `project.version` in `pyproject.toml` above the latest tag, run `uv lock`
-  and `uv run --locked python .github/scripts/release.py sync`, and rename that section to the
-  version; CI then tags and releases it. Installed plugins update only on a new
-  version.
+- Note changes under `## Unreleased` in `docs/CHANGELOG.md`. Every merge into `main` is a release:
+  raise `project.version` in `pyproject.toml` above the latest tag, run `uv lock` and
+  `uv run --locked python skills/fleex-repo/scripts/release.py --manifest .claude-plugin/plugin.json
+  --manifest .codex-plugin/plugin.json sync`, and rename that section to the version; CI then tags
+  and releases it. Installed plugins update only on a new version.
 
 ## Language
 

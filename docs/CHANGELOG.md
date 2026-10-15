@@ -4,6 +4,24 @@
 
 ## Unreleased
 
+- markdownlint and yamllint are hygiene defaults: `fleex-hygiene` lists them with the plugin's
+  configurations at pinned versions for repositories that configure neither, and the base
+  pre-commit template includes them. This repository runs both in pre-commit.
+- Added the explicit `fleex-repo` skill: it audits and sets up a GitHub repository's service files
+  and settings (LICENSE, `.gitignore`, `.gitattributes`, SECURITY and CONTRIBUTING skeletons, issue
+  and PR templates, Dependabot, CI) and the release mechanism, with templates
+  taken from this repository; GitLab is out of scope.
+- `release.py` moved into `fleex-repo` and works in any repository: the version comes from
+  `pyproject.toml`, `package.json`, or `VERSION`, manifests are passed with `--manifest`, and the
+  changelog is `docs/CHANGELOG.md` or `CHANGELOG.md`.
+- `fleex-hygiene` loads automatically again, still runs only on request or before a PR or merge,
+  and keeps its setup guide in a reference; it adds default `.editorconfig` and base pre-commit
+  templates. This repository gained an `.editorconfig`.
+- `staging` enters the branch model only for repositories that deploy to a test server.
+- Moved `SECURITY.md` to `docs/` with a Russian translation, and updated its scope to the current
+  hooks and scripts.
+- The README describes the plugin as a configuration tool for whole repositories, with a table of
+  skills and the repository layout.
 - `fleex-hygiene` no longer runs Poetry to find the project environment, since Poetry can install
   plugins the repository declares; it inspects only an in-project `.venv`.
 - `fleex-hygiene` fails with an actionable error instead of printing a command whose path contains
@@ -25,8 +43,8 @@
 - The `fleex-todo` skill became a `fleex-docs` reference, read only when `TODO.md` is edited.
 - Translations moved from the `fleex-i18n` skill into `fleex-docs` as an on-demand reference;
   translation passes still run only on request.
-- Removed automatic stop-time checks and consent prompts; hygiene and translations now require
-  explicit invocation, with full checks before PRs or merges and translation lag allowed in development.
+- Removed automatic stop-time checks and consent prompts; hygiene runs on request or before a PR or
+  merge, translations only on request, and translation lag is allowed in development.
 - Read hooks count lines in bounded buffers and use atomic per-file session markers with private
   plugin data; concurrent reads no longer lose state or repeatedly deny the same file.
 - Rare subtasks belong in related skills' references; standalone skills retain distinct triggers.

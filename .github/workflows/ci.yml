@@ -88,7 +88,9 @@ jobs:
           echo "::error::Only develop merges into main; retarget this pull request at develop."
           exit 1
       - name: Version and changelogs
-        run: uv run --locked --no-dev python .github/scripts/release.py check --release
+        run: >-
+          uv run --locked --no-dev python skills/fleex-repo/scripts/release.py
+          --manifest .claude-plugin/plugin.json --manifest .codex-plugin/plugin.json check --release
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -106,7 +108,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="$(uv run --locked --no-dev python .github/scripts/release.py check --release)"
-          uv run --locked --no-dev python .github/scripts/release.py notes > "$RUNNER_TEMP/notes.md"
+          release="uv run --locked --no-dev python skills/fleex-repo/scripts/release.py"
+          manifests="--manifest .claude-plugin/plugin.json --manifest .codex-plugin/plugin.json"
+          version="$($release $manifests check --release)"
+          $release notes > "$RUNNER_TEMP/notes.md"
           gh release create "$version" --target "$GITHUB_SHA" --title "$version" \
             --notes-file "$RUNNER_TEMP/notes.md" --latest

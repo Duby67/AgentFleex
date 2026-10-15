@@ -1,11 +1,17 @@
-"""Check the plugin version and changelogs, and print release notes.
+"""Check the release version and changelogs, and print release notes.
 
-`sync`: copy project.version from pyproject.toml to both manifests.
-`check`: both manifests match project.version, `docs/CHANGELOG.md` has `## Unreleased` first at most
-and then `## [x.y.z](<link to the x.y.z release tag>)` sections, the version has a section, and
-every translation has the same headings. `check --release` also requires an empty `## Unreleased`,
-notes for the version in every changelog, and a version above every x.y.z tag with no tag of its
-own. `notes`: the English section, then each translation's section collapsed under its language.
+The version source is the first of pyproject.toml (`project.version`), package.json (`version`),
+and VERSION (one line). Each `--manifest` is a JSON file whose `version` must match it. The English
+changelog is docs/CHANGELOG.md, or CHANGELOG.md without it; translations are
+docs/<code>/CHANGELOG.md.
+
+`sync`: copy the version to every manifest.
+`check`: every manifest matches the version, the English changelog has `## Unreleased` first at
+most and then `## [x.y.z](<link to the x.y.z release tag>)` sections, the version has a section,
+and every translation has the same headings. `check --release` also requires an empty
+`## Unreleased`, notes for the version in every changelog, and a version above every x.y.z tag
+with no tag of its own. `notes`: the English section, then each translation's section collapsed
+under its language.
 """
 
 from __future__ import annotations
@@ -22,46 +28,64 @@ if sys.version_info >= (3, 11):
 else:
     import tomli as tomllib
 
-MANIFESTS = (".claude-plugin/plugin.json", ".codex-plugin/plugin.json")
 SEMVER = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 RELEASE = re.compile(r"## \[(\d+\.\d+\.\d+)\]\(https://\S+/releases/tag/\1\)")
+# Version sources in order of preference, each with the field that holds the version.
+SOURCES = {"pyproject.toml": "project.version", "package.json": "version", "VERSION": "the line"}
 
 
 class Fail(Exception):
     """An error with an actionable message."""
 
 
-def version(root: Path) -> str:
+def version(root: Path) -> tuple[str, str]:
+    """The version and the file it comes from."""
+    source = next((name for name in SOURCES if (root / name).is_file()), None)
+    if source is None:
+        raise Fail(
+            "no version source; add project.version to pyproject.toml, version to package.json, "
+            "or a VERSION file"
+        )
+    text = (root / source).read_text(encoding="utf-8")
     try:
-        project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-        value = project["project"]["version"]
-    except (OSError, ValueError, KeyError) as error:
-        raise Fail(f"pyproject.toml: set project.version to x.y.z ({error})") from error
+        if source == "pyproject.toml":
+            value = tomllib.loads(text)["project"]["version"]
+        elif source == "package.json":
+            value = json.loads(text)["version"]
+        else:
+            value = text.strip()
+    except (ValueError, KeyError, TypeError) as error:
+        raise Fail(f"{source}: set {SOURCES[source]} to x.y.z ({error})") from error
     if not isinstance(value, str) or not SEMVER.fullmatch(value):
-        raise Fail(f"pyproject.toml project.version {value!r} is not x.y.z")
-    return value
+        raise Fail(f"{source}: {SOURCES[source]} {value!r} is not x.y.z")
+    return value, source
 
 
-def manifests(root: Path, value: str, sync: bool = False) -> None:
-    for path in MANIFESTS:
+def manifests(root: Path, paths: list[str], value: str, source: str, sync: bool = False) -> None:
+    for path in paths:
         file = root / path
-        found = json.loads(file.read_text(encoding="utf-8"))
+        try:
+            found = json.loads(file.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            raise Fail(f"{path}: not a readable JSON manifest ({error})") from error
         if found.get("version") == value:
             continue
         if not sync:
             raise Fail(
-                f"{path}: version differs from pyproject.toml ({value}); "
-                "run uv run --locked python .github/scripts/release.py sync"
+                f"{path}: version differs from {source} ({value}); "
+                "run release.py sync with the same --manifest options"
             )
         found["version"] = value
         file.write_text(json.dumps(found, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-ENGLISH = "docs/CHANGELOG.md"
-
-
 def changelogs(root: Path) -> list[Path]:
-    return [root / ENGLISH, *sorted(root.glob("docs/*/CHANGELOG.md"))]
+    english = root / "docs/CHANGELOG.md"
+    if not english.is_file():
+        english = root / "CHANGELOG.md"
+    if not english.is_file():
+        raise Fail("no changelog; add docs/CHANGELOG.md with ## Unreleased")
+    return [english, *sorted(root.glob("docs/*/CHANGELOG.md"))]
 
 
 def sections(path: Path) -> dict[str, str]:
@@ -77,23 +101,26 @@ def sections(path: Path) -> dict[str, str]:
     return found
 
 
-def check(root: Path, release: bool) -> str:
-    value = version(root)
-    manifests(root, value)
-    english = list(sections(root / ENGLISH))
+def check(root: Path, paths: list[str], release: bool) -> str:
+    value, source = version(root)
+    manifests(root, paths, value, source)
+    files = changelogs(root)
+    english_path = files[0]
+    english_name = english_path.relative_to(root).as_posix()
+    english = list(sections(english_path))
     for i, head in enumerate(english):
         if not (head == "## Unreleased" and i == 0 or RELEASE.fullmatch(head)):
             raise Fail(
-                f"{ENGLISH}: unexpected heading {head!r}; use ## Unreleased first, "
+                f"{english_name}: unexpected heading {head!r}; use ## Unreleased first, "
                 "then ## [x.y.z](<link to the x.y.z release tag>)"
             )
     if not any(head.startswith(f"## [{value}]") for head in english):
-        raise Fail(f"{ENGLISH}: add a ## [{value}] section for the manifest version")
-    for path in changelogs(root):
+        raise Fail(f"{english_name}: add a ## [{value}] section for the version in {source}")
+    for path in files:
         found = sections(path)
         name = path.relative_to(root).as_posix()
         if list(found) != english:
-            raise Fail(f"{name}: headings must match {ENGLISH}")
+            raise Fail(f"{name}: headings must match {english_name}")
         if release and found.get("## Unreleased", "").strip():
             raise Fail(f"{name}: move the ## Unreleased items to ## [{value}]")
         if release and not section(found, value).strip():
@@ -103,7 +130,7 @@ def check(root: Path, release: bool) -> str:
             ["git", "tag", "--list"], cwd=root, capture_output=True, text=True, check=True
         ).stdout.split()
         if value in tags:
-            raise Fail(f"tag {value} already exists; raise project.version and sync the manifests")
+            raise Fail(f"tag {value} already exists; raise the version in {source}")
         older = [tag for tag in tags if SEMVER.fullmatch(tag)]
         latest = max(older, key=key, default=None)
         if latest and key(value) <= key(latest):
@@ -120,7 +147,7 @@ def section(found: dict[str, str], value: str) -> str:
 
 
 def notes(root: Path) -> str:
-    value = version(root)
+    value, _ = version(root)
     english, *translations = changelogs(root)
     text = section(sections(english), value).strip() + "\n"
     for path in translations:
@@ -135,19 +162,22 @@ def notes(root: Path) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--manifest", action="append", default=[], help="JSON file whose version must match"
+    )
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("check", help="check the version and changelogs")
     run.add_argument("--release", action="store_true", help="also require a releasable version")
-    sub.add_parser("sync", help="copy project.version to both manifests")
-    sub.add_parser("notes", help="print the release notes of project.version")
+    sub.add_parser("sync", help="copy the version to every manifest")
+    sub.add_parser("notes", help="print the release notes of the version")
     args = parser.parse_args()
     root = Path.cwd()
     try:
         if args.command == "check":
-            print(check(root, args.release))
+            print(check(root, args.manifest, args.release))
         elif args.command == "sync":
-            value = version(root)
-            manifests(root, value, sync=True)
+            value, source = version(root)
+            manifests(root, args.manifest, value, source, sync=True)
             print(value)
         else:
             sys.stdout.buffer.write(notes(root).encode("utf-8"))
