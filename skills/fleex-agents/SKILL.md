@@ -1,6 +1,6 @@
 ---
 name: fleex-agents
-description: Create, rewrite, or optimize AGENTS.md and CLAUDE.md: add missing rules from the shared catalog, tighten existing rules without changing their meaning, and remove default agent behavior, facade, and decoration. Use when creating, editing, optimizing, shortening, or cleaning up AGENTS.md or CLAUDE.md. Do not use for skill files or human-facing documentation.
+description: Create, edit, or optimize AGENTS.md and CLAUDE.md: add missing rules from the shared catalog, tighten existing rules without changing their meaning, and remove default agent behavior, facade, and decoration. Use when creating, editing, shortening, or cleaning up AGENTS.md or CLAUDE.md. Do not use for skill files or human-facing documentation.
 ---
 
 # AGENTS.md
@@ -8,11 +8,11 @@ description: Create, rewrite, or optimize AGENTS.md and CLAUDE.md: add missing r
 `AGENTS.md` is paid for on every model request; each line must change what the agent does. It is
 the single rules file and the only entry point for agents: Codex reads it natively, and when Claude
 Code is in use, `.claude/CLAUDE.md` holds one line, `@../AGENTS.md`, so Claude Code imports the same
-file. Other agents' instruction files reference `AGENTS.md` using their supported import or
-reference mechanism; keep no independent rules in them. Claude Code is in use when it is the client you run in, `.claude/` exists, or the user says
-so; otherwise create neither `.claude/` nor the file. A root `CLAUDE.md` moves there, its rules
-merged into `AGENTS.md`. Ignore local agent directories in Git; retain an explicit exception
-only for required plugin distribution metadata.
+file. Other agents' instruction files reference `AGENTS.md` through their own import mechanism and
+hold no independent rules. Claude Code is in use when it is the client you run in, `.claude/`
+exists, or the user says so; otherwise create neither `.claude/` nor the file. A root `CLAUDE.md`
+moves there, its rules merged into `AGENTS.md`. Ignore local agent directories in Git, except
+required plugin distribution metadata.
 
 It holds only what every task needs and the agent cannot infer: one or two sentences on what the
 project is and is not, hard invariants whose violation is costly, and pointers to canonical owners
@@ -49,11 +49,11 @@ The repository owner's rules are decisions, not drafts. Change their form, never
 [The rule catalog](references/rules.md) is the only source of shared rules. A new `AGENTS.md` is the
 project sentence plus the catalog rules that hold for the repository; an existing one gains only the
 missing ones. Fill placeholders with the repository's real commands and paths, verified first; skip
-a rule you cannot make concrete. The Branches section goes into every `AGENTS.md` with the names
-`develop`, `staging`, and `main`, unless the user or the repository's existing setup names other
-branches; report a named branch that does not exist instead of creating it. The `translated to:`
-list in the Language section belongs to $fleex-i18n. Once written, the rules belong to the owner and
-are not synced back.
+a rule you cannot make concrete. The Branches section goes into every `AGENTS.md` with `develop`
+and `main`, plus `staging` when the repository deploys to a test server, unless the user or the
+repository's existing setup names other branches; report a named branch that does not exist
+instead of creating it. The `translated to:` list in the Language section belongs to $fleex-docs.
+Once written, the rules belong to the owner and are not synced back.
 
 ## Gotchas
 

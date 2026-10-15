@@ -164,16 +164,9 @@ def python_env(root: Path) -> tuple[str, str, Path | None]:
         if not (root / lock).exists():
             continue
         if tool == "poetry":
-            env = None
-            if shutil.which("poetry"):
-                info = subprocess.run(
-                    ["poetry", "env", "info", "--path"],
-                    cwd=root,
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                )
-                env = Path(info.stdout.strip()) if not info.returncode else None
+            # Running poetry can install plugins the repository declares, so only an in-project
+            # environment is inspected; any other location stays unknown.
+            env = root / ".venv" if (root / ".venv").is_dir() else None
         else:
             env = root / os.environ.get("UV_PROJECT_ENVIRONMENT", ".venv")
         return f"{tool} run ", tool, env
@@ -255,11 +248,14 @@ def ci_commands(path: Path) -> list[tuple[int, str]]:
     return commands
 
 
+DEFAULT_PATTERNS = ["*.py", "*.pyi", "*.sh", "*.bash", "*.md", "*.yml", "*.yaml"]
+
+
 def defaults(root: Path, present: set[str]) -> list[str]:
     """Checks with plugin configuration for languages the repository leaves unconfigured."""
     result = []
     files = subprocess.run(
-        ["git", "ls-files", "-co", "--exclude-standard", "--", "*.py", "*.pyi", "*.sh", "*.bash"],
+        ["git", "ls-files", "-co", "--exclude-standard", "--", *DEFAULT_PATTERNS],
         cwd=root,
         capture_output=True,
         text=True,
@@ -286,22 +282,55 @@ def defaults(root: Path, present: set[str]) -> list[str]:
     if any(f.endswith((".sh", ".bash")) for f in files) and "shellcheck" not in present:
         shellcheck, status = default_tool("shellcheck", uvx=False)
         result.append(f"shellcheck (built-in rules){status}\n  check: {shellcheck} {{files}}")
+    if any(f.endswith(".md") for f in files) and "markdownlint" not in present:
+        markdownlint, status = npx_tool("markdownlint-cli2")
+        config = shell_path(ASSETS / "markdownlint.yaml")
+        result.append(
+            f"markdownlint (AgentFleex default {config}){status}\n"
+            f"  check: {markdownlint} --config {config} {{files}}\n"
+            f"  fix: {markdownlint} --config {config} --fix {{files}}"
+        )
+    if any(f.endswith((".yml", ".yaml")) for f in files) and "yamllint" not in present:
+        yamllint, status = default_tool("yamllint")
+        config = shell_path(ASSETS / "yamllint.yaml")
+        result.append(
+            f"yamllint (AgentFleex default {config}){status}\n"
+            f"  check: {yamllint} -c {config} {{files}}"
+        )
     return result
 
 
 def shell_path(path: Path) -> str:
     """A path for bash, PowerShell, and cmd alike: forward slashes, double quotes only if needed."""
     text = path.as_posix()
-    return f'"{text}"' if re.search(r"[^\w@%+=:,./-]", text) else text
+    # cmd expands %VAR% even inside double quotes, and no escape works in all three shells.
+    if "%" in text:
+        raise SystemExit(f"checks: {text} contains '%', which cmd expands; use a path without '%'")
+    return f'"{text}"' if re.search(r"[^\w@+=:,./-]", text) else text
+
+
+# Versions uvx runs for the default tools, kept equal to this repository's pre-commit hooks so
+# results do not drift with new releases; other tools run at the version the project picks.
+UVX_VERSIONS = {"ruff": "0.16.9", "mypy": "2.3.1", "yamllint": "1.38.0"}
+NPX_VERSIONS = {"markdownlint-cli2": "0.23.3"}
 
 
 def default_tool(name: str, uvx: bool = True) -> tuple[str, str]:
-    """Command for a tool the repository does not install: on PATH, else through uvx."""
+    """Command for a tool the repository does not install: on PATH, else through pinned uvx."""
     if shutil.which(name):
         return name, ""
     if uvx and shutil.which("uvx"):
-        return f"uvx {name}", ""
+        version = UVX_VERSIONS.get(name)
+        return (f"uvx {name}@{version}" if version else f"uvx {name}"), ""
     return name, f"  MISSING {name}"
+
+
+def npx_tool(name: str) -> tuple[str, str]:
+    """Command for a Node tool the repository does not install: on PATH, else through pinned npx."""
+    if shutil.which(name):
+        return name, ""
+    command = f"npx --yes {name}@{NPX_VERSIONS[name]}"
+    return command, "" if shutil.which("npx") else "  MISSING npx (install Node.js)"
 
 
 def rows(root: Path) -> list[str]:
@@ -337,7 +366,7 @@ def rows(root: Path) -> list[str]:
             install = {"uv": "uv sync", "poetry": "poetry install", "pdm": "pdm install"}
             if manager and not shutil.which(manager):
                 status = f"  MISSING {manager}"
-            elif not in_env(env, name):
+            elif env is not None and not in_env(env, name):
                 status = (
                     f"  SETUP: {install[manager]} ({name} is not in the project environment)"
                     if manager

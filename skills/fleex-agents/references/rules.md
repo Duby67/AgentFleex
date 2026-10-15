@@ -17,19 +17,25 @@ Hard rules; stop and report instead of working around them.
 ## Branches
 
 - `<develop>` is the working branch: start branches and forks from it and target every PR at it.
-- `<staging>` is the test branch: `<develop>` merges into it for deployment to the test server; a
-  bug found there is fixed on `<develop>` and merged again.
-- `<main>`, the default branch, holds releases: only `<staging>` merges into it, after its tests
-  pass.
+- `<staging>` is the test branch, only in a repository that deploys to a test server: `<develop>`
+  merges into it for deployment; a bug found there is fixed on `<develop>` and merged again.
+- `<main>`, the default branch, holds releases: only `<staging>` (or `<develop>` without it) merges
+  into it, after its tests pass.
+- Name task branches `<type>/<kebab-description>` with a type from `<contributing guide#branches>`.
 
 ## Work
 
 - Make the smallest correct change. Prefer, in order: no change, existing code, the standard
   library, an installed dependency, new code. Stay in scope.
 - Read narrowly: focused search, bounded reads, `git diff --stat` before diffs, quiet test output.
+- For repositories with Python files, including tests, default to uv and an ignored `.venv`:
+  declare dependencies in `pyproject.toml`, commit `uv.lock`, and use `uv sync`, `uv add`, and
+  `uv run` instead of pip or system Python. Preserve an established environment manager unless
+  the user requests migration.
 - Never read or search `<generated, vendored, lockfile, snapshot, build output, and data paths>`.
 - Fastest checks: `<single test command>`, `<lint changed files command>`,
   `<type check command>`.
+- Run full hygiene checks on request or before a PR or merge, rather than after every edit.
 - Do not create plan, summary, or notes files unless asked.
 - Keep the repository root minimal: put a new file in an existing directory or its tool's own
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
@@ -38,6 +44,8 @@ Hard rules; stop and report instead of working around them.
 
 - Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in
   English<, translated to: <BCP 47 codes>>; add or remove a language only when the user asks.
+- Translations may lag during development; mark stale copies and synchronize on request or before
+  a PR. Release changelog sections must match in every language.
 
 ## Report
 

@@ -1,8 +1,39 @@
 # Changelog
 
-**English** · [Русский](docs/ru/CHANGELOG.md)
+**English** · [Русский](ru/CHANGELOG.md)
 
 ## Unreleased
+
+## [0.4.0](https://github.com/Duby67/AgentFleex/releases/tag/0.4.0)
+
+- Added the `fleex-repo` skill, invoked explicitly: it audits and sets up a GitHub repository's
+  service files and settings (LICENSE, `.gitignore`, `.gitattributes`, SECURITY and CONTRIBUTING
+  skeletons, issue forms and a PR template, Dependabot, CI, private vulnerability reporting) and its
+  releases, from templates taken from this repository.
+- `fleex-repo` ships `release.py` for any repository: the version comes from `pyproject.toml`,
+  `package.json`, or `VERSION`, `--manifest` files stay in sync, and CI rejects a pull request into
+  `main` from any branch but the release source, then tags each merge into `main` and publishes it
+  with notes from `docs/CHANGELOG.md`.
+- Fewer skill descriptions load into every request: translations and the `TODO.md` backlog became
+  `fleex-docs` references, replacing `fleex-i18n` and `fleex-todo`, and `fleex-vscode` runs only
+  when invoked explicitly. Tests cap the size of `AGENTS.md` and of the automatic descriptions.
+- `fleex-hygiene` loads automatically but runs only on request or before a PR or merge; automatic
+  stop-time checks and consent prompts are gone. Its setup guide is a reference with templates for
+  `.editorconfig` and a base pre-commit configuration.
+- markdownlint and yamllint joined Ruff, mypy, and ShellCheck as hygiene defaults, and default tools
+  run through `uvx` or `npx` at pinned versions, so results no longer drift with new releases.
+- `fleex-hygiene` no longer runs Poetry, which can install plugins the repository declares, to find
+  the project environment, and fails with an actionable error instead of printing a command whose
+  path contains `%`, which cmd expands on Windows.
+- Python repositories default to uv with a committed `uv.lock` and an ignored `.venv`; VS Code's
+  Python settings point to `.venv`.
+- The branch model adds `staging` only for repositories that deploy to a test server, and task
+  branches are named `<type>/<kebab-description>`.
+- Human docs other than the README live in `docs/` (`CHANGELOG.md`, `CONTRIBUTING.md`,
+  `SECURITY.md`, `TODO.md`), each translated to Russian; new backlogs are created as
+  `docs/TODO.md`.
+- The Read hook counts lines in bounded buffers and keeps atomic per-file markers in private plugin
+  data, so concurrent reads no longer lose state or deny the same file twice.
 
 ## [0.3.3](https://github.com/Duby67/AgentFleex/releases/tag/0.3.3)
 

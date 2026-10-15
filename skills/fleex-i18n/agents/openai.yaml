@@ -1,4 +1,0 @@
-interface:
-  display_name: "Translations"
-  short_description: "Add, remove, and maintain translated human docs"
-  default_prompt: "Use $fleex-i18n to add or update a translation of the human docs."
