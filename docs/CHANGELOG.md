@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- Tests cap the always-loaded context (`AGENTS.md` and model-invoked skill descriptions), check
+  that `check.sh` reports each kind of error, and compare `check.ps1` with it where PowerShell is
+  installed.
 - markdownlint and yamllint are hygiene defaults: `fleex-hygiene` lists them with the plugin's
   configurations at pinned versions for repositories that configure neither, and the base
   pre-commit template includes them. This repository runs both in pre-commit.
