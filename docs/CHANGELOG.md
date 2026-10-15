@@ -4,57 +4,36 @@
 
 ## Unreleased
 
-- Tests cap the always-loaded context (`AGENTS.md` and model-invoked skill descriptions), check
-  that `check.sh` reports each kind of error, and compare `check.ps1` with it where PowerShell is
-  installed.
-- markdownlint and yamllint are hygiene defaults: `fleex-hygiene` lists them with the plugin's
-  configurations at pinned versions for repositories that configure neither, and the base
-  pre-commit template includes them. This repository runs both in pre-commit.
-- Added the explicit `fleex-repo` skill: it audits and sets up a GitHub repository's service files
-  and settings (LICENSE, `.gitignore`, `.gitattributes`, SECURITY and CONTRIBUTING skeletons, issue
-  and PR templates, Dependabot, CI) and the release mechanism, with templates
-  taken from this repository; GitLab is out of scope.
-- `release.py` moved into `fleex-repo` and works in any repository: the version comes from
-  `pyproject.toml`, `package.json`, or `VERSION`, manifests are passed with `--manifest`, and the
-  changelog is `docs/CHANGELOG.md` or `CHANGELOG.md`.
-- `fleex-hygiene` loads automatically again, still runs only on request or before a PR or merge,
-  and keeps its setup guide in a reference; it adds default `.editorconfig` and base pre-commit
-  templates. This repository gained an `.editorconfig`.
-- `staging` enters the branch model only for repositories that deploy to a test server.
-- Moved `SECURITY.md` to `docs/` with a Russian translation, and updated its scope to the current
-  hooks and scripts.
-- The README describes the plugin as a configuration tool for whole repositories, with a table of
-  skills and the repository layout.
-- `fleex-hygiene` no longer runs Poetry to find the project environment, since Poetry can install
-  plugins the repository declares; it inspects only an in-project `.venv`.
-- `fleex-hygiene` fails with an actionable error instead of printing a command whose path contains
-  `%`, which cmd would expand on Windows.
-- The default Ruff and mypy run through `uvx` at pinned versions, matching this repository's
-  pre-commit hooks, so results no longer drift with new releases.
-- Enabled private vulnerability reporting on GitHub.
-- Moved `CHANGELOG.md` and `TODO.md` to `docs/`; the release check reads `docs/CHANGELOG.md`, and
-  `fleex-docs` creates a new backlog as `docs/TODO.md`.
-- Added `docs/CONTRIBUTING.md` with setup, checks, branch naming (`<type>/<description>`), pull
-  requests, Semantic Versioning, and the release steps; the README links to it instead of
-  describing development.
-- Added issue forms for bugs and features, a pull request template, and a contact link for private
-  vulnerability reports; blank issues are disabled.
-- CI fails a pull request into `main` from any branch other than `develop`.
-- The `AGENTS.md` rule catalog names task branches `<type>/<kebab-description>`.
-- `fleex-vscode` runs only when invoked explicitly, so its description no longer loads into every
-  request in Claude Code or Codex.
-- The `fleex-todo` skill became a `fleex-docs` reference, read only when `TODO.md` is edited.
-- Translations moved from the `fleex-i18n` skill into `fleex-docs` as an on-demand reference;
-  translation passes still run only on request.
-- Removed automatic stop-time checks and consent prompts; hygiene runs on request or before a PR or
-  merge, translations only on request, and translation lag is allowed in development.
-- Read hooks count lines in bounded buffers and use atomic per-file session markers with private
-  plugin data; concurrent reads no longer lose state or repeatedly deny the same file.
-- Rare subtasks belong in related skills' references; standalone skills retain distinct triggers.
-- Made `pyproject.toml` the version source; `release.py sync` updates both plugin manifests,
-  and pre-commit and CI reject version mismatches.
-- Added a uv-managed development environment with a lockfile, `.venv`, and matching CI commands;
-  Python repositories default to uv, and VS Code's Python settings point to `.venv`.
+## [0.4.0](https://github.com/Duby67/AgentFleex/releases/tag/0.4.0)
+
+- Added the `fleex-repo` skill, invoked explicitly: it audits and sets up a GitHub repository's
+  service files and settings (LICENSE, `.gitignore`, `.gitattributes`, SECURITY and CONTRIBUTING
+  skeletons, issue forms and a PR template, Dependabot, CI, private vulnerability reporting) and its
+  releases, from templates taken from this repository.
+- `fleex-repo` ships `release.py` for any repository: the version comes from `pyproject.toml`,
+  `package.json`, or `VERSION`, `--manifest` files stay in sync, and CI rejects a pull request into
+  `main` from any branch but the release source, then tags each merge into `main` and publishes it
+  with notes from `docs/CHANGELOG.md`.
+- Fewer skill descriptions load into every request: translations and the `TODO.md` backlog became
+  `fleex-docs` references, replacing `fleex-i18n` and `fleex-todo`, and `fleex-vscode` runs only
+  when invoked explicitly. Tests cap the size of `AGENTS.md` and of the automatic descriptions.
+- `fleex-hygiene` loads automatically but runs only on request or before a PR or merge; automatic
+  stop-time checks and consent prompts are gone. Its setup guide is a reference with templates for
+  `.editorconfig` and a base pre-commit configuration.
+- markdownlint and yamllint joined Ruff, mypy, and ShellCheck as hygiene defaults, and default tools
+  run through `uvx` or `npx` at pinned versions, so results no longer drift with new releases.
+- `fleex-hygiene` no longer runs Poetry, which can install plugins the repository declares, to find
+  the project environment, and fails with an actionable error instead of printing a command whose
+  path contains `%`, which cmd expands on Windows.
+- Python repositories default to uv with a committed `uv.lock` and an ignored `.venv`; VS Code's
+  Python settings point to `.venv`.
+- The branch model adds `staging` only for repositories that deploy to a test server, and task
+  branches are named `<type>/<kebab-description>`.
+- Human docs other than the README live in `docs/` (`CHANGELOG.md`, `CONTRIBUTING.md`,
+  `SECURITY.md`, `TODO.md`), each translated to Russian; new backlogs are created as
+  `docs/TODO.md`.
+- The Read hook counts lines in bounded buffers and keeps atomic per-file markers in private plugin
+  data, so concurrent reads no longer lose state or deny the same file twice.
 
 ## [0.3.3](https://github.com/Duby67/AgentFleex/releases/tag/0.3.3)
 

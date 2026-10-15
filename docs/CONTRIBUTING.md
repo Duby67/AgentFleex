@@ -27,8 +27,8 @@ plugin from the local marketplace.
 - Tests: `uv run --locked python -m unittest discover -s tests`. CI runs them on Linux, macOS, and
   Windows with Python 3.9 and the latest Python, with and without Universal Ctags.
 - Everything else: `uv run --locked pre-commit run --all-files`, the hooks in
-  [.pre-commit-config.yaml](../.pre-commit-config.yaml): Ruff, mypy, ShellCheck, file hygiene, and
-  the version check.
+  [.pre-commit-config.yaml](../.pre-commit-config.yaml): Ruff, mypy, ShellCheck, markdownlint,
+  yamllint, file hygiene, and the version check.
 
 ## Branches
 

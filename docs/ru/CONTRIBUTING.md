@@ -28,8 +28,8 @@
 - Тесты: `uv run --locked python -m unittest discover -s tests`. CI гоняет их на Linux, macOS и
   Windows с Python 3.9 и последним Python, с Universal Ctags и без.
 - Всё остальное: `uv run --locked pre-commit run --all-files`, хуки из
-  [.pre-commit-config.yaml](../../.pre-commit-config.yaml): Ruff, mypy, ShellCheck, гигиена файлов и
-  проверка версии.
+  [.pre-commit-config.yaml](../../.pre-commit-config.yaml): Ruff, mypy, ShellCheck, markdownlint,
+  yamllint, гигиена файлов и проверка версии.
 
 ## Ветки
 
