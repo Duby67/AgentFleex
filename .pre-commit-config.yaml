@@ -26,7 +26,7 @@ repos:
     hooks:
       - id: plugin-version
         name: plugin version and changelogs
-        language: python
-        entry: python .github/scripts/release.py check
-        files: ^(\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|(docs/[^/]+/)?CHANGELOG\.md)$
+        language: system
+        entry: uv run --locked python .github/scripts/release.py check
+        files: ^(pyproject\.toml|\.claude-plugin/plugin\.json|\.codex-plugin/plugin\.json|(docs/[^/]+/)?CHANGELOG\.md)$
         pass_filenames: false

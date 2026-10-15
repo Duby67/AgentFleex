@@ -1,6 +1,7 @@
 """Check the plugin version and changelogs, and print release notes.
 
-`check`: both manifests carry one x.y.z version, `CHANGELOG.md` has `## Unreleased` first at most
+`sync`: copy project.version from pyproject.toml to both manifests.
+`check`: both manifests match project.version, `CHANGELOG.md` has `## Unreleased` first at most
 and then `## [x.y.z](<link to the x.y.z release tag>)` sections, the version has a section, and
 every translation has the same headings. `check --release` also requires an empty `## Unreleased`,
 notes for the version in every changelog, and a version above every x.y.z tag with no tag of its
@@ -16,6 +17,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
+
 MANIFESTS = (".claude-plugin/plugin.json", ".codex-plugin/plugin.json")
 SEMVER = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 RELEASE = re.compile(r"## \[(\d+\.\d+\.\d+)\]\(https://\S+/releases/tag/\1\)")
@@ -26,13 +32,29 @@ class Fail(Exception):
 
 
 def version(root: Path) -> str:
-    found = {json.loads((root / path).read_text(encoding="utf-8"))["version"] for path in MANIFESTS}
-    if len(found) != 1:
-        raise Fail(f"plugin.json versions differ: {', '.join(sorted(found))}; set one version")
-    value = found.pop()
-    if not SEMVER.fullmatch(value):
-        raise Fail(f"plugin.json version {value!r} is not x.y.z")
+    try:
+        project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+        value = project["project"]["version"]
+    except (OSError, ValueError, KeyError) as error:
+        raise Fail(f"pyproject.toml: set project.version to x.y.z ({error})") from error
+    if not isinstance(value, str) or not SEMVER.fullmatch(value):
+        raise Fail(f"pyproject.toml project.version {value!r} is not x.y.z")
     return value
+
+
+def manifests(root: Path, value: str, sync: bool = False) -> None:
+    for path in MANIFESTS:
+        file = root / path
+        found = json.loads(file.read_text(encoding="utf-8"))
+        if found.get("version") == value:
+            continue
+        if not sync:
+            raise Fail(
+                f"{path}: version differs from pyproject.toml ({value}); "
+                "run uv run --locked python .github/scripts/release.py sync"
+            )
+        found["version"] = value
+        file.write_text(json.dumps(found, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def changelogs(root: Path) -> list[Path]:
@@ -54,6 +76,7 @@ def sections(path: Path) -> dict[str, str]:
 
 def check(root: Path, release: bool) -> str:
     value = version(root)
+    manifests(root, value)
     english = list(sections(root / "CHANGELOG.md"))
     for i, head in enumerate(english):
         if not (head == "## Unreleased" and i == 0 or RELEASE.fullmatch(head)):
@@ -77,7 +100,7 @@ def check(root: Path, release: bool) -> str:
             ["git", "tag", "--list"], cwd=root, capture_output=True, text=True, check=True
         ).stdout.split()
         if value in tags:
-            raise Fail(f"tag {value} already exists; raise the version in both plugin.json files")
+            raise Fail(f"tag {value} already exists; raise project.version and sync the manifests")
         older = [tag for tag in tags if SEMVER.fullmatch(tag)]
         latest = max(older, key=key, default=None)
         if latest and key(value) <= key(latest):
@@ -112,12 +135,17 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("check", help="check the version and changelogs")
     run.add_argument("--release", action="store_true", help="also require a releasable version")
-    sub.add_parser("notes", help="print the release notes of the manifest version")
+    sub.add_parser("sync", help="copy project.version to both manifests")
+    sub.add_parser("notes", help="print the release notes of project.version")
     args = parser.parse_args()
     root = Path.cwd()
     try:
         if args.command == "check":
             print(check(root, args.release))
+        elif args.command == "sync":
+            value = version(root)
+            manifests(root, value, sync=True)
+            print(value)
         else:
             sys.stdout.buffer.write(notes(root).encode("utf-8"))
     except Fail as error:

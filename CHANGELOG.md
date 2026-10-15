@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Made `pyproject.toml` the version source; `release.py sync` updates both plugin manifests,
+  and pre-commit and CI reject version mismatches.
 - Added a uv-managed development environment with a lockfile, `.venv`, and matching CI commands;
   Python repositories default to uv, and VS Code's Python settings point to `.venv`.
 

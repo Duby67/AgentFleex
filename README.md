@@ -100,10 +100,12 @@ Install the commit hook once with `uv run --locked pre-commit install`; check al
 `uv run --locked pre-commit run --all-files`. VS Code's Python settings set defaults to `.venv`;
 if an interpreter was already selected, choose it with `Python: Select Interpreter`.
 
-The version lives in both plugin manifests, and installed plugins pick up changes only after it is
-raised. Changes are noted under `## Unreleased` in [CHANGELOG.md](./CHANGELOG.md); a release renames
+The version is owned by `project.version` in `pyproject.toml`. After changing it, run `uv lock`
+and `uv run --locked python .github/scripts/release.py sync` to update both plugin manifests.
+Installed plugins pick up changes only after the version is raised.
+Changes are noted under `## Unreleased` in [CHANGELOG.md](./CHANGELOG.md); a release renames
 that section to the version. Work goes to `develop`, and every merge into `main` is a release.
-[release.py](./.github/scripts/release.py) checks that both manifests carry one x.y.z version, that
+[release.py](./.github/scripts/release.py) checks that both manifests match the TOML x.y.z version, that
 `CHANGELOG.md` has its section, and that translations have the same headings. A push to `develop`
 runs the tests and pre-commit; a pull request into `main` shows those results for its head commit
 and adds the release check: an empty `## Unreleased`, notes in every changelog, and a version above

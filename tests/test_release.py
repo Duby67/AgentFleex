@@ -29,6 +29,9 @@ class ReleaseTest(unittest.TestCase):
         self.write("1.1.0", "", "- New.\n", "- Новое.\n")
 
     def write(self, version: str, unreleased: str, notes: str, ru: str) -> None:
+        (self.root / "pyproject.toml").write_text(
+            f'[project]\nversion = "{version}"\n', encoding="utf-8"
+        )
         for manifest in (".claude-plugin", ".codex-plugin"):
             (self.root / manifest).mkdir(exist_ok=True)
             (self.root / manifest / "plugin.json").write_text(
@@ -104,7 +107,32 @@ class ReleaseTest(unittest.TestCase):
             json.dumps({"version": "1.2.0"}), encoding="utf-8"
         )
         run = self.run_script("check")
-        self.assertIn("versions differ", run.stderr)
+        self.assertIn("version differs from pyproject.toml", run.stderr)
+
+    def test_sync_updates_both_manifests_and_preserves_other_fields(self) -> None:
+        self.write("1.2.0", "", "- New.\n", "- Новое.\n")
+        for manifest in (".claude-plugin", ".codex-plugin"):
+            (self.root / manifest / "plugin.json").write_text(
+                json.dumps({"version": "1.1.0", "name": "test"}), encoding="utf-8"
+            )
+        self.assertNotEqual(self.run_script("check").returncode, 0)
+        run = self.run_script("sync")
+        self.assertEqual(run.returncode, 0, run.stderr)
+        for manifest in (".claude-plugin", ".codex-plugin"):
+            found = json.loads((self.root / manifest / "plugin.json").read_text(encoding="utf-8"))
+            self.assertEqual(found, {"version": "1.2.0", "name": "test"})
+        self.assertEqual(self.run_script("check").returncode, 0)
+
+    def test_invalid_project_version_does_not_change_manifests(self) -> None:
+        path = self.root / ".claude-plugin/plugin.json"
+        before = path.read_bytes()
+        (self.root / "pyproject.toml").write_text(
+            '[project]\nversion = "invalid"\n', encoding="utf-8"
+        )
+        run = self.run_script("sync")
+        self.assertEqual(run.returncode, 1)
+        self.assertIn("project.version", run.stderr)
+        self.assertEqual(path.read_bytes(), before)
 
     def test_translation_headings_must_match(self) -> None:
         path = self.root / "docs/ru/CHANGELOG.md"
