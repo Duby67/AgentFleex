@@ -1,4 +1,0 @@
-interface:
-  display_name: "TODO"
-  short_description: "Maintain the TODO.md backlog of findings and planned work"
-  default_prompt: "Use $fleex-todo to record these findings in TODO.md."

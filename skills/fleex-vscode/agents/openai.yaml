@@ -2,3 +2,5 @@ interface:
   display_name: "VS Code"
   short_description: "Prepare the VS Code workspace and, on request, sync extensions"
   default_prompt: "Use $fleex-vscode to prepare the VS Code workspace for this task."
+policy:
+  allow_implicit_invocation: false

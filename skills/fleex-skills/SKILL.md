@@ -53,8 +53,9 @@ agent direction rather than a script.
   Conditional detail goes to one-level `references/`, deterministic logic to `scripts/` with
   explicit inputs, no hidden network calls, and actionable non-zero failures.
 - Put a rare subtask in a related skill's `references/` instead of adding another always-loaded
-  description. Keep a standalone skill when its trigger or owned area is distinct; infer frequency
-  from usage evidence, and label lifecycle-based estimates when no usage data exists.
+  description. Keep a standalone skill when its trigger or owned area is distinct; when it runs
+  only on request, user-gate it, which keeps its description out of context in both clients. Infer
+  frequency from usage evidence, and label lifecycle-based estimates when no usage data exists.
 - Do not create skills for generic reasoning, planning, or mandatory task stages; keep a skill only
   when it adds project knowledge or tools beyond ordinary agent abilities.
 - Name another skill only where its boundary with this one is easy to confuse; never list or route

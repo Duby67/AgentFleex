@@ -56,13 +56,14 @@ Hooks need `python3` or `python` on `PATH` and `CLAUDE_PLUGIN_DATA` or `PLUGIN_D
 a private plugin data directory. There is no shared temporary-directory fallback. Codex must trust
 plugin hooks in `/hooks`, but this matcher does not intercept shell commands or other read tools.
 
-Hygiene and translations are user-invoked skills: use `$fleex-hygiene` for checks and
-`$fleex-i18n` for a translation pass, for example when preparing a PR or merge. Neither runs after
-every edit or response. Existing pre-commit and CI checks remain the validation checkpoints.
+`$fleex-hygiene` and `$fleex-vscode` run only when invoked explicitly, so their descriptions
+cost no context; translation passes run only on request, for example when preparing a
+PR or merge. Neither checks nor translations run after every edit or response. Existing pre-commit
+and CI checks remain the validation checkpoints.
 
 ## VS Code
 
-Ask the agent to prepare the VS Code workspace for a task: the `fleex-vscode` skill picks sets from
+Invoke `$fleex-vscode` to prepare the VS Code workspace for a task: it picks sets from
 `skills/fleex-vscode/assets/` by the task and the project files and merges their extension
 recommendations and settings into the project's `.vscode/`, which stays ignored by Git. On a new
 machine the whole set installs at once: `Extensions: Show Recommended Extensions`, then the Install
@@ -131,14 +132,13 @@ request. Therefore:
 Each skill owns its files: [fleex-agents](./skills/fleex-agents/SKILL.md) owns `AGENTS.md`,
 `.claude/CLAUDE.md`, and the single catalog of shared rules; [fleex-skills](./skills/fleex-skills/SKILL.md)
 owns skills, their wiring, and links to best practices; [fleex-docs](./skills/fleex-docs/SKILL.md)
-owns human documentation; [fleex-i18n](./skills/fleex-i18n/SKILL.md) owns its translations;
+owns human documentation and, in its references, [translations](./skills/fleex-docs/references/i18n.md)
+and the [`TODO.md` backlog](./skills/fleex-docs/references/todo.md);
 [fleex-index](./skills/fleex-index/SKILL.md) is a dependency-free navigation script (map, outline,
 show, find, refs) so agents read only the lines they need;
 [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) finds and runs the repository's configured linters,
-formatters, and type checkers on request or for a requested PR or merge check.
-[fleex-todo](./skills/fleex-todo/SKILL.md) owns the `TODO.md` backlog of verified findings and
-planned work. Existing configuration always wins;
-where a repository has none, the plugin's defaults in `skills/fleex-hygiene/assets/` apply. This
+formatters, and type checkers on request or for a requested PR or merge check. Existing
+configuration always wins; where a repository has none, the plugin's defaults in `skills/fleex-hygiene/assets/` apply. This
 repository uses them too: `ruff.toml` extends the default Ruff config, and CI passes the default
 mypy config. Rules once written into a repository's `AGENTS.md` belong to its owner and are not
 synced with the catalog.

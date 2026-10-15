@@ -4,6 +4,11 @@
 
 ## Unreleased
 
+- `fleex-vscode` runs only when invoked explicitly, so its description no longer loads into every
+  request in Claude Code or Codex.
+- The `fleex-todo` skill became a `fleex-docs` reference, read only when `TODO.md` is edited.
+- Translations moved from the `fleex-i18n` skill into `fleex-docs` as an on-demand reference;
+  translation passes still run only on request.
 - Removed automatic stop-time checks and consent prompts; hygiene and translations now require
   explicit invocation, with full checks before PRs or merges and translation lag allowed in development.
 - Read hooks count lines in bounded buffers and use atomic per-file session markers with private

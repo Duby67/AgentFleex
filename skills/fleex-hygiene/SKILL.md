@@ -25,10 +25,8 @@ CI's invocation wins.
 
 ## Apply
 
-Run this skill only on request. A requested PR or merge check is a suitable checkpoint; ordinary
-edits and completed responses do not trigger a hygiene pass. Honor explicit repository checks
-without loading this skill on every edit. Use the existing pre-commit and CI checks when available;
-do not repeat checks on an unchanged state. Repository configuration can execute code; the user's
+Use the existing pre-commit and CI checks when available; do not repeat checks on an unchanged
+state. Repository configuration can execute code; the user's
 request authorizes the requested checks, subject to the client's normal execution approvals.
 
 - Run the check commands on changed files; run project-wide commands (`tsc`, `go vet`, `mypy`
