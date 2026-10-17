@@ -1,6 +1,6 @@
 {
   "name": "agentfleex",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Skills and hooks that configure repositories one way: AGENTS.md, skills, translated docs, style checks, GitHub files and settings, releases, and cheap code navigation",
   "author": {
     "name": "Duby67"

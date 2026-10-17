@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+## [0.4.1](https://github.com/Duby67/AgentFleex/releases/tag/0.4.1)
+
 - Dependabot pull requests target `develop`: the `fleex-repo` template and this repository set
   `target-branch: develop` for every entry, so CI no longer rejects them as pull requests into
   `main`.
