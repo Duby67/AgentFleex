@@ -10,7 +10,6 @@ __pycache__/
 !/.agents/plugins/
 /.agents/plugins/*
 !/.agents/plugins/marketplace.json
-/.agetns/
 /.claude/
 /.cursor/
 /.codex/

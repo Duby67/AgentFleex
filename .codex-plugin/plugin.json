@@ -1,7 +1,7 @@
 {
   "name": "agentfleex",
-  "version": "0.3.3",
-  "description": "Skills and hooks for agent-driven repositories: minimal AGENTS.md, skills, and translated docs, cheap code navigation, and style checks",
+  "version": "0.4.0",
+  "description": "Skills and hooks that configure repositories one way: AGENTS.md, skills, translated docs, style checks, GitHub files and settings, releases, and cheap code navigation",
   "author": {
     "name": "Duby67"
   },

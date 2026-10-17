@@ -1,0 +1,19 @@
+# Environments and caches
+.venv/
+__pycache__/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+node_modules/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local agent configuration
+/.agents/
+/.claude/
+/.cursor/
+/.codex/

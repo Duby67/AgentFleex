@@ -18,6 +18,8 @@ Hard rules; stop and report instead of working around them.
 
 - `develop` is the working branch: start branches and forks from it and target every PR at it.
 - `main`, the default branch, holds releases: only `develop` merges into it.
+- Name task branches `<type>/<kebab-description>` with a type from
+  [CONTRIBUTING](docs/CONTRIBUTING.md#branches).
 
 ## Work
 
@@ -31,16 +33,23 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
   distribution metadata.
 - Keep the repository root minimal: put a new file in an existing directory or its tool's own
   (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
-- Checks: `uvx pre-commit run --all-files` and `python3 -m unittest discover -s tests`.
-- Note changes under `## Unreleased` in `CHANGELOG.md` and its translations. Every merge into `main`
-  is a release: raise `version` in both plugin manifests above the latest tag and rename that
-  section to the version; CI then tags and releases it. Installed plugins update only on a new
-  version.
+- Use uv and the ignored `.venv` for Python, including tests; sync with `uv sync --locked`,
+  add dependencies with `uv add`, and run commands with `uv run` instead of pip or system Python.
+- Checks: `uv run --locked pre-commit run --all-files` and
+  `uv run --locked python -m unittest discover -s tests`.
+- Run full checks on request and before a PR or merge, rather than after every edit.
+- Note changes under `## Unreleased` in `docs/CHANGELOG.md`. Every merge into `main` is a release:
+  raise `project.version` in `pyproject.toml` above the latest tag, run `uv lock` and
+  `uv run --locked python skills/fleex-repo/scripts/release.py --manifest .claude-plugin/plugin.json
+  --manifest .codex-plugin/plugin.json sync`, and rename that section to the version; CI then tags
+  and releases it. Installed plugins update only on a new version.
 
 ## Language
 
 - Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in English,
   translated to: ru; add or remove a language only when the user asks.
+- Translations may lag during development; mark stale copies and synchronize on request or before
+  a PR. Release changelog sections must match in every language.
 
 ## Report
 

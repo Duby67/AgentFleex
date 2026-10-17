@@ -1,0 +1,66 @@
+name: CI
+
+# A push to develop runs the checks; a pull request into main shows them for its head commit and
+# adds the release check; a push to main releases. Fill <test command> or delete that step.
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  # The only branch that merges into main: develop, or staging when the repository has it.
+  RELEASE_FROM: develop
+
+jobs:
+  checks:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+      - name: Pre-commit
+        run: uvx pre-commit run --all-files --show-diff-on-failure
+      - name: Tests
+        run: <test command>
+
+  # Every merge into main is a release: its version must be new and above the latest tag. The
+  # release job repeats this check before tagging.
+  version:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Source branch
+        if: github.head_ref != env.RELEASE_FROM
+        run: |
+          echo "::error::Only $RELEASE_FROM merges into main; retarget this pull request."
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history brings every tag to compare the version with.
+          fetch-depth: 0
+      - name: Version and changelogs
+        run: python3 .github/scripts/release.py check --release
+
+  release:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(python3 .github/scripts/release.py check --release)"
+          python3 .github/scripts/release.py notes > "$RUNNER_TEMP/notes.md"
+          gh release create "$version" --target "$GITHUB_SHA" --title "$version" \
+            --notes-file "$RUNNER_TEMP/notes.md" --latest

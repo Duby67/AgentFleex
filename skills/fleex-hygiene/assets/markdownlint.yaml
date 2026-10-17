@@ -1,0 +1,14 @@
+# AgentFleex default for repositories without their own markdownlint configuration.
+default: true
+MD013:
+  line_length: 100
+  code_blocks: false
+  tables: false
+# Repeated headings are fine under different parents, such as Changes in every release.
+MD024:
+  siblings_only: true
+# Collapsible sections in release notes and templates.
+MD033:
+  allowed_elements: [details, summary, br]
+# Templates and fragments may start below the first heading.
+MD041: false

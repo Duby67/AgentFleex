@@ -1,6 +1,7 @@
 ---
 name: fleex-vscode
-description: Prepare a project's VS Code workspace for a task by writing extension recommendations and settings from AgentFleex sets into its ignored .vscode/, and, only on explicit request, sync installed VS Code extensions with those sets. Use when the user asks to set up, prepare, or adjust the VS Code workspace, its extensions, or its editor settings, or to sync installed extensions with the recommendations. Do not use for VS Code user settings, profiles, keybindings, or launch and task configurations.
+description: User-invoked VS Code workspace setup: write extension recommendations and settings from AgentFleex sets into the project's ignored .vscode/, and, only on explicit request, sync installed VS Code extensions with those sets. Use only when the user asks to set up, prepare, or adjust the VS Code workspace, its extensions, or its editor settings, or to sync installed extensions. Do not use for VS Code user settings, profiles, keybindings, or launch and task configurations.
+disable-model-invocation: true
 ---
 
 # VS Code workspace

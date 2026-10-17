@@ -1,6 +1,6 @@
 ---
 name: fleex-index
-description: Find where a function, class, or Markdown section is and read only its lines, instead of reading whole files or grepping broadly: file outline with line ranges, one symbol or section, where a symbol is defined, which files mention a word, and a directory map with sizes. Use when exploring an unfamiliar repository, before opening a file over a few hundred lines, or when a Read was denied with an outline. Do not use for type-aware references, diagnostics, or refactoring.
+description: Find where a function, class, or Markdown section is and read only its lines instead of whole files or broad greps: directory map with sizes, file outline with line ranges, one symbol or section, definitions, and files that mention a word. Use when exploring an unfamiliar repository, before opening a file over a few hundred lines, or when a Read was denied with an outline. Do not use for type-aware references, diagnostics, or refactoring.
 ---
 
 # Index
