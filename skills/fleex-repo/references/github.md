@@ -11,7 +11,9 @@ nameWithOwner`.
 - `pull_request_template.md`: copy to `.github/`. Templates take effect once they reach the default
   branch.
 - `dependabot.yml`: copy to `.github/`; it updates the pinned action SHAs. Add an entry for each
-  package ecosystem the repository uses (`uv`, `pip`, `npm`, `docker`).
+  package ecosystem the repository uses (`uv`, `pip`, `npm`, `docker`). Give every entry
+  `target-branch: develop`, also with `staging`: without it Dependabot targets `main`, and CI
+  rejects that pull request.
 - `workflows/ci.yml`: copy to `.github/workflows/` when the repository has no CI, or merge its jobs
   into the existing workflow. Fill the test command or delete that step. Without releases, drop
   the `version` and `release` jobs and the `pull_request` trigger.
