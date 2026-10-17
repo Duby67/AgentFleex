@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+- Pull request'ы Dependabot направляются в `develop`: шаблон `fleex-repo` и этот репозиторий задают
+  `target-branch: develop` для каждой записи, поэтому CI больше не отклоняет их как pull request'ы в
+  `main`.
+
 ## [0.4.0](https://github.com/Duby67/AgentFleex/releases/tag/0.4.0)
 
 - Добавлен скилл `fleex-repo` с явным вызовом: он проверяет и настраивает служебные файлы и
