@@ -4,11 +4,21 @@
 
 ## Unreleased
 
+- `develop` стала веткой по умолчанию, а `main` только хранит релизы, поэтому обновления
+  безопасности Dependabot тоже открываются в `develop`. Настройки и шаблон `CONTRIBUTING.md` в
+  `fleex-repo` и каталог правил `AGENTS.md` следуют той же модели.
+- Dependabot проверяет обновления раз в месяц и собирает минорные и патч-обновления, а отдельно
+  обновления безопасности, в один pull request на экосистему; мажорное обновление приходит
+  отдельно. Этот репозиторий также обновляет зависимости uv. Шаблон `fleex-repo` использует то же
+  расписание и группы.
+
 ## [0.4.1](https://github.com/Duby67/AgentFleex/releases/tag/0.4.1)
 
 - Pull request'ы Dependabot направляются в `develop`: шаблон `fleex-repo` и этот репозиторий задают
   `target-branch: develop` для каждой записи, поэтому CI больше не отклоняет их как pull request'ы в
   `main`.
+- `dependabot/` стал допустимым типом ветки в `CONTRIBUTING.md` и шаблоне `fleex-repo`, поэтому
+  ветки Dependabot больше не противоречат правилу именования `<type>/<description>`.
 
 ## [0.4.0](https://github.com/Duby67/AgentFleex/releases/tag/0.4.0)
 

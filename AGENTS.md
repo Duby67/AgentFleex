@@ -16,8 +16,9 @@ Hard rules; stop and report instead of working around them.
 
 ## Branches
 
-- `develop` is the working branch: start branches and forks from it and target every PR at it.
-- `main`, the default branch, holds releases: only `develop` merges into it.
+- `develop`, the default branch, is the working branch: start branches and forks from it and
+  target every PR at it.
+- `main` holds releases: only `develop` merges into it.
 - Name task branches `<type>/<kebab-description>` with a type from
   [CONTRIBUTING](docs/CONTRIBUTING.md#branches).
 

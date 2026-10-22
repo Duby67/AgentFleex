@@ -15,13 +15,14 @@ described in `docs/SECURITY.md`.
 
 ## Branches
 
-- `develop` is the working branch: start every branch from it and target every pull request at it.
-  It holds only finished changes, so it can be released at any time.
-- `main`, the default branch, holds releases: only `develop` merges into it.
+- `develop`, the default branch, is the working branch: start every branch from it and target every
+  pull request at it. It holds only finished changes, so it can be released at any time.
+- `main` holds releases: only `develop` merges into it.
 - Task branches are named `<type>/<description>`: a lowercase kebab-case description of two to
   five words, optionally starting with an issue number. Types: `feat/` new behavior, `fix/` bug
   fix, `docs/` documentation only, `refactor/` no behavior change, `test/` tests only, `ci/` CI and
-  release workflows, `chore/` maintenance, `claude/` and `codex/` branches created by agents.
+  release workflows, `chore/` maintenance, `claude/` and `codex/` branches created by agents,
+  `dependabot/` dependency updates created by Dependabot.
 
 ## Pull requests
 
