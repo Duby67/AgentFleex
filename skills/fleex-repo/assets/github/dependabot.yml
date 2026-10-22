@@ -3,10 +3,15 @@ updates:
   # Actions are pinned to commit SHAs; Dependabot updates the SHA and its version comment.
   - package-ecosystem: github-actions
     directory: /
-    # Pull requests go to the working branch like any other change; only develop merges into main.
     target-branch: develop
     schedule:
-      interval: weekly
+      interval: monthly
+    # One pull request for minor and patch updates, one for security updates; a major update gets
+    # its own.
     groups:
       actions:
+        patterns: ["*"]
+        update-types: [minor, patch]
+      actions-security:
+        applies-to: security-updates
         patterns: ["*"]

@@ -12,8 +12,8 @@ nameWithOwner`.
   branch.
 - `dependabot.yml`: copy to `.github/`; it updates the pinned action SHAs. Add an entry for each
   package ecosystem the repository uses (`uv`, `pip`, `npm`, `docker`). Give every entry
-  `target-branch: develop`, also with `staging`: without it Dependabot targets `main`, and CI
-  rejects that pull request.
+  `target-branch: develop`, also with `staging`, and the same monthly schedule and groups. Security
+  updates ignore `target-branch` and open into the default branch, `develop`.
 - `workflows/ci.yml`: copy to `.github/workflows/` when the repository has no CI, or merge its jobs
   into the existing workflow. Fill the test command or delete that step. Without releases, drop
   the `version` and `release` jobs and the `pull_request` trigger.
@@ -25,8 +25,9 @@ nameWithOwner`.
 - Pin every action to a full commit SHA with its version as a comment; Dependabot keeps them
   current.
 - Top-level `permissions: contents: read`; grant write only to the job that needs it.
-- Run the hygiene checks through pre-commit and the project's tests on pushes to `develop`; a pull
-  request into `main` shows those results for its head commit.
+- Run the hygiene checks through pre-commit and the project's tests on pull requests into and pushes
+  to `develop`; a pull request into `main` shows those results for its head commit.
+- Checkouts that do not push set `persist-credentials: false`; every job has `timeout-minutes`.
 
 ## Staging
 
@@ -39,8 +40,9 @@ the test server as a job on pushes to `staging`.
 Show each command and run it only after the user confirms. Read the state first, for example
 `gh api repos/<owner>/<repo>`.
 
-- Default branch `main`: `gh repo edit --default-branch main`.
-- Merge commits allowed, branches deleted after merge:
-  `gh repo edit --enable-merge-commit --delete-branch-on-merge`.
+- Default branch `develop`: `gh repo edit --default-branch develop`.
+- Squash merges for pull requests into `develop`, merge commits for releases into `main`, no rebase
+  merges, branches deleted after merge: `gh repo edit --enable-squash-merge --enable-merge-commit
+  --enable-rebase-merge=false --delete-branch-on-merge`.
 - Private vulnerability reporting:
   `gh api -X PUT repos/<owner>/<repo>/private-vulnerability-reporting`.

@@ -64,8 +64,9 @@ request, including before a PR.
 
 ## Branches and releases
 
-`develop` is the working branch that all branches and PRs start from and target, and `main`, the
-default branch, holds releases. A repository that deploys to a test server adds `staging`:
+`develop`, the default branch, is the working branch that all branches and PRs start from and
+target, and `main` holds releases. Pull requests into `develop` are squash-merged; `develop` merges
+into `main` with a merge commit. A repository that deploys to a test server adds `staging`:
 `develop` merges into it for deployment, its bugs are fixed on `develop`, and only `staging`
 merges into `main`. Task branches are named `<type>/<description>`. A repository keeps its own
 branch names when the user names them.

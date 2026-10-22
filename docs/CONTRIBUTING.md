@@ -32,9 +32,9 @@ plugin from the local marketplace.
 
 ## Branches
 
-- `develop` is the working branch: start every branch from it and target every pull request at it.
-  It holds only finished changes, so it can be released at any time.
-- `main`, the default branch, holds releases: only `develop` merges into it.
+- `develop`, the default branch, is the working branch: start every branch from it and target every
+  pull request at it. It holds only finished changes, so it can be released at any time.
+- `main` holds releases: only `develop` merges into it.
 - Task branches are named `<type>/<description>`: a lowercase kebab-case description of two to
   five words, optionally starting with an issue number (`fix/42-hook-unicode-paths`). Types:
 
@@ -48,10 +48,12 @@ plugin from the local marketplace.
   | `ci/` | CI and release workflows |
   | `chore/` | Dependencies, tooling, and other maintenance |
   | `claude/`, `codex/` | Branches created by Claude Code or Codex in the cloud |
+  | `dependabot/` | Dependency updates created by Dependabot |
 
 ## Pull requests
 
-- One change per pull request into `develop`, with a title stating the change.
+- One change per pull request into `develop`, with a title stating the change; it is merged with
+  **Squash and merge**, so the title becomes the commit on `develop`.
 - The checks pass after the last commit.
 - Note user-visible changes under `## Unreleased` in [CHANGELOG.md](CHANGELOG.md) as the solved
   problem and resulting behavior.

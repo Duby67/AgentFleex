@@ -16,11 +16,12 @@ Hard rules; stop and report instead of working around them.
 
 ## Branches
 
-- `<develop>` is the working branch: start branches and forks from it and target every PR at it.
+- `<develop>`, the default branch, is the working branch: start branches and forks from it and
+  target every PR at it; PRs into it are squash-merged.
 - `<staging>` is the test branch, only in a repository that deploys to a test server: `<develop>`
   merges into it for deployment; a bug found there is fixed on `<develop>` and merged again.
-- `<main>`, the default branch, holds releases: only `<staging>` (or `<develop>` without it) merges
-  into it, after its tests pass.
+- `<main>` holds releases: only `<staging>` (or `<develop>` without it) merges into it, after its
+  tests pass, with a merge commit.
 - Name task branches `<type>/<kebab-description>` with a type from `<contributing guide#branches>`.
 
 ## Work

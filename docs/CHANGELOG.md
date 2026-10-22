@@ -4,11 +4,26 @@
 
 ## Unreleased
 
+- Pull requests into `develop` are squash-merged and `develop` merges into `main` with a merge
+  commit: `AGENTS.md`, the contributing guides, the `AGENTS.md` rule catalog, and the `fleex-repo`
+  repository settings state it.
+- CI checks pull requests into `develop` before merge, and an aggregate `checks` job gives
+  branch protection one stable status. Runs are cancelled when a newer one starts, except a
+  release, and jobs have timeouts. The `fleex-repo` CI template follows the same rules.
+- `develop` is the default branch and `main` only holds releases, so Dependabot security updates
+  also open into `develop`. The `fleex-repo` settings and `CONTRIBUTING.md` template and the
+  `AGENTS.md` rule catalog follow the same model.
+- Dependabot checks monthly and groups minor and patch updates, and separately security updates,
+  into one pull request per ecosystem; a major update gets its own. This repository also updates
+  its uv dependencies. The `fleex-repo` template follows the same schedule and groups.
+
 ## [0.4.1](https://github.com/Duby67/AgentFleex/releases/tag/0.4.1)
 
 - Dependabot pull requests target `develop`: the `fleex-repo` template and this repository set
   `target-branch: develop` for every entry, so CI no longer rejects them as pull requests into
   `main`.
+- `dependabot/` is an allowed branch type in `CONTRIBUTING.md` and the `fleex-repo` template, so
+  Dependabot branches no longer conflict with the `<type>/<description>` naming rule.
 
 ## [0.4.0](https://github.com/Duby67/AgentFleex/releases/tag/0.4.0)
 
