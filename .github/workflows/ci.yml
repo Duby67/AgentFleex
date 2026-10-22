@@ -1,21 +1,28 @@
 name: CI
 
-# A push to develop runs the checks; a pull request into main shows them for its head commit and
-# adds the release check; a push to main releases.
+# A pull request into develop and a push to develop run the checks; a pull request into main shows
+# them for its head commit and adds the release check; a push to main releases. Branch protection
+# requires the checks job.
 on:
   push:
     branches: [develop, main]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
 
 permissions:
   contents: read
 
+# A newer run replaces an unfinished one, except a release.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   test:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || github.base_ref == 'develop'
     name: test (${{ matrix.os }}, Python ${{ matrix.python }}${{ matrix.ctags && ', ctags' || '' }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -35,6 +42,8 @@ jobs:
         if: runner.os == 'Windows'
         run: git config --global core.symlinks true
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -61,10 +70,13 @@ jobs:
         run: ./skills/fleex-skills/scripts/check.ps1
 
   lint:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' || github.base_ref == 'develop'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
@@ -74,11 +86,13 @@ jobs:
   # Every merge into main is a release from develop: its version must be new and above the latest
   # tag. The release job repeats this check before tagging.
   version:
-    if: github.event_name == 'pull_request'
+    if: github.base_ref == 'main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # Full history brings every tag to compare the manifest version with.
           fetch-depth: 0
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
@@ -97,12 +111,14 @@ jobs:
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
@@ -116,3 +132,16 @@ jobs:
           $release notes > "$RUNNER_TEMP/notes.md"
           gh release create "$version" --target "$GITHUB_SHA" --title "$version" \
             --notes-file "$RUNNER_TEMP/notes.md" --latest
+
+  # One stable status for branch protection: fails when a needed job failed or was cancelled.
+  checks:
+    if: always() && github.event_name == 'pull_request'
+    needs: [test, lint, version]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Needed jobs
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "::error::A needed job failed or was cancelled."
+          exit 1

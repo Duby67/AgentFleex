@@ -1,15 +1,21 @@
 name: CI
 
-# A push to develop runs the checks; a pull request into main shows them for its head commit and
-# adds the release check; a push to main releases. Fill <test command> or delete that step.
+# A pull request into develop and a push to develop run the checks; a pull request into main shows
+# them for its head commit and adds the release check; a push to main releases. Branch protection
+# requires checks on develop and version on main. Fill <test command> or delete that step.
 on:
   push:
     branches: [develop, main]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
 
 permissions:
   contents: read
+
+# A newer run replaces an unfinished one, except a release.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 env:
   # The only branch that merges into main: develop, or staging when the repository has it.
@@ -17,10 +23,15 @@ env:
 
 jobs:
   checks:
-    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    if: >-
+      (github.event_name == 'push' && github.ref != 'refs/heads/main') ||
+      github.base_ref == 'develop'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
@@ -32,8 +43,9 @@ jobs:
   # Every merge into main is a release: its version must be new and above the latest tag. The
   # release job repeats this check before tagging.
   version:
-    if: github.event_name == 'pull_request'
+    if: github.base_ref == 'main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Source branch
         if: github.head_ref != env.RELEASE_FROM
@@ -44,18 +56,21 @@ jobs:
         with:
           # Full history brings every tag to compare the version with.
           fetch-depth: 0
+          persist-credentials: false
       - name: Version and changelogs
         run: python3 .github/scripts/release.py check --release
 
   release:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Tag and release
         env:
           GH_TOKEN: ${{ github.token }}

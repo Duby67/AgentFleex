@@ -25,8 +25,9 @@ nameWithOwner`.
 - Pin every action to a full commit SHA with its version as a comment; Dependabot keeps them
   current.
 - Top-level `permissions: contents: read`; grant write only to the job that needs it.
-- Run the hygiene checks through pre-commit and the project's tests on pushes to `develop`; a pull
-  request into `main` shows those results for its head commit.
+- Run the hygiene checks through pre-commit and the project's tests on pull requests into and pushes
+  to `develop`; a pull request into `main` shows those results for its head commit.
+- Checkouts that do not push set `persist-credentials: false`; every job has `timeout-minutes`.
 
 ## Staging
 
