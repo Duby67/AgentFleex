@@ -52,7 +52,8 @@ plugin from the local marketplace.
 
 ## Pull requests
 
-- One change per pull request into `develop`, with a title stating the change.
+- One change per pull request into `develop`, with a title stating the change; it is merged with
+  **Squash and merge**, so the title becomes the commit on `develop`.
 - The checks pass after the last commit.
 - Note user-visible changes under `## Unreleased` in [CHANGELOG.md](CHANGELOG.md) as the solved
   problem and resulting behavior.
