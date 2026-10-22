@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- CI checks pull requests into `develop` before merge, and an aggregate `checks` job gives
+  branch protection one stable status. Runs are cancelled when a newer one starts, except a
+  release, and jobs have timeouts. The `fleex-repo` CI template follows the same rules.
 - `develop` is the default branch and `main` only holds releases, so Dependabot security updates
   also open into `develop`. The `fleex-repo` settings and `CONTRIBUTING.md` template and the
   `AGENTS.md` rule catalog follow the same model.
