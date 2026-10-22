@@ -32,9 +32,9 @@ plugin from the local marketplace.
 
 ## Branches
 
-- `develop` is the working branch: start every branch from it and target every pull request at it.
-  It holds only finished changes, so it can be released at any time.
-- `main`, the default branch, holds releases: only `develop` merges into it.
+- `develop`, the default branch, is the working branch: start every branch from it and target every
+  pull request at it. It holds only finished changes, so it can be released at any time.
+- `main` holds releases: only `develop` merges into it.
 - Task branches are named `<type>/<description>`: a lowercase kebab-case description of two to
   five words, optionally starting with an issue number (`fix/42-hook-unicode-paths`). Types:
 
@@ -48,6 +48,7 @@ plugin from the local marketplace.
   | `ci/` | CI and release workflows |
   | `chore/` | Dependencies, tooling, and other maintenance |
   | `claude/`, `codex/` | Branches created by Claude Code or Codex in the cloud |
+  | `dependabot/` | Dependency updates created by Dependabot |
 
 ## Pull requests
 

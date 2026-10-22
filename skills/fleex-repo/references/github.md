@@ -12,8 +12,8 @@ nameWithOwner`.
   branch.
 - `dependabot.yml`: copy to `.github/`; it updates the pinned action SHAs. Add an entry for each
   package ecosystem the repository uses (`uv`, `pip`, `npm`, `docker`). Give every entry
-  `target-branch: develop`, also with `staging`: without it Dependabot targets `main`, and CI
-  rejects that pull request.
+  `target-branch: develop`, also with `staging`, and the same monthly schedule and groups. Security
+  updates ignore `target-branch` and open into the default branch, `develop`.
 - `workflows/ci.yml`: copy to `.github/workflows/` when the repository has no CI, or merge its jobs
   into the existing workflow. Fill the test command or delete that step. Without releases, drop
   the `version` and `release` jobs and the `pull_request` trigger.
@@ -39,7 +39,7 @@ the test server as a job on pushes to `staging`.
 Show each command and run it only after the user confirms. Read the state first, for example
 `gh api repos/<owner>/<repo>`.
 
-- Default branch `main`: `gh repo edit --default-branch main`.
+- Default branch `develop`: `gh repo edit --default-branch develop`.
 - Merge commits allowed, branches deleted after merge:
   `gh repo edit --enable-merge-commit --delete-branch-on-merge`.
 - Private vulnerability reporting:
