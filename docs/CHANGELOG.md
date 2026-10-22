@@ -4,6 +4,9 @@
 
 ## Unreleased
 
+- Pull requests into `develop` are squash-merged and `develop` merges into `main` with a merge
+  commit: `AGENTS.md`, the contributing guides, the `AGENTS.md` rule catalog, and the `fleex-repo`
+  repository settings state it.
 - CI checks pull requests into `develop` before merge, and an aggregate `checks` job gives
   branch protection one stable status. Runs are cancelled when a newer one starts, except a
   release, and jobs have timeouts. The `fleex-repo` CI template follows the same rules.

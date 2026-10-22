@@ -41,7 +41,8 @@ Show each command and run it only after the user confirms. Read the state first,
 `gh api repos/<owner>/<repo>`.
 
 - Default branch `develop`: `gh repo edit --default-branch develop`.
-- Merge commits allowed, branches deleted after merge:
-  `gh repo edit --enable-merge-commit --delete-branch-on-merge`.
+- Squash merges for pull requests into `develop`, merge commits for releases into `main`, no rebase
+  merges, branches deleted after merge: `gh repo edit --enable-squash-merge --enable-merge-commit
+  --enable-rebase-merge=false --delete-branch-on-merge`.
 - Private vulnerability reporting:
   `gh api -X PUT repos/<owner>/<repo>/private-vulnerability-reporting`.

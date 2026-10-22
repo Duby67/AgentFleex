@@ -26,7 +26,8 @@ described in `docs/SECURITY.md`.
 
 ## Pull requests
 
-- One change per pull request into `develop`; the checks pass after the last commit.
+- One change per pull request into `develop`, merged with **Squash and merge**; the checks pass
+  after the last commit.
 - Note user-visible changes under `## Unreleased` in `docs/CHANGELOG.md`.
 
 ## Versions and releases
