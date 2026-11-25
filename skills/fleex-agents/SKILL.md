@@ -62,5 +62,5 @@ them only at the owner's direction.
 
 Report changes to behavior, including removed constraints. Compare `wc -w AGENTS.md`
 before and after. For each added or edited line, ask whether an agent would act differently without
-it; if not, delete it. From the repository root, run `../fleex-skills/scripts/check.sh` relative to
-this skill's directory (`check.ps1` on Windows) and fix every reported error.
+it; if not, delete it. Check changed instruction files and their imports. Use the project's
+broader checks when the task changes their inputs or reaches a required verification milestone.

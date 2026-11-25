@@ -77,6 +77,8 @@ class HooksTest(unittest.TestCase):
         self.assertIn("30002 lines", reply["hookSpecificOutput"]["permissionDecisionReason"])
         self.write("binary.dat", "\0\n" * 500)
         self.assertEqual(self.hook("read", tool_input={"file_path": "binary.dat"}), {})
+        self.write("binary.py", "def f():\n    pass\n" + "# line\n" * 10000 + "\0")
+        self.assertEqual(self.hook("read", tool_input={"file_path": "binary.py"}), {})
 
     def test_read_state_is_separate_for_each_session(self) -> None:
         self.write("big.py", "def function():\n    pass\n" + "# line\n" * 400)

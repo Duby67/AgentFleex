@@ -32,10 +32,12 @@ Each area has one owner; follow it instead of repeating it here:
 
 - `AGENTS.md` and `.claude/CLAUDE.md`: $fleex-agents.
 - Project skills and agent skills symlinks: $fleex-skills.
-- Text of README, CONTRIBUTING, SECURITY, and the backlog: $fleex-docs.
+- Human-facing text, including changelog entries: $fleex-docs.
 - Linters, formatters, pre-commit, uv, and `.editorconfig`: $fleex-hygiene.
 
-This skill owns the Git files, the GitHub files and settings, and the release mechanism.
+This skill owns Git files, GitHub settings and workflow orchestration, and the release contract.
+CI invokes the project's existing checks. For release validation in pre-commit, keep the release
+command with the release mechanism and configure its invocation with $fleex-hygiene.
 
 ## Layout
 
@@ -62,5 +64,5 @@ update every link to it in the same change.
 
 ## Check
 
-Run the project's relevant checks on the changed files and read modified GitHub settings back
-with `gh`.
+Run the project's relevant checks on changed inputs. Reuse results for unchanged inputs and
+read back only GitHub settings that changed.

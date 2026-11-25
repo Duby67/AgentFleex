@@ -15,7 +15,7 @@ environment manager unless the user requests migration.
 For projects adopting pre-commit, start with their existing config or the basic file checks in
 `../assets/pre-commit-config.yaml`. Add project-specific checks when they catch meaningful issues
 the existing checks miss. Keep hooks fast, pin revisions, and avoid checking the same rule twice.
-In CI run pre-commit before expensive tests. Contributors install the hook once with
+Contributors install the hook once with
 `uv run --locked pre-commit install` in a uv project or `uvx pre-commit install` otherwise.
 
 ## Defaults and .editorconfig

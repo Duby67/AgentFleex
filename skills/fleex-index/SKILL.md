@@ -1,12 +1,12 @@
 ---
 name: fleex-index
-description: Find where a function, class, or Markdown section is and read only its lines instead of whole files or broad greps: directory map with sizes, file outline with line ranges, one symbol or section, definitions, and files that mention a word. Use when exploring an unfamiliar repository, before opening a file over a few hundred lines, or when a Read was denied with an outline. Do not use for type-aware references, diagnostics, or refactoring.
+description: Find code or Markdown ranges in unfamiliar repositories or long files. Use when a directory map, outline, or symbol range helps narrow a read. Do not use for type-aware references, diagnostics, or refactoring.
 ---
 
 # Index
 
-In Claude Code the plugin's hook already denies the first whole read of a file over 400 lines and
-returns its outline; read the ranges you need, or repeat the read for the whole file.
+Start with targeted search when you already know the name. If Claude Code's `Read` hook provides
+an outline, use its ranges directly. Repeat the read only when the whole file is needed.
 
 Run `scripts/index.py` (relative to this skill's directory) from anywhere in the repository with
 Python 3.9+ (`python3`, or `python` on Windows). It needs only the standard library and `git`, and

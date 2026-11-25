@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Scoped skill checks to changed inputs and avoided rescanning a file after its read outline
+  has already been shown in the session.
 - Classified shared agent rules by applicability. Project choices and previously agreed rules
   remain with each repository owner.
 - Focused shared skills on project wiring, existing documentation conventions, and configured
