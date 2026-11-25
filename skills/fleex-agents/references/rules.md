@@ -1,33 +1,24 @@
 # Rule catalog
 
-Shared rules for `AGENTS.md`, grouped by the section they go in. Use a rule only when it holds for
-the repository; replace `<...>` with verified commands and paths.
+Use these rules when writing or reviewing `AGENTS.md`. Verify project commands and paths before
+adding them. Once adopted, a rule belongs to the repository owner. Catalog changes never remove
+or alter an existing rule without the owner's direction.
 
-## Rules
+## Universal
 
-Hard rules; stop and report instead of working around them.
+- Never commit or log secrets.
+- Report contradictions between docs, configuration, code, and tests that affect the requested
+  work. Ask which contract to follow when the contradiction blocks the work.
 
-- No silent fallback: fail with an actionable error.
-- Secrets come from the environment; never commit or log them.
-- Start another agent only with the user's permission.
-- When docs, config, code, and tests disagree, report the contradiction instead of choosing.
+## Conditional
 
-## Work
+Add a rule only when the condition describes the repository or the owner's preference.
 
-- Reuse existing code and make the smallest complete change. Read only the relevant sections.
-- Run development commands and tests through the project's configured environment and tools.
-  Specify `<project command>` when it helps agents use that environment.
-- Use targeted checks or a quick functional check for routine changes. Run full checks on
-  request, before a commit or PR, or after substantial feature changes. Report results for the
-  state actually checked.
-- Do not create plan, summary, or notes files unless asked.
-- Add files to existing or tool-specific directories. Use the root only when a tool requires it.
-
-## Language
-
-Write agent-facing files and human documentation in English.
-
-## Report
-
-Briefly report completed work, outcomes of checks actually run, and concrete risks.
-Omit actions you did not take.
+| When it helps | Rule |
+| --- | --- |
+| A fallback would mask a failure or change a project contract | Fail with an actionable error when the required operation cannot complete. |
+| The owner limits delegation | Start another agent only with the user's permission. |
+| Running outside the configured environment gives different results | Run development commands and tests through the project's configured environment. Give the verified command when useful. |
+| Full checks are costly and the project defines verification milestones | Run targeted checks for routine changes. List the milestones that require full checks and report results for the state actually checked. |
+| The project deliberately limits root files | Use existing or tool-specific directories for new files. Use the root where a tool requires it. |
+| The owner wants terse handoffs | Briefly report completed work, outcomes of checks actually run, and concrete risks. Omit actions you did not take. |

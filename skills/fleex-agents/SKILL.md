@@ -46,12 +46,11 @@ The repository owner's rules are decisions, not drafts. Change their form, never
 
 ## Add
 
-[The rule catalog](references/rules.md) is the only source of shared rules. A new `AGENTS.md` is the
-project sentence plus the applicable catalog rules, grouped under Rules, Work, Language, and
-Report as needed; an existing one gains only the
-missing ones. Fill placeholders with the repository's real commands and paths, verified first; skip
-a rule you cannot make concrete.
-Once written, the rules belong to the owner and are not synced back.
+Use the [rule catalog](references/rules.md) for shared rules. Add only rules that improve decisions
+in this repository. Group them under Rules, Work, Language, and Report as needed. Keep concrete
+choices such as the secrets provider and documentation language in the project that owns them.
+Preserve existing owner-approved rules when the catalog changes. Change their meaning or remove
+them only at the owner's direction.
 
 ## Gotchas
 

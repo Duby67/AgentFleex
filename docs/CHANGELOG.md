@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Classified shared agent rules by applicability. Project choices and previously agreed rules
+  remain with each repository owner.
 - Focused shared skills on project wiring, existing documentation conventions, and configured
   checks. Repository audits now compare relevant assets before applying agreed updates.
 - Made branch and release conventions opt-in repository setup defaults and moved AgentFleex's
