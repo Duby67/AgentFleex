@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Made branch and release conventions opt-in repository setup defaults and moved AgentFleex's
+  release procedure to a dedicated guide.
+- Shortened the repository layout and reporting rules in the shared agent rule catalog.
+- Made the shared environment rule language-independent so agents use each project's tooling.
+
 - Adapt repository setup to project needs. License choice stays with the project, security and
   contributing guides are conditional, and Dependabot requires an explicit request.
 - Shortened issue and PR templates. Pre-commit gates expensive PR checks on the working branch,

@@ -1,8 +1,14 @@
 # Releases
 
-Every merge into `main` is a release; CI tags it and publishes a GitHub release with notes from the
-changelog. There are no release or hotfix branches: the release source branch (`develop`, or
-`staging`) holds only finished changes, and a bug in a release ships with the next patch version.
+Use the project's established release process. Offer the mechanism below when release setup is
+requested and the project has no versioning workflow. Projects without releases can stay unversioned.
+
+Document the adopted process in a dedicated project file and link it from `AGENTS.md` for release
+work. A request to prepare a release or release PR can imply a version bump. Ask before bumping
+a version on the agent's own initiative. Preparing a release and opening its PR are separate actions.
+
+With this default, merging the release PR into `main` tags the version and publishes the changelog
+notes. Fix release bugs on `develop` and ship them with the next patch.
 
 ## Versions
 

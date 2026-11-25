@@ -27,9 +27,12 @@ Templates are in `../assets/github/`. Obtain the repository name and visibility 
 - Use separate post-merge workflows for security or release tasks that need the merged state.
 - Checkouts that do not push set `persist-credentials: false`; every job has `timeout-minutes`.
 
-## Staging
+## Default branch workflow
 
-With `staging`, set `RELEASE_FROM: staging` and keep staging deployment in its own workflow.
+For new setups adopting these defaults, use `develop` as the default working branch.
+Start each change on a task branch from `develop` and squash-merge its PR into `develop`.
+When the project publishes or deploys, open a PR from `develop` into `main` and use a merge
+commit. Run publishing and any configured production deployment after the merge.
 
 ## Settings
 

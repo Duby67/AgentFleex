@@ -29,9 +29,9 @@ plugin from the local marketplace.
 
 ## Branches
 
-- `develop`, the default branch, is the working branch: start every branch from it and target every
-  pull request at it. It holds only finished changes, so it can be released at any time.
-- `main` holds releases: only `develop` merges into it.
+- Start each change on a task branch from `develop`, the default branch, and target its PR at
+  `develop`.
+- Release PRs go from `develop` to `main`, where a merge commit triggers publication.
 - Task branches are named `<type>/<description>`: a lowercase kebab-case description of two to
   five words, optionally starting with an issue number (`fix/42-hook-unicode-paths`). Types:
 
@@ -56,35 +56,9 @@ plugin from the local marketplace.
   problem and resulting behavior.
 - Write documentation in English.
 
-## Versions and releases
+## Releases
 
-Versions follow [Semantic Versioning](https://semver.org/). While the version is `0.x`, the minor
-number marks changed or removed behavior of skills and hooks, and the patch number marks fixes and
-additions. Installed plugins update only when the version is raised. `develop` has no version of
-its own; it carries the last released one until a release raises it.
-
-Every merge into `main` is a release, made by the maintainer:
-
-1. On `develop`, raise `project.version` in `pyproject.toml` above the latest tag, then run
-   `uv lock` and the sync command to update both plugin manifests:
-
-   ```bash
-   uv run --locked python skills/fleex-repo/scripts/release.py \
-     --manifest .claude-plugin/plugin.json --manifest .codex-plugin/plugin.json sync
-   ```
-
-2. Rename `## Unreleased` to `## [x.y.z](https://github.com/Duby67/AgentFleex/releases/tag/x.y.z)`
-   in the changelog and leave an empty `## Unreleased` above it.
-3. Run the local checks and push `develop`.
-4. Open a pull request from `develop` into `main`. The release check verifies the source branch,
-   manifest versions, an empty `## Unreleased`, notes for the new version, and a version above the
-   latest tag. [Release script](../skills/fleex-repo/scripts/release.py)
-5. Merge with **Create a merge commit**. Squash and rebase merges rewrite the commits, so `main` and
-   `develop` diverge.
-6. The push to `main` repeats the release check, tags the version, and publishes it as the latest
-   GitHub release with the notes from that section.
-
-A bug in a release is fixed on `develop` and shipped with the next patch version.
+See [Releasing AgentFleex](RELEASING.md).
 
 ## License
 

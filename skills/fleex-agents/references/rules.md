@@ -7,39 +7,22 @@ the repository; replace `<...>` with verified commands and paths.
 
 Hard rules; stop and report instead of working around them.
 
-- Commit, push, PR, and merge belong to the user.
 - No silent fallback: fail with an actionable error.
 - Secrets come from the environment; never commit or log them.
-- Never report an unrun or skipped check as passed; run checks after the last change.
 - Start another agent only with the user's permission.
 - When docs, config, code, and tests disagree, report the contradiction instead of choosing.
 
-## Branches
-
-- `<develop>`, the default branch, is the working branch: start branches and forks from it and
-  target every PR at it; PRs into it are squash-merged.
-- `<staging>` is the test branch, only in a repository that deploys to a test server: `<develop>`
-  merges into it for deployment; a bug found there is fixed on `<develop>` and merged again.
-- `<main>` holds releases: only `<staging>` (or `<develop>` without it) merges into it, after its
-  tests pass, with a merge commit.
-- Name task branches `<type>/<kebab-description>` with a type from `<contributing guide#branches>`.
-
 ## Work
 
-- Make the smallest correct change. Prefer, in order: no change, existing code, the standard
-  library, an installed dependency, new code. Stay in scope.
-- Read narrowly: focused search, bounded reads, `git diff --stat` before diffs, quiet test output.
-- For repositories with Python files, including tests, default to uv and an ignored `.venv`:
-  declare dependencies in `pyproject.toml`, commit `uv.lock`, and use `uv sync`, `uv add`, and
-  `uv run` instead of pip or system Python. Preserve an established environment manager unless
-  the user requests migration.
+- Reuse existing code and make the smallest complete change. Read only the relevant sections.
+- Run development commands and tests through the project's configured environment and tools.
+  Specify `<project command>` when it helps agents use that environment.
 - Never read or search `<generated, vendored, lockfile, snapshot, build output, and data paths>`.
-- Fastest checks: `<single test command>`, `<lint changed files command>`,
-  `<type check command>`.
-- Run full hygiene checks on request or before a PR or merge, rather than after every edit.
+- Use targeted checks or a quick functional check for routine changes. Run full
+  checks on request, before a PR, or after substantial feature changes. Report results for the
+  state actually checked.
 - Do not create plan, summary, or notes files unless asked.
-- Keep the repository root minimal: put a new file in an existing directory or its tool's own
-  (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
+- Add files to existing or tool-specific directories. Use the root only when a tool requires it.
 
 ## Language
 
@@ -47,5 +30,5 @@ Write agent-facing files and human documentation in English.
 
 ## Report
 
-One line per point: result, checks run with outcome, concrete risks. Write nothing else: no empty
-categories, no actions not taken (such as "not committed"), nothing the user already sees.
+Briefly report completed work, outcomes of checks actually run, and concrete risks.
+Omit actions you did not take.

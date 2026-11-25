@@ -22,14 +22,13 @@ during an audit. Findings may go to the backlog as $fleex-docs describes.
   contributors when the request covers collaboration. These requests need not name the files.
 - Configure Dependabot only when the user explicitly asks for Dependabot.
 - Conventions: actions pinned by full commit SHA with a version comment, top-level
-  `permissions: contents: read`, the branch model of `AGENTS.md`, and only the release source
-  branch merging into `main`.
+  `permissions: contents: read`, and the repository's established branch workflow.
 
 ## Owners
 
 Each area has one owner; follow it instead of repeating it here:
 
-- `AGENTS.md`, `.claude/CLAUDE.md`, and branch rules: $fleex-agents.
+- `AGENTS.md` and `.claude/CLAUDE.md`: $fleex-agents.
 - Project skills and agent skills symlinks: $fleex-skills.
 - Text of README, CONTRIBUTING, SECURITY, and the backlog: $fleex-docs.
 - Linters, formatters, pre-commit, uv, and `.editorconfig`: $fleex-hygiene.
@@ -49,8 +48,8 @@ update every link to it in the same change.
 - Show the plan (files to add or move, settings to change) and apply it after the user agrees.
 - Select templates from `assets/` for the agreed workflows. Replace each placeholder with a
   verified project value. Merge with existing files or report differences.
-- Keep established branches. For a new GitHub workflow, use the working and release branches
-  agreed with the user.
+- Keep the repository's established conventions. Use this skill's defaults only for workflows
+  agreed with the user during repository setup.
 - GitHub files and settings: [the GitHub guide](references/github.md). Versions, changelog, and
   releases: [the release guide](references/release.md); skip them for a repository with no
   releases.
