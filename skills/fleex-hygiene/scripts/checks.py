@@ -1,9 +1,8 @@
 """List the style and static checks a repository configures, with check and fix commands.
 
 Standard library only. Detection reads configuration files, package.json scripts, Makefile targets,
-pre-commit, and CI commands; it never runs a check. Languages with no configured tool get the
-plugin defaults in assets/. `{files}` stands for changed files. A tool that cannot run is marked
-MISSING (install it) or SETUP (install the project environment).
+pre-commit, and CI commands. It never runs a check. `{files}` stands for changed files. A tool that
+cannot run is marked MISSING (install it) or SETUP (install the project environment).
 """
 
 from __future__ import annotations
@@ -96,10 +95,6 @@ TOOLS = [
     ),
 ]
 PYTHON_TOOLS = {"ruff", "black", "isort", "flake8", "pylint", "mypy", "pyright"}
-# Plugin defaults for a language whose repository configures no tool of that role.
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
-PYTHON_STYLE = {"ruff", "black", "isort", "flake8", "pylint"}
-PYTHON_TYPES = {"mypy", "pyright"}
 SCRIPT = re.compile(r"^(lint|format|fmt|typecheck|type-check|check|style)([:-]\w+)*$")
 TARGET = re.compile(r"^((?:lint|format|fmt|typecheck|check|style)[\w-]*):(?!=)", re.MULTILINE)
 CI_FILES = [
@@ -248,91 +243,6 @@ def ci_commands(path: Path) -> list[tuple[int, str]]:
     return commands
 
 
-DEFAULT_PATTERNS = ["*.py", "*.pyi", "*.sh", "*.bash", "*.md", "*.yml", "*.yaml"]
-
-
-def defaults(root: Path, present: set[str]) -> list[str]:
-    """Checks with plugin configuration for languages the repository leaves unconfigured."""
-    result = []
-    files = subprocess.run(
-        ["git", "ls-files", "-co", "--exclude-standard", "--", *DEFAULT_PATTERNS],
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
-    ).stdout.split()
-    python = any(f.endswith((".py", ".pyi")) for f in files)
-    if python and not present & PYTHON_STYLE:
-        ruff, status = default_tool("ruff")
-        config = shell_path(ASSETS / "ruff.toml")
-        result.append(
-            f"ruff (AgentFleex default {config}){status}\n"
-            f"  check: {ruff} check --config {config} {{files}} && "
-            f"{ruff} format --config {config} --check {{files}}\n"
-            f"  fix: {ruff} check --config {config} --fix {{files}} && "
-            f"{ruff} format --config {config} {{files}}"
-        )
-    if python and not present & PYTHON_TYPES:
-        mypy, status = default_tool("mypy")
-        config = shell_path(ASSETS / "mypy.ini")
-        result.append(
-            f"mypy (AgentFleex default {config}){status}\n"
-            f"  check: {mypy} --config-file {config} {{files}}"
-        )
-    if any(f.endswith((".sh", ".bash")) for f in files) and "shellcheck" not in present:
-        shellcheck, status = default_tool("shellcheck", uvx=False)
-        result.append(f"shellcheck (built-in rules){status}\n  check: {shellcheck} {{files}}")
-    if any(f.endswith(".md") for f in files) and "markdownlint" not in present:
-        markdownlint, status = npx_tool("markdownlint-cli2")
-        config = shell_path(ASSETS / "markdownlint.yaml")
-        result.append(
-            f"markdownlint (AgentFleex default {config}){status}\n"
-            f"  check: {markdownlint} --config {config} {{files}}\n"
-            f"  fix: {markdownlint} --config {config} --fix {{files}}"
-        )
-    if any(f.endswith((".yml", ".yaml")) for f in files) and "yamllint" not in present:
-        yamllint, status = default_tool("yamllint")
-        config = shell_path(ASSETS / "yamllint.yaml")
-        result.append(
-            f"yamllint (AgentFleex default {config}){status}\n"
-            f"  check: {yamllint} -c {config} {{files}}"
-        )
-    return result
-
-
-def shell_path(path: Path) -> str:
-    """A path for bash, PowerShell, and cmd alike: forward slashes, double quotes only if needed."""
-    text = path.as_posix()
-    # cmd expands %VAR% even inside double quotes, and no escape works in all three shells.
-    if "%" in text:
-        raise SystemExit(f"checks: {text} contains '%', which cmd expands; use a path without '%'")
-    return f'"{text}"' if re.search(r"[^\w@+=:,./-]", text) else text
-
-
-# Versions uvx runs for the default tools, kept equal to this repository's pre-commit hooks so
-# results do not drift with new releases; other tools run at the version the project picks.
-UVX_VERSIONS = {"ruff": "0.16.9", "mypy": "2.3.1", "yamllint": "1.38.0"}
-NPX_VERSIONS = {"markdownlint-cli2": "0.23.3"}
-
-
-def default_tool(name: str, uvx: bool = True) -> tuple[str, str]:
-    """Command for a tool the repository does not install: on PATH, else through pinned uvx."""
-    if shutil.which(name):
-        return name, ""
-    if uvx and shutil.which("uvx"):
-        version = UVX_VERSIONS.get(name)
-        return (f"uvx {name}@{version}" if version else f"uvx {name}"), ""
-    return name, f"  MISSING {name}"
-
-
-def npx_tool(name: str) -> tuple[str, str]:
-    """Command for a Node tool the repository does not install: on PATH, else through pinned npx."""
-    if shutil.which(name):
-        return name, ""
-    command = f"npx --yes {name}@{NPX_VERSIONS[name]}"
-    return command, "" if shutil.which("npx") else "  MISSING npx (install Node.js)"
-
-
 def rows(root: Path) -> list[str]:
     try:
         package = json.loads(read(root / "package.json") or "{}")
@@ -352,9 +262,8 @@ def rows(root: Path) -> list[str]:
         source = configured(root, evidence, package)
         if not source or name in present:
             continue
-        present.add(name)
         status = "" if shutil.which(executable) else f"  MISSING {executable}"
-        if name in PYTHON_TOOLS and (manager or env):
+        if (name in PYTHON_TOOLS or name == "pre-commit") and (manager or env):
             if manager:
                 check = check.replace(f"{name} ", f"{prefix}{name} ")
                 fix = fix and fix.replace(f"{name} ", f"{prefix}{name} ")
@@ -374,19 +283,11 @@ def rows(root: Path) -> list[str]:
                 )
             else:
                 status = ""
-        elif name in PYTHON_TOOLS:
-            command, status = default_tool(name)
-            check = check.replace(f"{name} ", f"{command} ")
-            fix = fix and fix.replace(f"{name} ", f"{command} ")
-        elif name == "pre-commit":
-            command, status = default_tool(name)
-            check = check.replace(f"{name} ", f"{command} ")
         elif executable == "npx":
             status = node_status(root, npm, check.split()[1])
         result.append(
             f"{name} ({source}){status}\n  check: {check}" + (f"\n  fix: {fix}" if fix else "")
         )
-    result += defaults(root, present)
     for script in sorted(package.get("scripts", {})):
         if SCRIPT.match(script):
             status = node_status(root, npm, "")

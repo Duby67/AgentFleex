@@ -27,9 +27,9 @@ class ReleaseTest(unittest.TestCase):
             ["git", "commit", "-q", "--allow-empty", "-m", "x"], cwd=self.root, check=True
         )
         subprocess.run(["git", "tag", "1.0.0"], cwd=self.root, check=True)
-        self.write("1.1.0", "", "- New.\n", "- Новое.\n")
+        self.write("1.1.0", "", "- New.\n")
 
-    def write(self, version: str, unreleased: str, notes: str, ru: str) -> None:
+    def write(self, version: str, unreleased: str, notes: str) -> None:
         (self.root / "pyproject.toml").write_text(
             f'[project]\nversion = "{version}"\n', encoding="utf-8"
         )
@@ -40,16 +40,9 @@ class ReleaseTest(unittest.TestCase):
             )
         head = "## Unreleased\n\n" + unreleased + "\n"
         body = f"## [{version}]({LINK}/{version})\n\n{{}}\n## [1.0.0]({LINK}/1.0.0)\n\n- Old.\n"
-        (self.root / "docs/ru").mkdir(parents=True, exist_ok=True)
+        (self.root / "docs").mkdir(exist_ok=True)
         (self.root / "docs/CHANGELOG.md").write_text(
-            "# Changelog\n\n**English** · [Русский](ru/CHANGELOG.md)\n\n"
-            + head
-            + body.format(notes),
-            encoding="utf-8",
-        )
-        (self.root / "docs/ru/CHANGELOG.md").write_text(
-            "# Changelog\n\n[English](../CHANGELOG.md) · **Русский**\n\n" + head + body.format(ru),
-            encoding="utf-8",
+            "# Changelog\n\n" + head + body.format(notes), encoding="utf-8"
         )
 
     def run_script(self, *args: str) -> subprocess.CompletedProcess[str]:
@@ -66,13 +59,13 @@ class ReleaseTest(unittest.TestCase):
         run = self.run_script("check", "--release")
         self.assertEqual((run.returncode, run.stdout), (0, "1.1.0\n"), run.stderr)
 
-    def test_notes_collapse_translations(self) -> None:
+    def test_notes_print_version_section(self) -> None:
         run = self.run_script("notes")
         self.assertEqual(run.returncode, 0, run.stderr)
-        self.assertTrue(run.stdout.startswith("- New.\n"))
-        self.assertIn("<details><summary>Русский</summary>\n\n- Новое.\n", run.stdout)
+        self.assertEqual(run.stdout, "- New.\n")
 
     def test_notes_use_utf8_with_cp1252_stdout(self) -> None:
+        self.write("1.1.0", "", "- Café.\n")
         run = subprocess.run(
             [sys.executable, str(SCRIPT), "notes"],
             cwd=self.root,
@@ -82,10 +75,10 @@ class ReleaseTest(unittest.TestCase):
             check=False,
         )
         self.assertEqual(run.returncode, 0, run.stderr)
-        self.assertIn("<summary>Русский</summary>\n\n- Новое.\n", run.stdout)
+        self.assertEqual(run.stdout, "- Café.\n")
 
     def test_unreleased_items_pass_check_but_block_release(self) -> None:
-        self.write("1.1.0", "- Pending.\n", "- New.\n", "- Новое.\n")
+        self.write("1.1.0", "- Pending.\n", "- New.\n")
         self.assertEqual(self.run_script("check").returncode, 0)
         run = self.run_script("check", "--release")
         self.assertEqual(run.returncode, 1)
@@ -109,7 +102,7 @@ class ReleaseTest(unittest.TestCase):
         self.assertIn("version differs from pyproject.toml", run.stderr)
 
     def test_sync_updates_both_manifests_and_preserves_other_fields(self) -> None:
-        self.write("1.2.0", "", "- New.\n", "- Новое.\n")
+        self.write("1.2.0", "", "- New.\n")
         for manifest in (".claude-plugin", ".codex-plugin"):
             (self.root / manifest / "plugin.json").write_text(
                 json.dumps({"version": "1.1.0", "name": "test"}), encoding="utf-8"
@@ -158,17 +151,10 @@ class ReleaseTest(unittest.TestCase):
         )
         self.assertEqual((run.returncode, run.stdout), (0, "1.1.0\n"), run.stderr)
 
-    def test_translation_headings_must_match(self) -> None:
-        path = self.root / "docs/ru/CHANGELOG.md"
-        text = path.read_text(encoding="utf-8").replace("## [1.0.0]", "## [0.9.0]")
-        path.write_text(text, encoding="utf-8")
-        run = self.run_script("check")
-        self.assertIn("docs/ru/CHANGELOG.md: headings must match", run.stderr)
-
-    def test_empty_translation_notes_block_release(self) -> None:
-        self.write("1.1.0", "", "- New.\n", "")
+    def test_empty_notes_block_release(self) -> None:
+        self.write("1.1.0", "", "")
         run = self.run_script("check", "--release")
-        self.assertIn("docs/ru/CHANGELOG.md: no notes under ## [1.1.0]", run.stderr)
+        self.assertIn("docs/CHANGELOG.md: no notes under ## [1.1.0]", run.stderr)
 
 
 if __name__ == "__main__":

@@ -1,10 +1,28 @@
 # AgentFleex
 
-**English** · [Русский](docs/ru/README.md)
+AgentFleex helps Claude Code and Codex agents navigate code and maintain repository rules, skills,
+documentation, checks, and release workflows.
 
-A Claude Code and Codex plugin that configures repositories one way: agent rules, skills, docs and
-translations, style checks, GitHub files and settings, and releases, with cheap code navigation for
-the agent.
+## Philosophy
+
+Review every existing and proposed feature against five criteria:
+
+- Does it reduce token consumption?
+- Does it reduce the number of actions an agent takes?
+- Does it prevent repeated work?
+- Does it simplify repository organization?
+- Is the effort to maintain it proportionate to its benefits?
+
+Use the answers to decide what to add, keep, simplify, or remove. Share organization principles
+across projects and choose files and workflows for each project's needs.
+
+## AgentFleex repository
+
+| Area | Role |
+| --- | --- |
+| Project | The repository's own rules, configuration, and documentation, including `AGENTS.md`, `README.md`, and `docs/`. |
+| Tests and benchmarks | Tests in `tests/` verify behavior. Future benchmarks will measure how features affect agent work, including token consumption and action counts. |
+| Plugin | The repository's main product for Claude Code and Codex, with its skills in `skills/`, hooks in `hooks/`, and client distribution metadata. |
 
 ## Installation
 
@@ -31,45 +49,38 @@ references are read only when the skill is used. Skills marked explicit run only
 | Skill | Owns | Invocation |
 | --- | --- | --- |
 | [fleex-agents](./skills/fleex-agents/SKILL.md) | `AGENTS.md`, `.claude/CLAUDE.md`, and the [catalog of shared rules](./skills/fleex-agents/references/rules.md) | automatic |
-| [fleex-skills](./skills/fleex-skills/SKILL.md) | Project skills, their wiring, and links to best practices | automatic |
-| [fleex-docs](./skills/fleex-docs/SKILL.md) | Human docs, [translations](./skills/fleex-docs/references/i18n.md), and the [`TODO.md` backlog](./skills/fleex-docs/references/todo.md) | automatic; translations on request |
-| [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) | Linters, formatters, type checkers, pre-commit, uv, `.editorconfig` | automatic, on request or before a PR |
+| [fleex-skills](./skills/fleex-skills/SKILL.md) | Shared skill discovery and wiring across clients | automatic |
+| [fleex-docs](./skills/fleex-docs/SKILL.md) | Human docs and the [backlog](./skills/fleex-docs/references/todo.md) | automatic |
+| [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) | Diagnose and fix lint, formatting, and type-check failures | automatic, on request or before a commit or PR |
 | [fleex-index](./skills/fleex-index/SKILL.md) | A dependency-free navigation script: map, outline, show, find, refs | automatic |
 | [fleex-repo](./skills/fleex-repo/SKILL.md) | Audit and setup of Git and GitHub files and settings, and the release mechanism | explicit |
-| [fleex-vscode](./skills/fleex-vscode/SKILL.md) | The project's ignored `.vscode/` | explicit |
 
-Checks and translations never run after every edit or response; pre-commit and CI remain the
-validation checkpoints. Existing configuration always wins over the plugin's defaults.
+Use the project's configured checks at the pre-commit and CI checkpoints.
 
-## Repository layout
+## Layout for repositories configured by AgentFleex
 
 | Path | Purpose |
 | --- | --- |
 | `AGENTS.md` | The single rules file and the only entry point; Codex reads it natively |
 | `.claude/CLAUDE.md` | Claude Code only: one line, `@../AGENTS.md`, imports the same file |
 | `skills/` | Project skills, when they exist; `.agents/skills` and `.claude/skills` are relative symlinks to it, only for agents in use |
-| `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`, `.editorconfig`, `.pre-commit-config.yaml` | The only root files besides package manifests |
-| `docs/` | Human docs: `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `TODO.md`, and translations under `docs/<code>/` |
-| `.github/` | Issue forms, the PR template, Dependabot, CI, and the release script |
+| Repository root | Keep tool-required files at the root. Choose a license if the project needs one. |
+| `docs/` | Human documentation, with security and contributing guides as needed. |
+| `.github/` | GitHub workflows and concise issue and PR templates tailored to the project. |
 
 Agent directories (`.claude/`, `.cursor/`) are created only for agents in use and ignored by Git;
 required plugin distribution metadata stays tracked through an explicit exception. Shared `fleex-*`
 skills come from the plugin and are not copied into the repository.
 
-Agent-facing files are written in English. Human docs are written in English and translated to the
-languages `AGENTS.md` lists (`translated to: ru`): `README.md` as `docs/ru/README.md`, a `docs/`
-page at the same path inside `docs/ru/`, each file of a set with one language switcher line under
-its heading. Translations may lag during development with an outdated note and are synchronized on
-request, including before a PR.
+Write documentation in English. Add a security policy for a public project when the request covers
+public maintenance or vulnerability reporting. Add a contributing guide when the request covers
+collaboration by multiple contributors. Configure Dependabot only by explicit request.
 
 ## Branches and releases
 
-`develop`, the default branch, is the working branch that all branches and PRs start from and
-target, and `main` holds releases. Pull requests into `develop` are squash-merged; `develop` merges
-into `main` with a merge commit. A repository that deploys to a test server adds `staging`:
-`develop` merges into it for deployment, its bugs are fixed on `develop`, and only `staging`
-merges into `main`. Task branches are named `<type>/<description>`. A repository keeps its own
-branch names when the user names them.
+AgentFleex uses `develop` as the working branch and `main` for releases. Pull requests into
+`develop` are squash-merged. Pre-commit gates the test matrix on these pull requests.
+Releases merge from `develop` into `main` with a merge commit.
 
 Every merge into `main` is a release with a new Semantic Versioning version: CI checks the version
 and changelogs, tags the version, and publishes a GitHub release with notes from
@@ -85,29 +96,6 @@ buffers, and atomic markers prevent repeated denials when reads run concurrently
 Hooks need `python3` or `python` on `PATH` and `CLAUDE_PLUGIN_DATA` or `PLUGIN_DATA` pointing to
 a private plugin data directory. There is no shared temporary-directory fallback. Codex must trust
 plugin hooks in `/hooks`, but this matcher does not intercept shell commands or other read tools.
-
-## VS Code
-
-Invoke `$fleex-vscode` to prepare the VS Code workspace for a task: it picks sets from
-`skills/fleex-vscode/assets/` by the task and the project files and merges their extension
-recommendations and settings into the project's `.vscode/`, which stays ignored by Git. On a new
-machine the whole set installs at once: `Extensions: Show Recommended Extensions`, then the Install
-Workspace Recommended Extensions button. The agent may suggest other extensions for the task but
-never suggests removing yours, and it installs nothing itself. Only when you ask it to sync installed
-extensions with the recommendations does it install the missing ones and then, as a separate step
-you confirm, uninstall the extras.
-
-| Set | When |
-| --- | --- |
-| `default` | Always: editor, Git, Markdown, YAML, TOML, EditorConfig |
-| `personal` | Always: theme and layout |
-| `python` | Python projects |
-| `cpp` | C and C++ projects |
-| `infrastructure` | Docker, CI, shell scripts, remote hosts |
-| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup, npm |
-
-Keybindings and settings with application or machine scope work only in the user profile; keep them
-there, for example with Settings Sync.
 
 ## Saving tokens
 

@@ -1,11 +1,9 @@
 name: CI
 
-# A pull request into develop and a push to develop run the checks; a pull request into main shows
-# them for its head commit and adds the release check; a push to main releases. Branch protection
-# requires the checks job.
+# Pre-commit gates the test matrix on PRs into develop. PRs into main validate the release.
 on:
   push:
-    branches: [develop, main]
+    branches: [main]
   pull_request:
     branches: [develop, main]
 
@@ -19,7 +17,8 @@ concurrency:
 
 jobs:
   test:
-    if: github.ref == 'refs/heads/develop' || github.base_ref == 'develop'
+    needs: lint
+    if: github.base_ref == 'develop'
     name: test (${{ matrix.os }}, Python ${{ matrix.python }}${{ matrix.ctags && ', ctags' || '' }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
@@ -28,8 +27,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python: ["3.9", "3.x"]
+        exclude:
+          - os: ubuntu-latest
+            python: "3.9"
         # Ctags on the latest Python only, so Linux and macOS also test the pattern parser alone.
         include:
+          # setup-python provides Python 3.9 for Ubuntu 24.04.
+          - os: ubuntu-24.04
+            python: "3.9"
           - os: ubuntu-latest
             python: "3.x"
             ctags: true
@@ -70,7 +75,7 @@ jobs:
         run: ./skills/fleex-skills/scripts/check.ps1
 
   lint:
-    if: github.ref == 'refs/heads/develop' || github.base_ref == 'develop'
+    if: github.base_ref == 'develop'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

@@ -46,14 +46,11 @@ The repository owner's rules are decisions, not drafts. Change their form, never
 
 ## Add
 
-[The rule catalog](references/rules.md) is the only source of shared rules. A new `AGENTS.md` is the
-project sentence plus the catalog rules that hold for the repository; an existing one gains only the
-missing ones. Fill placeholders with the repository's real commands and paths, verified first; skip
-a rule you cannot make concrete. The Branches section goes into every `AGENTS.md` with `develop`
-and `main`, plus `staging` when the repository deploys to a test server, unless the user or the
-repository's existing setup names other branches; report a named branch that does not exist
-instead of creating it. The `translated to:` list in the Language section belongs to $fleex-docs.
-Once written, the rules belong to the owner and are not synced back.
+Use the [rule catalog](references/rules.md) for shared rules. Add only rules that improve decisions
+in this repository. Group them under Rules, Work, Language, and Report as needed. Keep concrete
+choices such as the secrets provider and documentation language in the project that owns them.
+Preserve existing owner-approved rules when the catalog changes. Change their meaning or remove
+them only at the owner's direction.
 
 ## Gotchas
 
@@ -63,7 +60,7 @@ Once written, the rules belong to the owner and are not synced back.
 
 ## Check
 
-Report each removed line with its reason, so the owner can restore it. Compare `wc -w AGENTS.md`
+Report changes to behavior, including removed constraints. Compare `wc -w AGENTS.md`
 before and after. For each added or edited line, ask whether an agent would act differently without
-it; if not, delete it. From the repository root, run `../fleex-skills/scripts/check.sh` relative to
-this skill's directory (`check.ps1` on Windows) and fix every reported error.
+it; if not, delete it. Check changed instruction files and their imports. Use the project's
+broader checks when the task changes their inputs or reaches a required verification milestone.

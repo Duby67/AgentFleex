@@ -1,48 +1,47 @@
 # GitHub
 
-Templates are in `../assets/github/`; `<owner>/<repo>` comes from `gh repo view --json
-nameWithOwner`.
+Templates are in `../assets/github/`. Obtain the repository name and visibility with
+`gh repo view --json nameWithOwner,visibility`.
 
 ## Files
 
-- `ISSUE_TEMPLATE/`: bug and feature forms, and `config.yml` that disables blank issues and links
-  private vulnerability reports. Copy to `.github/ISSUE_TEMPLATE/`; adapt the form fields to the
-  project (the versions a bug report needs, a client or platform dropdown).
-- `pull_request_template.md`: copy to `.github/`. Templates take effect once they reach the default
-  branch.
-- `dependabot.yml`: copy to `.github/`; it updates the pinned action SHAs. Add an entry for each
-  package ecosystem the repository uses (`uv`, `pip`, `npm`, `docker`). Give every entry
-  `target-branch: develop`, also with `staging`, and the same monthly schedule and groups. Security
-  updates ignore `target-branch` and open into the default branch, `develop`.
-- `workflows/ci.yml`: copy to `.github/workflows/` when the repository has no CI, or merge its jobs
-  into the existing workflow. Fill the test command or delete that step. Without releases, drop
-  the `version` and `release` jobs and the `pull_request` trigger.
-- `../assets/docs/SECURITY.md` and `../assets/docs/CONTRIBUTING.md`: skeletons for `docs/`; their
-  text follows $fleex-docs.
+- Use issue and PR templates in public or private projects where they help. Adapt the skeletons
+  to the project's workflows and keep only fields maintainers use. Add a private reporting link
+  only when its destination exists. Templates take effect on the default branch.
+- When Dependabot is explicitly requested, adapt `dependabot.yml` to the ecosystems and manifest
+  locations the repository uses. Schedule one monthly minor/patch group per ecosystem. Keep
+  major versions and security fixes in individual PRs. Leave grouped security updates disabled.
+  Dependabot uses the default branch for security updates. Set `target-branch` only to send
+  version updates to a different branch.
+- Adapt `workflows/ci.yml` to the existing CI, branch names, pre-commit setup, and test commands.
+  For projects without releases, omit the version and release jobs and their triggers.
+- Use the optional `assets/docs/` skeletons only under the conditions in the repository skill.
+  Fill them with the project's actual contribution workflow or security reporting policy.
 
 ## CI conventions
 
-- Pin every action to a full commit SHA with its version as a comment; Dependabot keeps them
-  current.
+- Pin every action to a full commit SHA with its version as a comment.
 - Top-level `permissions: contents: read`; grant write only to the job that needs it.
-- Run the hygiene checks through pre-commit and the project's tests on pull requests into and pushes
-  to `develop`; a pull request into `main` shows those results for its head commit.
+- Run CI pre-commit before expensive builds and tests on pull requests into the working branch,
+  and require the result before merging.
+- Use separate post-merge workflows for security or release tasks that need the merged state.
 - Checkouts that do not push set `persist-credentials: false`; every job has `timeout-minutes`.
 
-## Staging
+## Default branch workflow
 
-With `staging`, `develop` merges into `staging` and `staging` into `main`. In `ci.yml`, add
-`staging` to the push branches, set `RELEASE_FROM: staging`, and add the project's deployment to
-the test server as a job on pushes to `staging`.
+For new setups adopting these defaults, use `develop` as the default working branch.
+Start each change on a task branch from `develop` and squash-merge its PR into `develop`.
+When the project publishes or deploys, open a PR from `develop` into `main` and use a merge
+commit. Run publishing and any configured production deployment after the merge.
 
 ## Settings
 
 Show each command and run it only after the user confirms. Read the state first, for example
 `gh api repos/<owner>/<repo>`.
 
-- Default branch `develop`: `gh repo edit --default-branch develop`.
-- Squash merges for pull requests into `develop`, merge commits for releases into `main`, no rebase
-  merges, branches deleted after merge: `gh repo edit --enable-squash-merge --enable-merge-commit
+- If the agreed default branch is `develop`: `gh repo edit --default-branch develop`.
+- For the squash-to-develop and merge-to-main workflow:
+  `gh repo edit --enable-squash-merge --enable-merge-commit
   --enable-rebase-merge=false --delete-branch-on-merge`.
-- Private vulnerability reporting:
+- For public projects with a requested vulnerability reporting workflow:
   `gh api -X PUT repos/<owner>/<repo>/private-vulnerability-reporting`.
