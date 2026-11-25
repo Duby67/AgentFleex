@@ -1,7 +1,5 @@
 # Contributing
 
-**English** · [Русский](ru/CONTRIBUTING.md)
-
 ## Issues
 
 Report bugs and propose features with the issue forms. Report vulnerabilities privately as
@@ -56,8 +54,7 @@ plugin from the local marketplace.
 - The checks pass after the last commit.
 - Note user-visible changes under `## Unreleased` in [CHANGELOG.md](CHANGELOG.md) as the solved
   problem and resulting behavior.
-- Human docs are written in English and translated to Russian under `docs/ru/`; a translation may
-  lag during development with an outdated note, and is synchronized before the release.
+- Write documentation in English.
 
 ## Versions and releases
 
@@ -77,17 +74,15 @@ Every merge into `main` is a release, made by the maintainer:
    ```
 
 2. Rename `## Unreleased` to `## [x.y.z](https://github.com/Duby67/AgentFleex/releases/tag/x.y.z)`
-   in every changelog, leave an empty `## Unreleased` above it, and synchronize the translations.
-3. Push `develop`; CI runs the tests and pre-commit.
-4. Open a pull request from `develop` into `main`. CI shows the `develop` results, fails a pull
-   request from any other branch, and adds the release check
-   ([release.py](../skills/fleex-repo/scripts/release.py)): both manifests match the version, `## Unreleased`
-   is empty, every changelog has the version's section with the same headings, and the version is
-   above the latest tag.
+   in the changelog and leave an empty `## Unreleased` above it.
+3. Run the local checks and push `develop`.
+4. Open a pull request from `develop` into `main`. The release check verifies the source branch,
+   manifest versions, an empty `## Unreleased`, notes for the new version, and a version above the
+   latest tag. [Release script](../skills/fleex-repo/scripts/release.py)
 5. Merge with **Create a merge commit**. Squash and rebase merges rewrite the commits, so `main` and
    `develop` diverge.
 6. The push to `main` repeats the release check, tags the version, and publishes it as the latest
-   GitHub release with the notes of its section, each translation collapsed under its language.
+   GitHub release with the notes from that section.
 
 A bug in a release is fixed on `develop` and shipped with the next patch version.
 

@@ -18,8 +18,8 @@ changelog. There are no release or hotfix branches: the release source branch (`
 
 `docs/CHANGELOG.md` starts with `## Unreleased`, then one
 `## [x.y.z](https://github.com/<owner>/<repo>/releases/tag/x.y.z)` section per release, newest
-first, each a short list of solved problems and resulting behavior. Translations at
-`docs/<code>/CHANGELOG.md` have the same headings and notes for every release.
+first. Record user-visible changes under `## Unreleased` as the problem solved and resulting
+behavior.
 
 ## Mechanism
 
@@ -30,7 +30,7 @@ Copy `../scripts/release.py` to `.github/scripts/release.py`; it needs Python 3.
 - A local pre-commit hook runs `release.py check` when the version source, a manifest, or a
   changelog changes: manifests match, the headings are valid, and the version has a section.
 - The `version` job in CI runs `release.py check --release` on a pull request into `main`: the
-  source branch is the release source, `## Unreleased` is empty, every changelog has notes, and the
+  source branch is the release source, `## Unreleased` is empty, the version has notes, and the
   version is above the latest tag and untagged.
 - The `release` job repeats that check on the push to `main`, then tags the version and publishes
   the release with `release.py notes`.
@@ -38,7 +38,7 @@ Copy `../scripts/release.py` to `.github/scripts/release.py`; it needs Python 3.
 ## Making a release
 
 1. On the release source branch, raise the version above the latest tag, run `release.py sync`
-   and the lockfile update, rename `## Unreleased` to the version in every changelog, and leave an
+   and the lockfile update, rename `## Unreleased` to the version, and leave an
    empty `## Unreleased` above it.
 2. Push, open a pull request into `main`, and merge it with a merge commit once the checks pass.
    Squash and rebase merges rewrite commits, so `main` and the source branch would diverge.

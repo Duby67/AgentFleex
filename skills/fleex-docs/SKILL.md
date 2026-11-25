@@ -1,6 +1,6 @@
 ---
 name: fleex-docs
-description: Synchronize human-facing Markdown with behavior verified in code, tests, configuration, or workflows, and, only on request, translate it under docs/<code>/. Use when editing README.md, TODO.md, or other human documentation, including recording findings or tasks in the TODO.md backlog, or when the user asks for a translation pass or to add or remove a language. Do not use for AGENTS.md or skills.
+description: Maintain human-facing Markdown using verified project behavior. Use for README, TODO, and other human documentation. Do not use for AGENTS.md or skills.
 ---
 
 # Docs
@@ -20,16 +20,10 @@ canonical owner.
 - `TODO.md` is the backlog of known defects, risks, and planned work: follow
   [the backlog guide](references/todo.md).
 
-## Translations
-
-Write human docs in English. Translations may lag during development: when an English source
-changes, put a note under the switcher of each existing translation, in its language, linking the
-original (`> Перевод отстаёт от [английской версии](../../README.md).`), and keep switchers linked
-to existing files. Translate, or add or remove a language, only when the user asks, including a
-pass before a PR; then follow [the translation guide](references/i18n.md).
+Write documentation in English and follow the repository’s existing language policy.
 
 ## Check
 
 From the repository root, run `../fleex-skills/scripts/check.sh` relative to this skill's directory
-(`check.ps1` on Windows) to verify links and translations, and confirm by hand that referenced paths
+(`check.ps1` on Windows) to verify links, and confirm by hand that referenced paths
 in code spans exist.

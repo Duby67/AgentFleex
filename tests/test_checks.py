@@ -47,30 +47,18 @@ class ChecksTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return result.stdout
 
-    def test_configured_tool_wins_over_default(self) -> None:
+    def test_configured_tools_are_listed(self) -> None:
         self.write("pyproject.toml", "[tool.black]\n[tool.pyright]\n")
         self.write("app.py")
         output = self.checks()
         self.assertIn("black (pyproject.toml [tool.black])", output)
         self.assertIn("pyright (pyproject.toml [tool.pyright])", output)
-        self.assertNotIn("AgentFleex default", output)
+        self.assertNotIn("ruff (", output)
 
-    def test_defaults_fill_unconfigured_roles(self) -> None:
-        self.write("app.py")
-        self.write("run.sh")
-        output = self.checks()
-        self.assertIn("ruff (AgentFleex default", output)
-        self.assertIn("mypy (AgentFleex default", output)
-        self.assertIn("shellcheck (built-in rules)", output)
-        self.assertNotIn("markdownlint (", output)
-        self.write("README.md", "# Title\n")
-        self.write("ci.yml", "on: push\n")
-        output = self.checks()
-        self.assertIn("markdownlint (AgentFleex default", output)
-        self.assertIn("yamllint (AgentFleex default", output)
-        self.assertIn("assets/ruff.toml", output)
-        self.assertNotIn("\\", output)
-        self.assertNotIn("'", output)
+    def test_source_files_do_not_add_linters(self) -> None:
+        for name in ("app.py", "run.sh", "README.md", "ci.yml"):
+            self.write(name)
+        self.assertEqual(self.checks(), "git whitespace\n  check: git diff --check HEAD\n")
 
     def test_pre_commit_runs_the_tools_it_lists(self) -> None:
         self.write("ruff.toml")
@@ -79,11 +67,6 @@ class ChecksTest(unittest.TestCase):
         output = self.checks()
         self.assertIn("pre-commit (.pre-commit-config.yaml)", output)
         self.assertNotIn("ruff (", output)
-        self.assertIn("mypy (AgentFleex default", output)
-
-    def test_no_python_means_no_python_defaults(self) -> None:
-        self.write("README.md", "# Title\n")
-        self.assertNotIn("ruff", self.checks())
 
     def test_environment_states(self) -> None:
         self.write("pyproject.toml", "[tool.ruff]\n[tool.mypy]\n")
@@ -116,27 +99,16 @@ class ChecksTest(unittest.TestCase):
         self.assertNotIn("SETUP: poetry install (mypy", output)
         self.assertFalse(marker.exists())
 
-    def test_percent_in_a_generated_path_fails(self) -> None:
-        with self.assertRaises(SystemExit) as raised:
-            checks.shell_path(Path("C:/Users/a%USERNAME%b/ruff.toml"))
-        self.assertIn("contains '%'", str(raised.exception))
-        self.assertEqual(checks.shell_path(Path("/opt/a b/ruff.toml")), '"/opt/a b/ruff.toml"')
-
-    def test_uvx_defaults_are_pinned_to_the_pre_commit_versions(self) -> None:
+    def test_uvx_tools_are_pinned_to_the_pre_commit_versions(self) -> None:
         with mock.patch.object(checks.shutil, "which", lambda name: name == "uvx"):
-            self.assertEqual(checks.default_tool("ruff")[0], "uvx ruff@0.16.9")
-            self.assertEqual(checks.default_tool("mypy")[0], "uvx mypy@2.3.1")
-        with mock.patch.object(checks.shutil, "which", lambda name: name == "npx"):
-            self.assertEqual(
-                checks.npx_tool("markdownlint-cli2"), ("npx --yes markdownlint-cli2@0.23.3", "")
-            )
+            self.assertEqual(checks.tool_command("ruff")[0], "uvx ruff@0.16.9")
+            self.assertEqual(checks.tool_command("mypy")[0], "uvx mypy@2.3.1")
         hooks = (SCRIPT.parents[3] / ".pre-commit-config.yaml").read_text(encoding="utf-8")
-        pinned = {**checks.UVX_VERSIONS, **checks.NPX_VERSIONS}
+        pinned = checks.UVX_VERSIONS
         for name, repo in (
             ("ruff", "ruff-pre-commit"),
             ("mypy", "mirrors-mypy"),
             ("yamllint", "yamllint"),
-            ("markdownlint-cli2", "markdownlint-cli2"),
         ):
             frozen = re.search(rf"{repo}\n\s+rev: \S+ # frozen: v(\S+)", hooks)
             self.assertIsNotNone(frozen, repo)

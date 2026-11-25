@@ -5,12 +5,8 @@ description: Run the repository's configured linters, formatters, type checkers,
 
 # Hygiene
 
-The repository's own configuration is the single style: its linter, formatter, and type checker
-configs, `.editorconfig`, pre-commit hooks, and what CI runs. Where it configures no tool for a role
-(Python style, Python types, shell, Markdown, YAML), the plugin defaults in `assets/` apply: Ruff
-with `assets/ruff.toml`, mypy with `assets/mypy.ini`, ShellCheck's built-in rules, markdownlint with
-`assets/markdownlint.yaml`, and yamllint with `assets/yamllint.yaml`. An existing
-configuration always wins over a default.
+Use the project's own linters, formatters, type checkers, pre-commit hooks, and CI commands.
+Follow its `.editorconfig`.
 
 Run a hygiene pass only when asked, including a requested check before a PR or merge; ordinary edits
 and finished responses never trigger one. Do not repeat checks on an unchanged state.
@@ -18,7 +14,7 @@ and finished responses never trigger one. Do not repeat checks on an unchanged s
 ## Find the checks
 
 Run `scripts/checks.py` (relative to this skill's directory) from anywhere in the repository with
-Python 3.9+. It reads configuration only and prints each configured or default tool with its check
+Python 3.9+. It reads configuration only and prints each configured tool with its check
 and fix commands, run through the project environment (`uv run`, `poetry run`, `.venv`, `npx`, the
 lockfile's package manager) or, for a Python tool the project does not install, `uvx` at a pinned
 version, and the CI commands that run them. `{files}` stands for the changed files: `git diff
@@ -38,9 +34,7 @@ subject to the client's normal execution approvals.
   `eslint-disable`, `type: ignore`) to pass, unless the user asks; a rule that looks wrong is
   reported instead.
 - Editor diagnostics (such as a VS Code diagnostics tool) cover only open or saved files, so an
-  empty result is not a pass; confirm with the tool's command line. Diagnostics from tools the
-  repository does not configure: fix them when the fix keeps behavior, and suggest committing that
-  tool's configuration.
+  empty result is not a pass; confirm with the configured tool's command line.
 - Leave pre-existing failures in untouched code alone and report them separately.
 - A line marked `MISSING` names a tool to install; `SETUP` gives the command that installs the
   project environment. Tell the user once, never install on your own, and run the remaining checks.

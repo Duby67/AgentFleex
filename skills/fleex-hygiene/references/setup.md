@@ -12,19 +12,15 @@ environment manager unless the user requests migration.
 
 ## pre-commit
 
-Every repository runs its hygiene checks through pre-commit. Without `.pre-commit-config.yaml`,
-start from `../assets/pre-commit-config.yaml` (whitespace, end of file, merge conflicts, YAML and
-JSON syntax, markdownlint, yamllint) and add the repository's existing linters, formatters, and type
-checkers; pin every `rev` to a commit with `pre-commit autoupdate --freeze`. Copy
-`../assets/markdownlint.yaml` and `../assets/yamllint.yaml` to `.github/linters/.markdownlint.yaml`
-and `.github/linters/.yamllint.yaml` unless the repository configures those tools already. CI runs
-`pre-commit run --all-files`; contributors install it once with `uv run --locked pre-commit install`
-in a uv project, or `uvx pre-commit install` otherwise.
+For projects adopting pre-commit, start with their existing config or the basic file checks in
+`../assets/pre-commit-config.yaml`. Add project-specific checks when they catch meaningful issues
+the existing checks miss. Keep hooks fast, pin revisions, and avoid checking the same rule twice.
+In CI run pre-commit before expensive tests. Contributors install the hook once with
+`uv run --locked pre-commit install` in a uv project or `uvx pre-commit install` otherwise.
 
 ## Defaults and .editorconfig
 
-When asked to add or unify tooling, start from the plugin defaults in `../assets/`: copy their
-settings into an existing file (`pyproject.toml`, `package.json`) where possible, so the repository
-no longer depends on the plugin. Without `.editorconfig`, copy `../assets/editorconfig` to the root
-as `.editorconfig`, with `max_line_length` matching the formatter and line endings matching
-`.gitattributes`. CI and `.editorconfig` must agree with the tool configuration.
+Use the project's existing settings. When adding a tool, adapt a relevant config from
+`../assets/` if it fits, and keep it in the project's own config where possible. When adding
+`.editorconfig`, adapt `../assets/editorconfig` to the formatter's line length and the line
+endings in `.gitattributes`. CI and `.editorconfig` must agree with the tool configuration.

@@ -1,10 +1,7 @@
-## What and why
+## What changed and why
 
-<!-- The change and the problem it solves. Closes #... -->
+<!-- Link the issue when applicable. -->
 
-## Checklist
+## Verification
 
-- [ ] The branch targets `develop` and is named `<type>/<description>`.
-- [ ] The checks pass after the last commit.
-- [ ] User-visible changes are noted under `## Unreleased` in `docs/CHANGELOG.md`.
-- [ ] Changed docs are updated; stale translations are marked.
+<!-- Describe how the change was verified. -->

@@ -1,7 +1,5 @@
 # TODO
 
-**English** · [Русский](ru/TODO.md)
-
 States: `- [ ]` open, `- [-]` declined.
 Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests`, `#docs`,
 `#chore`.

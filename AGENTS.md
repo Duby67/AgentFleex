@@ -47,10 +47,7 @@ an installed dependency, new code. Stay in scope. Read narrowly: focused search,
 
 ## Language
 
-- Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in English,
-  translated to: ru; add or remove a language only when the user asks.
-- Translations may lag during development; mark stale copies and synchronize on request or before
-  a PR. Release changelog sections must match in every language.
+Write agent-facing files and human documentation in English.
 
 ## Report
 

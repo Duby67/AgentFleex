@@ -1,11 +1,10 @@
 name: CI
 
-# A pull request into develop and a push to develop run the checks; a pull request into main shows
-# them for its head commit and adds the release check; a push to main releases. Branch protection
-# requires checks on develop and version on main. Fill <test command> or delete that step.
+# PRs into develop run pre-commit and tests. PRs into main validate the release.
+# A push to main publishes the release. Fill the test command for the project.
 on:
   push:
-    branches: [develop, main]
+    branches: [main]
   pull_request:
     branches: [develop, main]
 
@@ -23,9 +22,7 @@ env:
 
 jobs:
   checks:
-    if: >-
-      (github.event_name == 'push' && github.ref != 'refs/heads/main') ||
-      github.base_ref == 'develop'
+    if: github.base_ref == 'develop'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

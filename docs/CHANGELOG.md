@@ -1,8 +1,13 @@
 # Changelog
 
-**English** · [Русский](ru/CHANGELOG.md)
-
 ## Unreleased
+
+- Adapt repository setup to project needs. License choice stays with the project, security and
+  contributing guides are conditional, and Dependabot requires an explicit request.
+- Shortened issue and PR templates. Pre-commit gates expensive PR checks on the working branch,
+  and release CI uses notes from the English changelog.
+- Hygiene runs project-configured tools. The starter pre-commit config contains basic file checks.
+- Removed the Russian documentation copies and translation handling from the plugin.
 
 - Removed the `fleex-vscode` skill and its bundled workspace settings and extension recommendations.
 - Documented the five criteria for evaluating AgentFleex features and the roles of project

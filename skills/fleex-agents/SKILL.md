@@ -52,7 +52,7 @@ missing ones. Fill placeholders with the repository's real commands and paths, v
 a rule you cannot make concrete. The Branches section goes into every `AGENTS.md` with `develop`
 and `main`, plus `staging` when the repository deploys to a test server, unless the user or the
 repository's existing setup names other branches; report a named branch that does not exist
-instead of creating it. The `translated to:` list in the Language section belongs to $fleex-docs.
+instead of creating it.
 Once written, the rules belong to the owner and are not synced back.
 
 ## Gotchas

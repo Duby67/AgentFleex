@@ -43,10 +43,7 @@ Hard rules; stop and report instead of working around them.
 
 ## Language
 
-- Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in
-  English<, translated to: <BCP 47 codes>>; add or remove a language only when the user asks.
-- Translations may lag during development; mark stale copies and synchronize on request or before
-  a PR. Release changelog sections must match in every language.
+Write agent-facing files and human documentation in English.
 
 ## Report
 
