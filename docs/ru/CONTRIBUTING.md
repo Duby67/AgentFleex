@@ -16,9 +16,7 @@
 Установите [uv](https://docs.astral.sh/uv/getting-started/installation/), затем выполните
 `uv sync --locked`: команда создаст игнорируемую `.venv` из `pyproject.toml` и `uv.lock`. Один раз
 установите хук коммита командой `uv run --locked pre-commit install`. Добавляйте зависимости
-разработки через `uv add --dev`, запускайте Python-команды через `uv run --locked`. Настройки Python
-для VS Code по умолчанию указывают на `.venv`; если интерпретатор уже был выбран, укажите его через
-`Python: Select Interpreter`.
+разработки через `uv add --dev`, запускайте Python-команды через `uv run --locked`.
 
 Чтобы попробовать изменения скиллов, запустите Claude Code с `claude --plugin-dir .`; в Codex
 переустановите плагин из локального маркетплейса.

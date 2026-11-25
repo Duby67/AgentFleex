@@ -56,7 +56,6 @@ references are read only when the skill is used. Skills marked explicit run only
 | [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) | Linters, formatters, type checkers, pre-commit, uv, `.editorconfig` | automatic, on request or before a PR |
 | [fleex-index](./skills/fleex-index/SKILL.md) | A dependency-free navigation script: map, outline, show, find, refs | automatic |
 | [fleex-repo](./skills/fleex-repo/SKILL.md) | Audit and setup of Git and GitHub files and settings, and the release mechanism | explicit |
-| [fleex-vscode](./skills/fleex-vscode/SKILL.md) | The project's ignored `.vscode/` | explicit |
 
 Checks and translations never run after every edit or response; pre-commit and CI remain the
 validation checkpoints. Existing configuration always wins over the plugin's defaults.
@@ -105,29 +104,6 @@ buffers, and atomic markers prevent repeated denials when reads run concurrently
 Hooks need `python3` or `python` on `PATH` and `CLAUDE_PLUGIN_DATA` or `PLUGIN_DATA` pointing to
 a private plugin data directory. There is no shared temporary-directory fallback. Codex must trust
 plugin hooks in `/hooks`, but this matcher does not intercept shell commands or other read tools.
-
-## VS Code
-
-Invoke `$fleex-vscode` to prepare the VS Code workspace for a task: it picks sets from
-`skills/fleex-vscode/assets/` by the task and the project files and merges their extension
-recommendations and settings into the project's `.vscode/`, which stays ignored by Git. On a new
-machine the whole set installs at once: `Extensions: Show Recommended Extensions`, then the Install
-Workspace Recommended Extensions button. The agent may suggest other extensions for the task but
-never suggests removing yours, and it installs nothing itself. Only when you ask it to sync installed
-extensions with the recommendations does it install the missing ones and then, as a separate step
-you confirm, uninstall the extras.
-
-| Set | When |
-| --- | --- |
-| `default` | Always: editor, Git, Markdown, YAML, TOML, EditorConfig |
-| `personal` | Always: theme and layout |
-| `python` | Python projects |
-| `cpp` | C and C++ projects |
-| `infrastructure` | Docker, CI, shell scripts, remote hosts |
-| `tools` | REST, draw.io, hex, CSV, XML, Inno Setup, npm |
-
-Keybindings and settings with application or machine scope work only in the user profile; keep them
-there, for example with Settings Sync.
 
 ## Saving tokens
 

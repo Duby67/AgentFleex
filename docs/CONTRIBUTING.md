@@ -16,8 +16,7 @@ The repository root is the plugin root; skills live in `skills/`, hooks in `hook
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run `uv sync --locked`
 to create the ignored `.venv` from `pyproject.toml` and `uv.lock`, and install the commit hook once
 with `uv run --locked pre-commit install`. Use `uv add --dev` for development dependencies and
-`uv run --locked` for Python commands. VS Code's Python settings default to `.venv`; if an
-interpreter was already selected, choose it with `Python: Select Interpreter`.
+`uv run --locked` for Python commands.
 
 To try skill changes, start Claude Code with `claude --plugin-dir .`; in Codex, reinstall the
 plugin from the local marketplace.

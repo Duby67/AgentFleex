@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Removed the `fleex-vscode` skill and its bundled workspace settings and extension recommendations.
 - Documented the five criteria for evaluating AgentFleex features and the roles of project
   documentation and configuration, tests and benchmarks, and the plugin.
 - Pull requests into `develop` are squash-merged and `develop` merges into `main` with a merge

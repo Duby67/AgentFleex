@@ -129,17 +129,6 @@ class HooksTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("private plugin data directory", result.stderr)
 
-    def test_vscode_requires_explicit_invocation(self) -> None:
-        for name in ("fleex-vscode",):
-            skill = SCRIPT.parent.parent / "skills" / name
-            self.assertIn(
-                "disable-model-invocation: true", (skill / "SKILL.md").read_text(encoding="utf-8")
-            )
-            self.assertIn(
-                "allow_implicit_invocation: false",
-                (skill / "agents/openai.yaml").read_text(encoding="utf-8"),
-            )
-
 
 if __name__ == "__main__":
     unittest.main()
