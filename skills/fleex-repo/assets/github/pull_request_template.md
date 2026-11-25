@@ -1,7 +1,7 @@
-## What changed and why
+## Changes
 
 <!-- Link the issue when applicable. -->
 
 ## Verification
 
-<!-- Describe how the change was verified. -->
+- [ ] <!-- Record a check and its outcome. -->
