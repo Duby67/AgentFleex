@@ -6,6 +6,26 @@ A Claude Code and Codex plugin that configures repositories one way: agent rules
 translations, style checks, GitHub files and settings, and releases, with cheap code navigation for
 the agent.
 
+## Philosophy
+
+Review every existing and proposed feature against five criteria:
+
+- Does it reduce token consumption?
+- Does it reduce the number of actions an agent takes?
+- Does it prevent repeated work?
+- Does it simplify repository organization?
+- Is the effort to maintain it proportionate to its benefits?
+
+Use the answers to decide what to add, keep, simplify, or remove.
+
+## AgentFleex repository
+
+| Area | Role |
+| --- | --- |
+| Project | The repository's own rules, configuration, and documentation, including `AGENTS.md`, `README.md`, and `docs/`. |
+| Tests and benchmarks | Tests in `tests/` verify behavior. Future benchmarks will measure how features affect agent work, including token consumption and action counts. |
+| Plugin | The repository's main product for Claude Code and Codex, with its skills in `skills/`, hooks in `hooks/`, and client distribution metadata. |
+
 ## Installation
 
 Claude Code:
@@ -41,7 +61,7 @@ references are read only when the skill is used. Skills marked explicit run only
 Checks and translations never run after every edit or response; pre-commit and CI remain the
 validation checkpoints. Existing configuration always wins over the plugin's defaults.
 
-## Repository layout
+## Layout for repositories configured by AgentFleex
 
 | Path | Purpose |
 | --- | --- |

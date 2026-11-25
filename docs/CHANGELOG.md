@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Documented the five criteria for evaluating AgentFleex features and the roles of project
+  documentation and configuration, tests and benchmarks, and the plugin.
 - Pull requests into `develop` are squash-merged and `develop` merges into `main` with a merge
   commit: `AGENTS.md`, the contributing guides, the `AGENTS.md` rule catalog, and the `fleex-repo`
   repository settings state it.

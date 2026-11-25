@@ -2,6 +2,8 @@
 
 [English](../CHANGELOG.md) · **Русский**
 
+> Перевод отстаёт от [английской версии](../CHANGELOG.md).
+
 ## Unreleased
 
 - Pull request'ы в `develop` сливаются через squash, а `develop` сливается в `main` merge-коммитом:
