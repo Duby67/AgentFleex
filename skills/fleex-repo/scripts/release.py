@@ -1,17 +1,12 @@
 """Check the release version and changelogs, and print release notes.
 
 The version source is the first of pyproject.toml (`project.version`), package.json (`version`),
-and VERSION (one line). Each `--manifest` is a JSON file whose `version` must match it. The English
-changelog is docs/CHANGELOG.md, or CHANGELOG.md without it; translations are
-docs/<code>/CHANGELOG.md.
+and VERSION (one line). Each `--manifest` is a JSON file whose `version` must match it.
 
-`sync`: copy the version to every manifest.
-`check`: every manifest matches the version, the English changelog has `## Unreleased` first at
-most and then `## [x.y.z](<link to the x.y.z release tag>)` sections, the version has a section,
-and every translation has the same headings. `check --release` also requires an empty
-`## Unreleased`, notes for the version in every changelog, and a version above every x.y.z tag
-with no tag of its own. `notes`: the English section, then each translation's section collapsed
-under its language.
+`sync` copies the version to every manifest. `check` validates the manifests and the version's
+section in docs/CHANGELOG.md (or CHANGELOG.md). `check --release` also requires an empty
+`## Unreleased`, nonempty release notes, and a version above every x.y.z tag.
+`notes` prints the version's changelog section.
 """
 
 from __future__ import annotations
@@ -79,13 +74,13 @@ def manifests(root: Path, paths: list[str], value: str, source: str, sync: bool 
         file.write_text(json.dumps(found, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def changelogs(root: Path) -> list[Path]:
+def changelog(root: Path) -> Path:
     english = root / "docs/CHANGELOG.md"
     if not english.is_file():
         english = root / "CHANGELOG.md"
     if not english.is_file():
         raise Fail("no changelog; add docs/CHANGELOG.md with ## Unreleased")
-    return [english, *sorted(root.glob("docs/*/CHANGELOG.md"))]
+    return english
 
 
 def sections(path: Path) -> dict[str, str]:
@@ -104,28 +99,22 @@ def sections(path: Path) -> dict[str, str]:
 def check(root: Path, paths: list[str], release: bool) -> str:
     value, source = version(root)
     manifests(root, paths, value, source)
-    files = changelogs(root)
-    english_path = files[0]
-    english_name = english_path.relative_to(root).as_posix()
-    english = list(sections(english_path))
-    for i, head in enumerate(english):
+    path = changelog(root)
+    name = path.relative_to(root).as_posix()
+    found = sections(path)
+    for i, head in enumerate(found):
         if not (head == "## Unreleased" and i == 0 or RELEASE.fullmatch(head)):
             raise Fail(
-                f"{english_name}: unexpected heading {head!r}; use ## Unreleased first, "
+                f"{name}: unexpected heading {head!r}; use ## Unreleased first, "
                 "then ## [x.y.z](<link to the x.y.z release tag>)"
             )
-    if not any(head.startswith(f"## [{value}]") for head in english):
-        raise Fail(f"{english_name}: add a ## [{value}] section for the version in {source}")
-    for path in files:
-        found = sections(path)
-        name = path.relative_to(root).as_posix()
-        if list(found) != english:
-            raise Fail(f"{name}: headings must match {english_name}")
-        if release and found.get("## Unreleased", "").strip():
-            raise Fail(f"{name}: move the ## Unreleased items to ## [{value}]")
-        if release and not section(found, value).strip():
-            raise Fail(f"{name}: no notes under ## [{value}]")
+    if not any(head.startswith(f"## [{value}]") for head in found):
+        raise Fail(f"{name}: add a ## [{value}] section for the version in {source}")
     if release:
+        if found.get("## Unreleased", "").strip():
+            raise Fail(f"{name}: move the ## Unreleased items to ## [{value}]")
+        if not section(found, value).strip():
+            raise Fail(f"{name}: no notes under ## [{value}]")
         tags = subprocess.run(
             ["git", "tag", "--list"], cwd=root, capture_output=True, text=True, check=True
         ).stdout.split()
@@ -148,16 +137,7 @@ def section(found: dict[str, str], value: str) -> str:
 
 def notes(root: Path) -> str:
     value, _ = version(root)
-    english, *translations = changelogs(root)
-    text = section(sections(english), value).strip() + "\n"
-    for path in translations:
-        # The bold current language in the switcher line names the translation.
-        match = re.search(r"\*\*([^*]+)\*\*", path.read_text(encoding="utf-8"))
-        if not match:
-            raise Fail(f"{path}: no bold language name in its switcher line")
-        body = section(sections(path), value).strip()
-        text += f"\n<details><summary>{match.group(1)}</summary>\n\n{body}\n\n</details>\n"
-    return text
+    return section(sections(changelog(root)), value).strip() + "\n"
 
 
 def main() -> int:

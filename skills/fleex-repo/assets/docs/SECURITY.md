@@ -2,11 +2,10 @@
 
 ## Supported versions
 
-Only the latest release gets security fixes.
+<!-- List only versions that receive security fixes. -->
 
 ## Reporting a vulnerability
 
-Report privately through GitHub: open the repository's **Security** tab and choose **Report a
-vulnerability**. Do not open a public issue, pull request, or discussion for a vulnerability.
+<!-- Give the verified private reporting channel and any response expectations. -->
 
 Include the version, the operating system, the steps that reproduce the problem, and its impact.

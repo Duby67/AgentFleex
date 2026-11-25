@@ -1,38 +1,43 @@
 ---
 name: fleex-repo
-description: User-invoked audit and setup of a GitHub repository's service files and settings: README, LICENSE, .gitignore, .gitattributes, SECURITY, CONTRIBUTING, issue and PR templates, Dependabot, CI, and the version, changelog, and release mechanism. Use only when the user asks to audit, set up, or align a repository with their conventions, or to set up releases. Do not use for AGENTS.md, skills, or docs content alone.
+description: Explicitly invoked setup of new GitHub repositories or audit and refresh of existing repositories against AgentFleex assets and conventions.
 disable-model-invocation: true
 ---
 
 # Repository
 
-Bring a repository to one layout shared by all of the user's repositories, reusing what it already
-has. GitHub only.
+Apply shared organization principles to the repository's actual needs and existing conventions.
+GitHub only.
 
 ## Audit
 
-Report each item as present, missing, or differing from the conventions below; never change files
-during an audit. Findings may go to the backlog as $fleex-docs describes.
+Audit without changing files or settings. Select the assets relevant to the requested workflows
+and compare their behavior with the project's files, CI, and GitHub settings. For each actionable
+gap, cite the asset, show the current behavior, and explain what alignment would change.
+Respect deliberate project conventions and identify settings you could not verify.
 
-- Required, an error when missing: `README.md`, `LICENSE`, `.gitignore`, `.gitattributes`,
-  `AGENTS.md`.
-- Recommended, a suggestion when missing: `.editorconfig`, `.pre-commit-config.yaml` and CI
-  checks, `docs/SECURITY.md`, `docs/CONTRIBUTING.md`, issue forms and a PR template, Dependabot,
-  the release mechanism, and private vulnerability reporting.
+- Assess existing files against the project's needs. Report missing files only when they support
+  a requested workflow or a tool the project already uses.
+- Keep the project's license choice. A private project may have no license file.
+- Consider `SECURITY.md` only for public repositories when the request covers public maintenance
+  or vulnerability reporting. Consider `CONTRIBUTING.md` only for projects with multiple
+  contributors when the request covers collaboration. These requests need not name the files.
+- Configure Dependabot only when the user explicitly asks for Dependabot.
 - Conventions: actions pinned by full commit SHA with a version comment, top-level
-  `permissions: contents: read`, the branch model of `AGENTS.md`, and only the release source
-  branch merging into `main`.
+  `permissions: contents: read`, and the repository's established branch workflow.
 
 ## Owners
 
 Each area has one owner; follow it instead of repeating it here:
 
-- `AGENTS.md`, `.claude/CLAUDE.md`, and branch rules: $fleex-agents.
+- `AGENTS.md` and `.claude/CLAUDE.md`: $fleex-agents.
 - Project skills and agent skills symlinks: $fleex-skills.
-- Text of README, CONTRIBUTING, SECURITY, translations, and the backlog: $fleex-docs.
+- Human-facing text, including changelog entries: $fleex-docs.
 - Linters, formatters, pre-commit, uv, and `.editorconfig`: $fleex-hygiene.
 
-This skill owns the Git files, the GitHub files and settings, and the release mechanism.
+This skill owns Git files, GitHub settings and workflow orchestration, and the release contract.
+CI invokes the project's existing checks. For release validation in pre-commit, keep the release
+command with the release mechanism and configure its invocation with $fleex-hygiene.
 
 ## Layout
 
@@ -45,13 +50,12 @@ update every link to it in the same change.
 ## Apply
 
 - Show the plan (files to add or move, settings to change) and apply it after the user agrees.
-- Copy templates from `assets/` (relative to this skill's directory); fill each `<...>` with a
-  verified value and skip a file you cannot make concrete. Never overwrite an existing file: merge
-  into it or report the difference.
-- `LICENSE` is MIT with the current year and the owner from the GitHub remote, unless the user or
-  the repository names another license.
-- Branches are `develop` and `main`; add `staging` only when the repository deploys to a test
-  server or the user asks.
+- Select templates from `assets/` for the agreed workflows. Replace each placeholder with a
+  verified project value. Merge with existing files or report differences.
+- When refreshing an existing repository, apply the agreed audit findings and preserve
+  unrelated configuration and project-specific settings.
+- Keep the repository's established conventions. Use this skill's defaults only for workflows
+  agreed with the user during repository setup.
 - GitHub files and settings: [the GitHub guide](references/github.md). Versions, changelog, and
   releases: [the release guide](references/release.md); skip them for a repository with no
   releases.
@@ -60,6 +64,5 @@ update every link to it in the same change.
 
 ## Check
 
-From the repository root, run `../fleex-skills/scripts/check.sh` relative to this skill's directory
-(`check.ps1` on Windows), run the repository's pre-commit on the new files, and read the changed
-GitHub settings back with `gh`.
+Run the project's relevant checks on changed inputs. Reuse results for unchanged inputs and
+read back only GitHub settings that changed.

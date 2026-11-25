@@ -1,14 +1,30 @@
 # Changelog
 
-**English** · [Русский](ru/CHANGELOG.md)
-
 ## Unreleased
+
+## [0.5.0](https://github.com/Duby67/AgentFleex/releases/tag/0.5.0)
+
+- Repository audits compare relevant templates with existing settings and apply agreed updates.
+  Branch and release workflows are opt-in defaults. Repositories choose their own license, add
+  security and contribution guides when needed, and enable Dependabot on explicit request.
+- New issue and PR templates are shorter. The CI template runs pre-commit and tests on
+  working-branch PRs, so those checks do not repeat after merge.
+- Agent rules apply only where they help, and catalog updates preserve owner-approved rules.
+  Shared skills focus on cross-client setup without a fixed length limit.
+- Hygiene uses the project's configured tools and reports missing tools instead of selecting
+  substitute versions. Documentation follows the project's language, with one changelog for
+  release notes.
+- The Claude Code read hook skips rescanning files already outlined in the session.
+- Removed `fleex-vscode` and its bundled workspace presets.
+- Added a Claude Code listing icon and updated both plugin descriptions.
 
 ## [0.4.1](https://github.com/Duby67/AgentFleex/releases/tag/0.4.1)
 
 - Dependabot pull requests target `develop`: the `fleex-repo` template and this repository set
   `target-branch: develop` for every entry, so CI no longer rejects them as pull requests into
   `main`.
+- `dependabot/` is an allowed branch type in `CONTRIBUTING.md` and the `fleex-repo` template, so
+  Dependabot branches no longer conflict with the `<type>/<description>` naming rule.
 
 ## [0.4.0](https://github.com/Duby67/AgentFleex/releases/tag/0.4.0)
 

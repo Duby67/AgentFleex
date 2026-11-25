@@ -77,6 +77,8 @@ class HooksTest(unittest.TestCase):
         self.assertIn("30002 lines", reply["hookSpecificOutput"]["permissionDecisionReason"])
         self.write("binary.dat", "\0\n" * 500)
         self.assertEqual(self.hook("read", tool_input={"file_path": "binary.dat"}), {})
+        self.write("binary.py", "def f():\n    pass\n" + "# line\n" * 10000 + "\0")
+        self.assertEqual(self.hook("read", tool_input={"file_path": "binary.py"}), {})
 
     def test_read_state_is_separate_for_each_session(self) -> None:
         self.write("big.py", "def function():\n    pass\n" + "# line\n" * 400)
@@ -128,17 +130,6 @@ class HooksTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 1)
         self.assertIn("private plugin data directory", result.stderr)
-
-    def test_vscode_requires_explicit_invocation(self) -> None:
-        for name in ("fleex-vscode",):
-            skill = SCRIPT.parent.parent / "skills" / name
-            self.assertIn(
-                "disable-model-invocation: true", (skill / "SKILL.md").read_text(encoding="utf-8")
-            )
-            self.assertIn(
-                "allow_implicit_invocation: false",
-                (skill / "agents/openai.yaml").read_text(encoding="utf-8"),
-            )
 
 
 if __name__ == "__main__":

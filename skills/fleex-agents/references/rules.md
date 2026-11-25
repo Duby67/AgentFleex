@@ -1,53 +1,24 @@
 # Rule catalog
 
-Shared rules for `AGENTS.md`, grouped by the section they go in. Use a rule only when it holds for
-the repository; replace `<...>` with verified commands and paths.
+Use these rules when writing or reviewing `AGENTS.md`. Verify project commands and paths before
+adding them. Once adopted, a rule belongs to the repository owner. Catalog changes never remove
+or alter an existing rule without the owner's direction.
 
-## Rules
+## Universal
 
-Hard rules; stop and report instead of working around them.
+- Never commit or log secrets.
+- Report contradictions between docs, configuration, code, and tests that affect the requested
+  work. Ask which contract to follow when the contradiction blocks the work.
 
-- Commit, push, PR, and merge belong to the user.
-- No silent fallback: fail with an actionable error.
-- Secrets come from the environment; never commit or log them.
-- Never report an unrun or skipped check as passed; run checks after the last change.
-- Start another agent only with the user's permission.
-- When docs, config, code, and tests disagree, report the contradiction instead of choosing.
+## Conditional
 
-## Branches
+Add a rule only when the condition describes the repository or the owner's preference.
 
-- `<develop>` is the working branch: start branches and forks from it and target every PR at it.
-- `<staging>` is the test branch, only in a repository that deploys to a test server: `<develop>`
-  merges into it for deployment; a bug found there is fixed on `<develop>` and merged again.
-- `<main>`, the default branch, holds releases: only `<staging>` (or `<develop>` without it) merges
-  into it, after its tests pass.
-- Name task branches `<type>/<kebab-description>` with a type from `<contributing guide#branches>`.
-
-## Work
-
-- Make the smallest correct change. Prefer, in order: no change, existing code, the standard
-  library, an installed dependency, new code. Stay in scope.
-- Read narrowly: focused search, bounded reads, `git diff --stat` before diffs, quiet test output.
-- For repositories with Python files, including tests, default to uv and an ignored `.venv`:
-  declare dependencies in `pyproject.toml`, commit `uv.lock`, and use `uv sync`, `uv add`, and
-  `uv run` instead of pip or system Python. Preserve an established environment manager unless
-  the user requests migration.
-- Never read or search `<generated, vendored, lockfile, snapshot, build output, and data paths>`.
-- Fastest checks: `<single test command>`, `<lint changed files command>`,
-  `<type check command>`.
-- Run full hygiene checks on request or before a PR or merge, rather than after every edit.
-- Do not create plan, summary, or notes files unless asked.
-- Keep the repository root minimal: put a new file in an existing directory or its tool's own
-  (`docs/`, `.claude/`, `.github/`); add a root file only where a tool requires it.
-
-## Language
-
-- Agent-facing files (`AGENTS.md`, skills, agent docs) are in English. Human docs are in
-  English<, translated to: <BCP 47 codes>>; add or remove a language only when the user asks.
-- Translations may lag during development; mark stale copies and synchronize on request or before
-  a PR. Release changelog sections must match in every language.
-
-## Report
-
-One line per point: result, checks run with outcome, concrete risks. Write nothing else: no empty
-categories, no actions not taken (such as "not committed"), nothing the user already sees.
+| When it helps | Rule |
+| --- | --- |
+| A fallback would mask a failure or change a project contract | Fail with an actionable error when the required operation cannot complete. |
+| The owner limits delegation | Start another agent only with the user's permission. |
+| Running outside the configured environment gives different results | Run development commands and tests through the project's configured environment. Give the verified command when useful. |
+| Full checks are costly and the project defines verification milestones | Run targeted checks for routine changes. List the milestones that require full checks and report results for the state actually checked. |
+| The project deliberately limits root files | Use existing or tool-specific directories for new files. Use the root where a tool requires it. |
+| The owner wants terse handoffs | Briefly report completed work, outcomes of checks actually run, and concrete risks. Omit actions you did not take. |

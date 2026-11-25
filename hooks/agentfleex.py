@@ -18,10 +18,7 @@ INDEX = Path(__file__).resolve().parent.parent / "skills/fleex-index/scripts/ind
 LONG = 400
 
 
-def marker(event: dict[str, Any], file: Path) -> Path:
-    base = os.environ.get("CLAUDE_PLUGIN_DATA") or os.environ.get("PLUGIN_DATA")
-    if not base:
-        raise ValueError("set CLAUDE_PLUGIN_DATA or PLUGIN_DATA to a private plugin data directory")
+def marker(base: str, event: dict[str, Any], file: Path) -> Path:
     session = hashlib.sha256(str(event.get("session_id") or "default").encode()).hexdigest()
     name = hashlib.sha256(str(file.resolve()).encode()).hexdigest()
     return Path(base) / "reads" / session / name
@@ -32,14 +29,17 @@ def read(event: dict[str, Any]) -> dict[str, Any]:
     if tool.get("offset") or tool.get("limit") or not tool.get("file_path"):
         return {}
     file = Path(str(event.get("cwd") or "."), str(tool["file_path"]))
+    base = os.environ.get("CLAUDE_PLUGIN_DATA") or os.environ.get("PLUGIN_DATA")
+    path = marker(base, event, file) if base else None
+    if path is not None and path.is_dir():
+        return {}
     try:
+        lines = 0
+        last = b""
         with file.open("rb") as stream:
-            chunk = stream.read(8192)
-            if b"\0" in chunk:
-                return {}
-            lines = chunk.count(b"\n")
-            last = chunk[-1:]
             while chunk := stream.read(65536):
+                if b"\0" in chunk:
+                    return {}
                 lines += chunk.count(b"\n")
                 last = chunk[-1:]
             lines += bool(last) and last != b"\n"
@@ -47,9 +47,8 @@ def read(event: dict[str, Any]) -> dict[str, Any]:
         return {}
     if lines <= LONG:
         return {}
-    path = marker(event, file)
-    if path.exists():
-        return {}
+    if path is None:
+        raise ValueError("set CLAUDE_PLUGIN_DATA or PLUGIN_DATA to a private plugin data directory")
     outline = subprocess.run(
         [sys.executable, str(INDEX), "outline", str(file), "--root", str(file.parent)],
         capture_output=True,

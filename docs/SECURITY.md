@@ -1,7 +1,5 @@
 # Security policy
 
-**English** · [Русский](ru/SECURITY.md)
-
 ## Supported versions
 
 Only the latest release gets security fixes; update the plugin before reporting.
