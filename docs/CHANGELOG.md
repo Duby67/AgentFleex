@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Updated both plugin descriptions to reflect project-specific conventions and current features.
 - Scoped skill checks to changed inputs and avoided rescanning a file after its read outline
   has already been shown in the session.
 - Classified shared agent rules by applicability. Project choices and previously agreed rules
