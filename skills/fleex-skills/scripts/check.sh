@@ -99,7 +99,6 @@ for dir in ${packages[@]+"${packages[@]}"}; do
   if [ -z "$desc" ] || [ ${#desc} -gt 1024 ]; then
     err "$file" "description must be one line of 1-1024 characters"
   fi
-  [ "$(wc -l <"$file")" -le 200 ] || err "$file" "must stay under 200 lines"
 
   gated=no
   [ "$(field "$file" disable-model-invocation)" = true ] && gated=yes

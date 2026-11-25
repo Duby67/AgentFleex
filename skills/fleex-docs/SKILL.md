@@ -20,10 +20,9 @@ canonical owner.
 - `TODO.md` is the backlog of known defects, risks, and planned work: follow
   [the backlog guide](references/todo.md).
 
-Write documentation in English and follow the repository’s existing language policy.
+Use the language specified in project instructions. Otherwise, use the existing document's
+language or the user's language for a new document.
 
 ## Check
 
-From the repository root, run `../fleex-skills/scripts/check.sh` relative to this skill's directory
-(`check.ps1` on Windows) to verify links, and confirm by hand that referenced paths
-in code spans exist.
+Use the project's documentation checks and verify paths in the changed text.

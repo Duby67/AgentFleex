@@ -47,7 +47,8 @@ The repository owner's rules are decisions, not drafts. Change their form, never
 ## Add
 
 [The rule catalog](references/rules.md) is the only source of shared rules. A new `AGENTS.md` is the
-project sentence plus the catalog rules that hold for the repository; an existing one gains only the
+project sentence plus the applicable catalog rules, grouped under Rules, Work, Language, and
+Report as needed; an existing one gains only the
 missing ones. Fill placeholders with the repository's real commands and paths, verified first; skip
 a rule you cannot make concrete.
 Once written, the rules belong to the owner and are not synced back.
@@ -60,7 +61,7 @@ Once written, the rules belong to the owner and are not synced back.
 
 ## Check
 
-Report each removed line with its reason, so the owner can restore it. Compare `wc -w AGENTS.md`
+Report changes to behavior, including removed constraints. Compare `wc -w AGENTS.md`
 before and after. For each added or edited line, ask whether an agent would act differently without
 it; if not, delete it. From the repository root, run `../fleex-skills/scripts/check.sh` relative to
 this skill's directory (`check.ps1` on Windows) and fix every reported error.

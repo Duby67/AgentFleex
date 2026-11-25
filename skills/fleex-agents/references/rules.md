@@ -17,9 +17,8 @@ Hard rules; stop and report instead of working around them.
 - Reuse existing code and make the smallest complete change. Read only the relevant sections.
 - Run development commands and tests through the project's configured environment and tools.
   Specify `<project command>` when it helps agents use that environment.
-- Never read or search `<generated, vendored, lockfile, snapshot, build output, and data paths>`.
-- Use targeted checks or a quick functional check for routine changes. Run full
-  checks on request, before a PR, or after substantial feature changes. Report results for the
+- Use targeted checks or a quick functional check for routine changes. Run full checks on
+  request, before a commit or PR, or after substantial feature changes. Report results for the
   state actually checked.
 - Do not create plan, summary, or notes files unless asked.
 - Add files to existing or tool-specific directories. Use the root only when a tool requires it.

@@ -2,22 +2,15 @@
 
 from __future__ import annotations
 
-import importlib.util
 import os
-import re
 import subprocess
 import sys
 import tempfile
 import textwrap
 import unittest
 from pathlib import Path
-from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parent.parent / "skills/fleex-hygiene/scripts/checks.py"
-SPEC = importlib.util.spec_from_file_location("checks", SCRIPT)
-assert SPEC and SPEC.loader
-checks = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(checks)
 
 
 class ChecksTest(unittest.TestCase):
@@ -98,22 +91,6 @@ class ChecksTest(unittest.TestCase):
         self.assertIn("SETUP: poetry install (ruff is not in the project environment)", output)
         self.assertNotIn("SETUP: poetry install (mypy", output)
         self.assertFalse(marker.exists())
-
-    def test_uvx_tools_are_pinned_to_the_pre_commit_versions(self) -> None:
-        with mock.patch.object(checks.shutil, "which", lambda name: name == "uvx"):
-            self.assertEqual(checks.tool_command("ruff")[0], "uvx ruff@0.16.9")
-            self.assertEqual(checks.tool_command("mypy")[0], "uvx mypy@2.3.1")
-        hooks = (SCRIPT.parents[3] / ".pre-commit-config.yaml").read_text(encoding="utf-8")
-        pinned = checks.UVX_VERSIONS
-        for name, repo in (
-            ("ruff", "ruff-pre-commit"),
-            ("mypy", "mirrors-mypy"),
-            ("yamllint", "yamllint"),
-        ):
-            frozen = re.search(rf"{repo}\n\s+rev: \S+ # frozen: v(\S+)", hooks)
-            self.assertIsNotNone(frozen, repo)
-            assert frozen
-            self.assertEqual(pinned[name], frozen.group(1), name)
 
     def test_windows_venv_layout(self) -> None:
         self.write("pyproject.toml", "[tool.ruff]\n")

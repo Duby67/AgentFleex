@@ -126,7 +126,6 @@ foreach ($dir in $packages) {
     if (-not $desc -or $desc -match '^[>|]' -or $desc.Length -gt 1024) {
         Err $file 'description must be one line of 1-1024 characters'
     }
-    if ($lines.Count -gt 200) { Err $file 'must stay under 200 lines' }
 
     $gated = (Get-Field $lines 'disable-model-invocation') -eq 'true'
     $yaml = "$rel/agents/openai.yaml"

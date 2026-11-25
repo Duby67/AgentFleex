@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Focused shared skills on project wiring, existing documentation conventions, and configured
+  checks. Repository audits now compare relevant assets before applying agreed updates.
 - Made branch and release conventions opt-in repository setup defaults and moved AgentFleex's
   release procedure to a dedicated guide.
 - Shortened the repository layout and reporting rules in the shared agent rule catalog.

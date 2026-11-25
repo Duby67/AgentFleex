@@ -49,9 +49,9 @@ references are read only when the skill is used. Skills marked explicit run only
 | Skill | Owns | Invocation |
 | --- | --- | --- |
 | [fleex-agents](./skills/fleex-agents/SKILL.md) | `AGENTS.md`, `.claude/CLAUDE.md`, and the [catalog of shared rules](./skills/fleex-agents/references/rules.md) | automatic |
-| [fleex-skills](./skills/fleex-skills/SKILL.md) | Project skills, their wiring, and links to best practices | automatic |
+| [fleex-skills](./skills/fleex-skills/SKILL.md) | Shared skill discovery and wiring across clients | automatic |
 | [fleex-docs](./skills/fleex-docs/SKILL.md) | Human docs and the [backlog](./skills/fleex-docs/references/todo.md) | automatic |
-| [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) | Linters, formatters, type checkers, pre-commit, uv, `.editorconfig` | automatic, on request or before a PR |
+| [fleex-hygiene](./skills/fleex-hygiene/SKILL.md) | Diagnose and fix lint, formatting, and type-check failures | automatic, on request or before a commit or PR |
 | [fleex-index](./skills/fleex-index/SKILL.md) | A dependency-free navigation script: map, outline, show, find, refs | automatic |
 | [fleex-repo](./skills/fleex-repo/SKILL.md) | Audit and setup of Git and GitHub files and settings, and the release mechanism | explicit |
 

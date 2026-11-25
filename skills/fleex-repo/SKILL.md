@@ -1,6 +1,6 @@
 ---
 name: fleex-repo
-description: User-invoked audit and setup of a GitHub repository's service files and settings: README, LICENSE, .gitignore, .gitattributes, SECURITY, CONTRIBUTING, issue and PR templates, Dependabot, CI, and the version, changelog, and release mechanism. Use only when the user asks to audit, set up, or align a repository with their conventions, or to set up releases. Do not use for AGENTS.md, skills, or docs content alone.
+description: Explicitly invoked setup of new GitHub repositories or audit and refresh of existing repositories against AgentFleex assets and conventions.
 disable-model-invocation: true
 ---
 
@@ -11,8 +11,10 @@ GitHub only.
 
 ## Audit
 
-Report each item as present, missing, or differing from the conventions below; never change files
-during an audit. Findings may go to the backlog as $fleex-docs describes.
+Audit without changing files or settings. Select the assets relevant to the requested workflows
+and compare their behavior with the project's files, CI, and GitHub settings. For each actionable
+gap, cite the asset, show the current behavior, and explain what alignment would change.
+Respect deliberate project conventions and identify settings you could not verify.
 
 - Assess existing files against the project's needs. Report missing files only when they support
   a requested workflow or a tool the project already uses.
@@ -48,6 +50,8 @@ update every link to it in the same change.
 - Show the plan (files to add or move, settings to change) and apply it after the user agrees.
 - Select templates from `assets/` for the agreed workflows. Replace each placeholder with a
   verified project value. Merge with existing files or report differences.
+- When refreshing an existing repository, apply the agreed audit findings and preserve
+  unrelated configuration and project-specific settings.
 - Keep the repository's established conventions. Use this skill's defaults only for workflows
   agreed with the user during repository setup.
 - GitHub files and settings: [the GitHub guide](references/github.md). Versions, changelog, and
@@ -58,6 +62,5 @@ update every link to it in the same change.
 
 ## Check
 
-From the repository root, run `../fleex-skills/scripts/check.sh` relative to this skill's directory
-(`check.ps1` on Windows), run the repository's pre-commit on the new files, and read the changed
-GitHub settings back with `gh`.
+Run the project's relevant checks on the changed files and read modified GitHub settings back
+with `gh`.

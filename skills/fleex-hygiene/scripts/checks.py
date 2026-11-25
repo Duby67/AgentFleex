@@ -243,21 +243,6 @@ def ci_commands(path: Path) -> list[tuple[int, str]]:
     return commands
 
 
-# Versions uvx runs for configured tools, kept equal to this repository's pre-commit hooks so
-# results do not drift with new releases; other tools run at the version the project picks.
-UVX_VERSIONS = {"ruff": "0.16.9", "mypy": "2.3.1", "yamllint": "1.38.0"}
-
-
-def tool_command(name: str) -> tuple[str, str]:
-    """Command for a tool the repository does not install: on PATH, else through pinned uvx."""
-    if shutil.which(name):
-        return name, ""
-    if shutil.which("uvx"):
-        version = UVX_VERSIONS.get(name)
-        return (f"uvx {name}@{version}" if version else f"uvx {name}"), ""
-    return name, f"  MISSING {name}"
-
-
 def rows(root: Path) -> list[str]:
     try:
         package = json.loads(read(root / "package.json") or "{}")
@@ -278,7 +263,7 @@ def rows(root: Path) -> list[str]:
         if not source or name in present:
             continue
         status = "" if shutil.which(executable) else f"  MISSING {executable}"
-        if name in PYTHON_TOOLS and (manager or env):
+        if (name in PYTHON_TOOLS or name == "pre-commit") and (manager or env):
             if manager:
                 check = check.replace(f"{name} ", f"{prefix}{name} ")
                 fix = fix and fix.replace(f"{name} ", f"{prefix}{name} ")
@@ -298,13 +283,6 @@ def rows(root: Path) -> list[str]:
                 )
             else:
                 status = ""
-        elif name in PYTHON_TOOLS:
-            command, status = tool_command(name)
-            check = check.replace(f"{name} ", f"{command} ")
-            fix = fix and fix.replace(f"{name} ", f"{command} ")
-        elif name == "pre-commit":
-            command, status = tool_command(name)
-            check = check.replace(f"{name} ", f"{command} ")
         elif executable == "npx":
             status = node_status(root, npm, check.split()[1])
         result.append(

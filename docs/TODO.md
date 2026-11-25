@@ -6,9 +6,11 @@ Tags: `#bug`, `#security`, `#reliability`, `#feature`, `#tokens`, `#ci`, `#tests
 
 ## P3 — features
 
-- [ ] Extend read savings beyond the Read tool #tokens
-  - The hook matches only `Read` ([hooks.json:6](../hooks/hooks.json#L6)); `cat`, `grep -r`, and
-    long Bash output bypass it.
+- [ ] Benchmark and refine fleex-index navigation #tokens #tests
+  - Add a repeatable benchmark runner and fixtures under the repository's test and benchmark area.
+    Compare native search and bounded reads, fleex-index commands, and the read hook separately.
+  - Use representative tasks and repositories. Record correctness, input and output tokens, tool
+    calls, and elapsed time. Include cases that bypass the hook and fallback parsing without ctags.
+  - Use the measurements to decide which commands, activation guidance, and hook behavior to keep.
 - [ ] Automate skill activation tests #tests
-  - [fleex-skills](../skills/fleex-skills/SKILL.md#L98) describes about ten manual prompts per
-    skill; check whether `claude plugin eval` fits.
+  - Check whether `claude plugin eval` can automate representative trigger and near-miss cases.

@@ -1,4 +1,4 @@
 interface:
   display_name: "Hygiene"
-  short_description: "Run the repository's linters and formatters on changed files"
+  short_description: "Diagnose and fix failures from the project's configured checks"
   default_prompt: "Use $fleex-hygiene to check that my changes match the repository style."
