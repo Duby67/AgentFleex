@@ -2,40 +2,21 @@
 
 ## Unreleased
 
-- Updated both plugin descriptions to reflect project-specific conventions and current features.
-- Scoped skill checks to changed inputs and avoided rescanning a file after its read outline
-  has already been shown in the session.
-- Classified shared agent rules by applicability. Project choices and previously agreed rules
-  remain with each repository owner.
-- Focused shared skills on project wiring, existing documentation conventions, and configured
-  checks. Repository audits now compare relevant assets before applying agreed updates.
-- Made branch and release conventions opt-in repository setup defaults and moved AgentFleex's
-  release procedure to a dedicated guide.
-- Shortened the repository layout and reporting rules in the shared agent rule catalog.
-- Made the shared environment rule language-independent so agents use each project's tooling.
+## [0.5.0](https://github.com/Duby67/AgentFleex/releases/tag/0.5.0)
 
-- Adapt repository setup to project needs. License choice stays with the project, security and
-  contributing guides are conditional, and Dependabot requires an explicit request.
-- Shortened issue and PR templates. Pre-commit gates expensive PR checks on the working branch,
-  and release CI uses notes from the English changelog.
-- Hygiene runs project-configured tools. The starter pre-commit config contains basic file checks.
-- Removed the Russian documentation copies and translation handling from the plugin.
-
-- Removed the `fleex-vscode` skill and its bundled workspace settings and extension recommendations.
-- Documented the five criteria for evaluating AgentFleex features and the roles of project
-  documentation and configuration, tests and benchmarks, and the plugin.
-- Pull requests into `develop` are squash-merged and `develop` merges into `main` with a merge
-  commit: `AGENTS.md`, the contributing guides, the `AGENTS.md` rule catalog, and the `fleex-repo`
-  repository settings state it.
-- CI checks pull requests into `develop` before merge, and an aggregate `checks` job gives
-  branch protection one stable status. Runs are cancelled when a newer one starts, except a
-  release, and jobs have timeouts. The `fleex-repo` CI template follows the same rules.
-- `develop` is the default branch and `main` only holds releases, so Dependabot security updates
-  also open into `develop`. The `fleex-repo` settings and `CONTRIBUTING.md` template and the
-  `AGENTS.md` rule catalog follow the same model.
-- Dependabot checks monthly and groups minor and patch updates, and separately security updates,
-  into one pull request per ecosystem; a major update gets its own. This repository also updates
-  its uv dependencies. The `fleex-repo` template follows the same schedule and groups.
+- Repository audits compare relevant templates with existing settings and apply agreed updates.
+  Branch and release workflows are opt-in defaults. Repositories choose their own license, add
+  security and contribution guides when needed, and enable Dependabot on explicit request.
+- New issue and PR templates are shorter. The CI template runs pre-commit and tests on
+  working-branch PRs, so those checks do not repeat after merge.
+- Agent rules apply only where they help, and catalog updates preserve owner-approved rules.
+  Shared skills focus on cross-client setup without a fixed length limit.
+- Hygiene uses the project's configured tools and reports missing tools instead of selecting
+  substitute versions. Documentation follows the project's language, with one changelog for
+  release notes.
+- The Claude Code read hook skips rescanning files already outlined in the session.
+- Removed `fleex-vscode` and its bundled workspace presets.
+- Added a Claude Code listing icon and updated both plugin descriptions.
 
 ## [0.4.1](https://github.com/Duby67/AgentFleex/releases/tag/0.4.1)
 

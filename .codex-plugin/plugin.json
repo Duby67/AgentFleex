@@ -1,6 +1,6 @@
 {
   "name": "agentfleex",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Skills for focused code navigation and maintaining agent rules, shared skills, documentation, checks, and release workflows using each repository's conventions.",
   "author": {
     "name": "Duby67"
